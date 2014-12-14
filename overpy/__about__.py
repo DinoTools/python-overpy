@@ -5,7 +5,7 @@ __all__ = [
     "__license__",
     "__summary__",
     "__title__",
-    "__uri__",
+    "__url__",
     "__version__",
 ]
 
