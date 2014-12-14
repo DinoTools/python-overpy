@@ -1,0 +1,46 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "osm3s": {
+    "timestamp_osm_base": "2014-12-14T13:33:02Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 317146077,
+  "nodes": [
+    3233854241,
+    3233854238,
+    3233854233,
+    3233854234,
+    3233854236,
+    3233854237,
+    3233854241
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 317146078,
+  "timestamp": "2014-12-14T07:27:21Z",
+  "version": 1,
+  "changeset": 23456789,
+  "user": "TestUser",
+  "uid": 345678,
+  "nodes": [
+    3233854241,
+    3233854238,
+    3233854233,
+    3233854234,
+    3233854236,
+    3233854237,
+    3233854241
+  ]
+}
+
+  ]
+}
