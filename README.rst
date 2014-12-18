@@ -16,6 +16,12 @@ Have a look at the `documentation`_ to find additional information.
 .. image:: https://travis-ci.org/DinoTools/python-overpy.svg?branch=master
     :target: https://travis-ci.org/DinoTools/python-overpy
 
+Features
+--------
+
+* Query Overpass API
+* Parse JSON and XML response data
+
 Install
 -------
 

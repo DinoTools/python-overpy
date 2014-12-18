@@ -73,8 +73,9 @@ class Overpass(object):
         if content_type == "application/json":
             return self.parse_json(response)
 
-        # ToDo: Support XML
-        # if content_type == "application/osm3s+xml":
+        if content_type == "application/osm3s+xml":
+            return self.parse_xml(response)
+
         raise Exception
 
     def parse_json(self, data, encoding="utf-8"):
@@ -92,6 +93,22 @@ class Overpass(object):
             data = data.decode(encoding)
         data = json.loads(data, parse_float=Decimal)
         return Result.from_json(data, api=self)
+
+    def parse_xml(self, data, encoding="utf-8"):
+        """
+
+        :param data: Raw XML Data
+        :type data: String or Bytes
+        :param encoding: Encoding to decode byte string
+        :type encoding: String
+        :return: Result object
+        :rtype: overpy.Result
+        """
+        if isinstance(data, bytes):
+            data = data.decode(encoding)
+        import xml.etree.ElementTree as ET
+        root = ET.fromstring(data)
+        return Result.from_xml(root)
 
 
 class Result(object):
@@ -203,6 +220,25 @@ class Result(object):
                 e_type = element.get("type")
                 if hasattr(e_type, "lower") and e_type.lower() == elem_cls._type_value:
                     result.append(elem_cls.from_json(element, result=result))
+
+        return result
+
+    @classmethod
+    def from_xml(cls, root, api=None):
+        """
+        Create a new instance and load data from xml object.
+
+        :param data: Root element
+        :param api:
+        :type: Overpass
+        :return: New instance of Result object
+        :rtype: Result
+        """
+        result = cls(api=api)
+        for elem_cls in [Node, Way, Relation]:
+            for child in root:
+                if child.tag.lower() == elem_cls._type_value:
+                    result.append(elem_cls.from_xml(child, result=result))
 
         return result
 
@@ -402,6 +438,38 @@ class Node(Element):
 
         return cls(node_id=node_id, lat=lat, lon=lon, tags=tags, attributes=attributes, result=result)
 
+    @classmethod
+    def from_xml(cls, child, result=None):
+        if child.tag.lower() != cls._type_value:
+            raise Exception
+
+        tags = {}
+
+        for sub_child in child:
+            if sub_child.tag.lower() == "tag":
+                name = sub_child.attrib.get("k")
+                value = sub_child.attrib.get("v")
+                tags[name] = value
+
+        node_id = child.attrib.get("id")
+        if node_id is not None:
+            node_id = int(node_id)
+        lat = child.attrib.get("lat")
+        if lat is not None:
+            lat = Decimal(lat)
+        lon = child.attrib.get("lon")
+        if lon is not None:
+            lon = Decimal(lon)
+
+        attributes = {}
+        ignore = ["id", "lat", "lon"]
+        for n, v in child.attrib.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        return cls(node_id=node_id, lat=lat, lon=lon, tags=tags, attributes=attributes, result=result)
+
 
 class Way(Element):
     """
@@ -493,6 +561,39 @@ class Way(Element):
 
         return cls(way_id=way_id, attributes=attributes, node_ids=node_ids, tags=tags, result=result)
 
+    @classmethod
+    def from_xml(cls, child, result=None):
+        if child.tag.lower() != cls._type_value:
+            raise Exception
+
+        tags = {}
+        node_ids = []
+
+        for sub_child in child:
+            if sub_child.tag.lower() == "tag":
+                name = sub_child.attrib.get("k")
+                value = sub_child.attrib.get("v")
+                tags[name] = value
+            if sub_child.tag.lower() == "nd":
+                ref_id = sub_child.attrib.get("ref")
+                if ref_id is None:
+                    raise Exception
+                ref_id = int(ref_id)
+                node_ids.append(ref_id)
+
+        way_id = child.attrib.get("id")
+        if way_id is not None:
+            way_id = int(way_id)
+
+        attributes = {}
+        ignore = ["id"]
+        for n, v in child.attrib.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        return cls(way_id=way_id, attributes=attributes, node_ids=node_ids, tags=tags, result=result)
+
 
 class Relation(Element):
     """
@@ -546,6 +647,44 @@ class Relation(Element):
 
         return cls(rel_id=rel_id, attributes=attributes, members=members, tags=tags, result=result)
 
+    @classmethod
+    def from_xml(cls, child, result=None):
+        if child.tag.lower() != cls._type_value:
+            raise Exception
+
+        tags = {}
+        members = []
+
+        supported_members = [RelationNode, RelationWay]
+        for sub_child in child:
+            if sub_child.tag.lower() == "tag":
+                name = sub_child.attrib.get("k")
+                value = sub_child.attrib.get("v")
+                tags[name] = value
+            if sub_child.tag.lower() == "member":
+                type_value = sub_child.attrib.get("type")
+                for member_cls in supported_members:
+                    if member_cls._type_value == type_value:
+                        members.append(
+                            member_cls.from_child(
+                                sub_child,
+                                result=result
+                            )
+                        )
+
+        way_id = child.attrib.get("id")
+        if way_id is not None:
+            way_id = int(way_id)
+
+        attributes = {}
+        ignore = ["id"]
+        for n, v in child.attrib.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        return cls(way_id=way_id, attributes=attributes, tags=tags, result=result)
+
 
 class RelationMember(object):
     """
@@ -570,6 +709,17 @@ class RelationMember(object):
 
         ref = data.get("ref")
         role = data.get("role")
+        return cls(ref=ref, role=role, result=result)
+
+    @classmethod
+    def from_xml(cls, child, result=None):
+        if child.attrib.get("type") != cls._type_value:
+            raise Exception
+
+        ref = child.attrib.get("ref")
+        if ref is not None:
+            ref = int(ref)
+        role = child.attrib.get("role")
         return cls(ref=ref, role=role, result=result)
 
 
