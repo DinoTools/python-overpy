@@ -4,11 +4,6 @@ import os
 import overpy
 
 
-def read_file(filename):
-    filename = os.path.join(os.path.dirname(__file__), filename)
-    return open(filename).read()
-
-
 class BaseTestNodes(object):
     def _test_node01(self, result):
         assert len(result.nodes) == 3
@@ -129,3 +124,8 @@ class BaseTestWay(object):
 
         assert isinstance(node, overpy.Node)
         assert node.id == 3233854241
+
+
+def read_file(filename):
+    filename = os.path.join(os.path.dirname(__file__), filename)
+    return open(filename).read()

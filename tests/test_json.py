@@ -1,12 +1,7 @@
-import os
-
 import overpy
 
 from base_class import BaseTestNodes, BaseTestWay
-
-def read_file(filename):
-    filename = os.path.join(os.path.dirname(__file__), filename)
-    return open(filename).read()
+from base_class import read_file
 
 
 class TestNodes(BaseTestNodes):
