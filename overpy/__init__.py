@@ -33,26 +33,11 @@ class Overpass(object):
         """
         if not isinstance(query, bytes):
             query = bytes(query, "utf-8")
+
         try:
             f = urlopen(self.url, query)
         except HTTPError as e:
-            msgs = []
-            response = e.read(4096)
-            while True:
-                data = e.read(4096)
-                if len(data) == 0:
-                    break
-                response = response + data
-
-            for msg in self._regex_extract_error_msg.finditer(response):
-                tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
-                try:
-                    tmp = tmp.decode("utf-8")
-                except:
-                    tmp = repr(tmp)
-                msgs.append(tmp)
-
-            raise Exception("\n".join(msgs))
+            f = e
 
         content_type = None
         if PY2:
@@ -67,14 +52,26 @@ class Overpass(object):
             if len(data) == 0:
                 break
             response = response + data
-
         f.close()
 
-        if content_type == "application/json":
-            return self.parse_json(response)
+        if f.code == 200:
+            if content_type == "application/json":
+                return self.parse_json(response)
 
-        if content_type == "application/osm3s+xml":
-            return self.parse_xml(response)
+            if content_type == "application/osm3s+xml":
+                return self.parse_xml(response)
+
+        elif f.code == 400:
+            msgs = []
+            for msg in self._regex_extract_error_msg.finditer(response):
+                tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
+                try:
+                    tmp = tmp.decode("utf-8")
+                except UnicodeDecodeError:
+                    tmp = repr(tmp)
+                msgs.append(tmp)
+
+            raise Exception("\n".join(msgs))
 
         raise Exception
 
