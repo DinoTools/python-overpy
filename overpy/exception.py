@@ -22,6 +22,14 @@ class OverpassBadRequest(OverPyException):
         return "\n".join(self.msgs)
 
 
+class OverpassTooManyRequests(OverPyException):
+    """
+    Raised if the Overpass API service returns a 429 status code.
+    """
+    def __init__(self):
+        OverPyException.__init__(self, "Too many requests")
+
+
 class OverpassUnknownContentType(OverPyException):
     """
     Raised if the reported content type isn't handled by OverPy.

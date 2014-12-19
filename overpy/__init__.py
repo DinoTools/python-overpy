@@ -65,7 +65,7 @@ class Overpass(object):
 
             raise exception.OverpassUnknownContentType(content_type)
 
-        elif f.code == 400:
+        if f.code == 400:
             msgs = []
             for msg in self._regex_extract_error_msg.finditer(response):
                 tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
@@ -79,6 +79,9 @@ class Overpass(object):
                 query,
                 msgs=msgs
             )
+
+        if f.code == 429:
+            raise exception.OverpassTooManyRequests
 
         raise exception.OverpassUnknownHTTPStatusCode(f.code)
 
