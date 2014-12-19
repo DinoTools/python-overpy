@@ -83,6 +83,9 @@ class Overpass(object):
         if f.code == 429:
             raise exception.OverpassTooManyRequests
 
+        if f.code == 504:
+            raise exception.OverpassGatewayTimeout
+
         raise exception.OverpassUnknownHTTPStatusCode(f.code)
 
     def parse_json(self, data, encoding="utf-8"):

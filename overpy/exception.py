@@ -22,6 +22,14 @@ class OverpassBadRequest(OverPyException):
         return "\n".join(self.msgs)
 
 
+class OverpassGatewayTimeout(OverPyException):
+    """
+    Raised if load of the Overpass API service is to high and it can't handle the request.
+    """
+    def __init__(self):
+        OverPyException.__init__(self, "Server load to high")
+
+
 class OverpassTooManyRequests(OverPyException):
     """
     Raised if the Overpass API service returns a 429 status code.
