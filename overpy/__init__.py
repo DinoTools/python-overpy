@@ -63,6 +63,8 @@ class Overpass(object):
             if content_type == "application/osm3s+xml":
                 return self.parse_xml(response)
 
+            raise exception.OverpassUnknownContentType(content_type)
+
         elif f.code == 400:
             msgs = []
             for msg in self._regex_extract_error_msg.finditer(response):

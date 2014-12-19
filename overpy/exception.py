@@ -22,6 +22,22 @@ class OverpassBadRequest(OverPyException):
         return "\n".join(self.msgs)
 
 
+class OverpassUnknownContentType(OverPyException):
+    """
+    Raised if the reported content type isn't handled by OverPy.
+
+    :param content_type: The reported content type
+    :type content_type: None or String
+    """
+    def __init__(self, content_type):
+        self.content_type = content_type
+
+    def __str__(self):
+        if self.content_type is None:
+            return "No content type returned"
+        return "Unknown content type: %s" % self.content_type
+
+
 class OverpassUnknownHTTPStatusCode(OverPyException):
     """
     Raised if the returned HTTP status code isn't handled by OverPy.
