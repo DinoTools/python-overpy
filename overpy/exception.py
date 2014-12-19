@@ -3,6 +3,20 @@ class OverPyException(BaseException):
     pass
 
 
+class DataIncomplete(OverPyException):
+    """
+    Raised if the requested data isn't available in the result.
+    Try to improve the query or to resolve the missing data.
+    """
+    def __init__(self, *args, **kwargs):
+        OverPyException.__init__(
+            self,
+            "Data incomplete try to improve the query or to resolve the missing data",
+            *args,
+            **kwargs
+        )
+
+
 class OverpassBadRequest(OverPyException):
     """
     Raised if the Overpass API service returns a syntax error.

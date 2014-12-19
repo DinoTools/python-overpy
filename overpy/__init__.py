@@ -148,9 +148,10 @@ class Result(object):
 
         :param other: Expand the result with the elements from this result.
         :type other: overpy.Result
+        :raises ValueError: If provided parameter is not instance of :class:`overpy.Result`
         """
         if not isinstance(other, Result):
-            raise Exception
+            raise ValueError("Provided argument has to be instance of overpy:Result()")
 
         def do(ids, elements):
             for element in elements:
@@ -264,11 +265,13 @@ class Result(object):
         :param resolve_missing: Query the Overpass API if the node is missing in the result set.
         :return: The node
         :rtype: overpy.Node
+        :raises overpy.exception.DataIncomplete: At least one referenced node is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and at least one node can't be resolved.
         """
         nodes = self.get_nodes(node_id=node_id)
         if len(nodes) == 0:
             if not resolve_missing:
-                raise Exception
+                raise exception.DataIncomplete("Resolve missing nodes is disabled")
 
             query = ("\n"
                     "[out:json];\n"
@@ -284,7 +287,7 @@ class Result(object):
             nodes = self.get_nodes(node_id=node_id)
 
         if len(nodes) == 0:
-            raise Exception
+            raise exception.DataIncomplete("Unable to resolve all nodes")
 
         return nodes[0]
 
@@ -307,11 +310,13 @@ class Result(object):
         :param resolve_missing: Query the Overpass API if the relation is missing in the result set.
         :return: The relation
         :rtype: overpy.Relation
+        :raises overpy.exception.DataIncomplete: The requested relation is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and the relation can't be resolved.
         """
         relations = self.get_relations(rel_id=rel_id)
         if len(relations) == 0:
             if resolve_missing is False:
-                raise Exception
+                raise exception.DataIncomplete("Resolve missing relations is disabled")
 
             query = ("\n"
                     "[out:json];\n"
@@ -327,7 +332,7 @@ class Result(object):
             relations = self.get_relations(rel_id=rel_id)
 
         if len(relations) == 0:
-            raise Exception
+            raise exception.DataIncomplete("Unable to resolve requested reference")
 
         return relations[0]
 
@@ -350,11 +355,13 @@ class Result(object):
         :param resolve_missing: Query the Overpass API if the way is missing in the result set.
         :return: The way
         :rtype: overpy.Way
+        :raises overpy.exception.DataIncomplete: The requested way is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and the way can't be resolved.
         """
         ways = self.get_ways(way_id=way_id)
         if len(ways) == 0:
             if resolve_missing is False:
-                raise Exception
+                raise exception.DataIncomplete("Resolve missing way is disabled")
 
             query = ("\n"
                     "[out:json];\n"
@@ -370,7 +377,7 @@ class Result(object):
             ways = self.get_ways(way_id=way_id)
 
         if len(ways) == 0:
-            raise Exception
+            raise exception.DataIncomplete("Unable to resolve requested way")
 
         return ways[0]
 
@@ -517,6 +524,8 @@ class Way(Element):
         :type resolve_missing: Boolean
         :return: List of nodes
         :rtype: List of overpy.Node
+        :raises overpy.exception.DataIncomplete: At least one referenced node is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and at least one node can't be resolved.
         """
         result = []
         resolved = False
@@ -524,32 +533,36 @@ class Way(Element):
         for node_id in self._node_ids:
             try:
                 node = self._result.get_node(node_id)
-            except:
+            except exception.DataIncomplete:
                 node = None
+
+            if node is not None:
+                result.append(node)
+                continue
+
+            if resolved or not resolve_missing:
+                raise exception.DataIncomplete("Resolve missing nodes is disabled")
+
+            query = ("\n"
+                    "[out:json];\n"
+                    "way({way_id});\n"
+                    "node(w);\n"
+                    "out body;\n"
+            )
+            query = query.format(
+                way_id=self.id
+            )
+            tmp_result = self._result.api.query(query)
+            self._result.expand(tmp_result)
+            resolved = True
+
+            try:
+                node = self._result.get_node(node_id)
+            except exception.DataIncomplete:
+                node = None
+
             if node is None:
-                if resolved or not resolve_missing:
-                    raise Exception
-
-                query = ("\n"
-                        "[out:json];\n"
-                        "way({way_id});\n"
-                        "node(w);\n"
-                        "out body;\n"
-                )
-                query = query.format(
-                    way_id=self.id
-                )
-                tmp_result = self._result.api.query(query)
-                self._result.expand(tmp_result)
-                resolved = True
-
-                try:
-                    node = self._result.get_node(node_id)
-                except:
-                    node = None
-
-            if node is None:
-                raise Exception
+                exception.DataIncomplete("Unable to resolve all nodes")
 
             result.append(node)
 
