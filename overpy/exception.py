@@ -20,3 +20,17 @@ class OverpassBadRequest(OverPyException):
 
     def __str__(self):
         return "\n".join(self.msgs)
+
+
+class OverpassUnknownHTTPStatusCode(OverPyException):
+    """
+    Raised if the returned HTTP status code isn't handled by OverPy.
+
+    :param code: The HTTP status code
+    :type code: Integer
+    """
+    def __init__(self, code):
+        self.code = code
+
+    def __str__(self):
+        return "Unknown/Unhandled status code: %d" % self.code

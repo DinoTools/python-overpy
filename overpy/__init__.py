@@ -78,7 +78,7 @@ class Overpass(object):
                 msgs=msgs
             )
 
-        raise Exception
+        raise exception.OverpassUnknownHTTPStatusCode(f.code)
 
     def parse_json(self, data, encoding="utf-8"):
         """
