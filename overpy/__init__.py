@@ -106,6 +106,9 @@ class Overpass(object):
         """
         if isinstance(data, bytes):
             data = data.decode(encoding)
+        if PY2 and not isinstance(data, str):
+            # Python 2.x: kConvert unicode strings
+            data = data.encode(encoding)
         import xml.etree.ElementTree as ET
         root = ET.fromstring(data)
         return Result.from_xml(root)
