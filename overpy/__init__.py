@@ -3,6 +3,8 @@ import json
 import re
 import sys
 
+from overpy import exception
+
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
@@ -71,7 +73,10 @@ class Overpass(object):
                     tmp = repr(tmp)
                 msgs.append(tmp)
 
-            raise Exception("\n".join(msgs))
+            raise exception.OverpassBadRequest(
+                query,
+                msgs=msgs
+            )
 
         raise Exception
 
