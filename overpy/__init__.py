@@ -615,7 +615,7 @@ class Way(Element):
             if sub_child.tag.lower() == "nd":
                 ref_id = sub_child.attrib.get("ref")
                 if ref_id is None:
-                    raise Exception
+                    raise ValueError("Unable to find required ref value.")
                 ref_id = int(ref_id)
                 node_ids.append(ref_id)
 
