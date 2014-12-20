@@ -1,3 +1,5 @@
+import pytest
+
 import overpy
 
 from base_class import BaseTestNodes, BaseTestWay
@@ -21,3 +23,26 @@ class TestWay(BaseTestWay):
         api = overpy.Overpass()
         result = api.parse_xml(read_file("xml/way-02.xml"))
         self._test_way02(result)
+
+
+class TestDataError(object):
+    def _get_element_wrong_type(self):
+        data = "<foo></foo>"
+        import xml.etree.ElementTree as ET
+        return ET.fromstring(data)
+
+    def test_element_wrong_type(self):
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.Node.from_xml(
+                self._get_element_wrong_type()
+            )
+
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.Relation.from_xml(
+                self._get_element_wrong_type()
+            )
+
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.Way.from_xml(
+                self._get_element_wrong_type()
+            )
