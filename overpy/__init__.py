@@ -441,7 +441,10 @@ class Node(Element):
     @classmethod
     def from_json(cls, data, result=None):
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         tags = data.get("tags", {})
 
@@ -461,7 +464,10 @@ class Node(Element):
     @classmethod
     def from_xml(cls, child, result=None):
         if child.tag.lower() != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         tags = {}
 
@@ -571,7 +577,10 @@ class Way(Element):
     @classmethod
     def from_json(cls, data, result=None):
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         tags = data.get("tags", {})
 
@@ -590,7 +599,10 @@ class Way(Element):
     @classmethod
     def from_xml(cls, child, result=None):
         if child.tag.lower() != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         tags = {}
         node_ids = []
@@ -644,7 +656,10 @@ class Relation(Element):
     @classmethod
     def from_json(cls, data, result=None):
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         tags = data.get("tags", {})
 
@@ -676,7 +691,10 @@ class Relation(Element):
     @classmethod
     def from_xml(cls, child, result=None):
         if child.tag.lower() != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         tags = {}
         members = []
@@ -731,7 +749,10 @@ class RelationMember(object):
     @classmethod
     def from_json(cls, data, result=None):
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         ref = data.get("ref")
         role = data.get("role")
@@ -740,7 +761,10 @@ class RelationMember(object):
     @classmethod
     def from_xml(cls, child, result=None):
         if child.attrib.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         ref = child.attrib.get("ref")
         if ref is not None:

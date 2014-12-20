@@ -17,6 +17,26 @@ class DataIncomplete(OverPyException):
         )
 
 
+class ElementDataWrongType(OverPyException):
+    """
+    Raised if the provided element does not match the expected type.
+
+    :param type_expected: The expected element type
+    :type type_expected: String
+    :param type_provided: The provided element type
+    :type type_provided: String|None
+    """
+    def __init__(self, type_expected, type_provided=None):
+        self.type_expected = type_expected
+        self.type_provided = type_provided
+
+    def __str__(self):
+        return "Type expected '%s' but '%s' provided" % (
+            self.type_expected,
+            str(self.type_provided)
+        )
+
+
 class OverpassBadRequest(OverPyException):
     """
     Raised if the Overpass API service returns a syntax error.
