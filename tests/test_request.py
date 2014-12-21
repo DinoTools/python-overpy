@@ -93,7 +93,7 @@ def server_thread(server):
     request = server.get_request()
     server.process_request(*request)
     server.server_close()
-    # server.socket.close()
+    server.socket.close()
 
 
 class TestQuery(object):

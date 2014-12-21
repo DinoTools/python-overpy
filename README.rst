@@ -32,7 +32,7 @@ Install
 
 Supported Python versions:
 
-* Python 2.6 and 2.7
+* Python 2.7
 * Python >= 3.2
 * PyPy and PyPy3
 
