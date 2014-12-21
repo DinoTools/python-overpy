@@ -789,15 +789,15 @@ class Relation(Element):
                 for member_cls in supported_members:
                     if member_cls._type_value == type_value:
                         members.append(
-                            member_cls.from_child(
+                            member_cls.from_xml(
                                 sub_child,
                                 result=result
                             )
                         )
 
-        way_id = child.attrib.get("id")
-        if way_id is not None:
-            way_id = int(way_id)
+        rel_id = child.attrib.get("id")
+        if rel_id is not None:
+            rel_id = int(rel_id)
 
         attributes = {}
         ignore = ["id"]
@@ -806,7 +806,7 @@ class Relation(Element):
                 continue
             attributes[n] = v
 
-        return cls(way_id=way_id, attributes=attributes, tags=tags, result=result)
+        return cls(rel_id=rel_id, attributes=attributes, members=members, tags=tags, result=result)
 
 
 class RelationMember(object):
