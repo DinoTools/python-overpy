@@ -29,7 +29,7 @@ class HandleBadRequest(BaseRequestHandler):
         self.request.send(read_file("response/bad-request.html", "rb"))
 
 
-class HandleJSONResponse(BaseRequestHandler):
+class HandleResponseJSON(BaseRequestHandler):
     """
     """
     def handle(self):
@@ -39,12 +39,22 @@ class HandleJSONResponse(BaseRequestHandler):
         self.request.send(read_file("json/way-02.json", "rb"))
 
 
-class HandleXMLResponse(BaseRequestHandler):
+class HandleResponseXML(BaseRequestHandler):
     """
     """
     def handle(self):
         self.request.send(b"HTTP/1.0 200 OK\r\n")
         self.request.send(b"Content-Type: application/osm3s+xml\r\n")
+        self.request.send(b"\r\n")
+        self.request.send(read_file("xml/way-02.xml", "rb"))
+
+
+class HandleResponseUnknown(BaseRequestHandler):
+    """
+    """
+    def handle(self):
+        self.request.send(b"HTTP/1.0 200 OK\r\n")
+        self.request.send(b"Content-Type: application/foobar\r\n")
         self.request.send(b"\r\n")
         self.request.send(read_file("xml/way-02.xml", "rb"))
 
@@ -76,11 +86,11 @@ class TestQuery(object):
             ))
         t.join()
 
-    def test_json_response(self):
+    def test_response_json(self):
         port = PORT_START + 2
         server = TCPServer(
             (HOST, port),
-            HandleJSONResponse
+            HandleResponseJSON
         )
         t = Thread(target=server_thread, args=(server,))
         t.start()
@@ -91,11 +101,26 @@ class TestQuery(object):
         t.join()
         assert len(result.nodes) > 0
 
-    def test_xml_response(self):
+    def test_response_unknown(self):
         port = PORT_START + 3
         server = TCPServer(
             (HOST, port),
-            HandleJSONResponse
+            HandleResponseUnknown
+        )
+        t = Thread(target=server_thread, args=(server,))
+        t.start()
+
+        api = overpy.Overpass()
+        api.url = "http://%s:%d" % (HOST, port)
+        with pytest.raises(overpy.exception.OverpassUnknownContentType):
+            api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
+        t.join()
+
+    def test_response_xml(self):
+        port = PORT_START + 3
+        server = TCPServer(
+            (HOST, port),
+            HandleResponseXML
         )
         t = Thread(target=server_thread, args=(server,))
         t.start()
