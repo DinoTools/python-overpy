@@ -5,6 +5,8 @@ import pytest
 
 import overpy
 
+from tests import read_file
+
 
 class BaseTestNodes(object):
     def _test_node01(self, result):
@@ -191,7 +193,3 @@ class BaseTestWay(object):
         for way_ids in (result.way_ids, result.get_way_ids()):
             assert len(way_ids) == 1
             assert way_ids[0] == 317146077
-
-def read_file(filename, mode="r"):
-    filename = os.path.join(os.path.dirname(__file__), filename)
-    return open(filename, mode).read()

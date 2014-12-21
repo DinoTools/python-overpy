@@ -1,21 +1,9 @@
-import sys
-from threading import Thread
-
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from SocketServer import TCPServer, BaseRequestHandler
-else:
-    from socketserver import TCPServer, BaseRequestHandler
-
 import pytest
 
 import overpy
 
-from tests.base_class import read_file
-
-HOST = "127.0.0.1"
-PORT_START = 10000
-TCPServer.allow_reuse_address = True
+from tests import BaseRequestHandler
+from tests import read_file, new_server_thread
 
 
 class HandleOverpassBadRequest(BaseRequestHandler):
@@ -89,25 +77,13 @@ class HandleResponseUnknown(BaseRequestHandler):
         self.request.send(read_file("xml/way-02.xml", "rb"))
 
 
-def server_thread(server):
-    request = server.get_request()
-    server.process_request(*request)
-    server.server_close()
-    server.socket.close()
-
-
 class TestQuery(object):
     def test_overpass_syntax_error(self):
-        port = PORT_START + 1
-        server = TCPServer(
-            (HOST, port),
-            HandleOverpassBadRequest
-        )
-        t = Thread(target=server_thread, args=(server,))
+        url, t = new_server_thread(HandleOverpassBadRequest)
         t.start()
 
         api = overpy.Overpass()
-        api.url = "http://%s:%d" % (HOST, port)
+        api.url = url
         with pytest.raises(overpy.exception.OverpassBadRequest):
             # Missing ; after way(1)
             api.query((
@@ -117,16 +93,11 @@ class TestQuery(object):
         t.join()
 
     def test_overpass_too_many_requests(self):
-        port = PORT_START + 1
-        server = TCPServer(
-            (HOST, port),
-            HandleOverpassTooManyRequests
-        )
-        t = Thread(target=server_thread, args=(server,))
+        url, t = new_server_thread(HandleOverpassTooManyRequests)
         t.start()
 
         api = overpy.Overpass()
-        api.url = "http://%s:%d" % (HOST, port)
+        api.url = url
         with pytest.raises(overpy.exception.OverpassTooManyRequests):
             api.query((
                 "way(1);"
@@ -135,16 +106,11 @@ class TestQuery(object):
         t.join()
 
     def test_overpass_gateway_timeout(self):
-        port = PORT_START + 1
-        server = TCPServer(
-            (HOST, port),
-            HandleOverpassGatewayTimeout
-        )
-        t = Thread(target=server_thread, args=(server,))
+        url, t = new_server_thread(HandleOverpassGatewayTimeout)
         t.start()
 
         api = overpy.Overpass()
-        api.url = "http://%s:%d" % (HOST, port)
+        api.url = url
         with pytest.raises(overpy.exception.OverpassGatewayTimeout):
             api.query((
                 "way(1);"
@@ -153,16 +119,11 @@ class TestQuery(object):
         t.join()
 
     def test_overpass_unknown_status_code(self):
-        port = PORT_START + 1
-        server = TCPServer(
-            (HOST, port),
-            HandleOverpassUnknownHTTPStatusCode
-        )
-        t = Thread(target=server_thread, args=(server,))
+        url, t = new_server_thread(HandleOverpassUnknownHTTPStatusCode)
         t.start()
 
         api = overpy.Overpass()
-        api.url = "http://%s:%d" % (HOST, port)
+        api.url = url
         with pytest.raises(overpy.exception.OverpassUnknownHTTPStatusCode):
             api.query((
                 "way(1);"
@@ -171,46 +132,31 @@ class TestQuery(object):
         t.join()
 
     def test_response_json(self):
-        port = PORT_START + 2
-        server = TCPServer(
-            (HOST, port),
-            HandleResponseJSON
-        )
-        t = Thread(target=server_thread, args=(server,))
+        url, t = new_server_thread(HandleResponseJSON)
         t.start()
 
         api = overpy.Overpass()
-        api.url = "http://%s:%d" % (HOST, port)
+        api.url = url
         result = api.query("[out:json];node(50.745,7.17,50.75,7.18);out;")
         t.join()
         assert len(result.nodes) > 0
 
     def test_response_unknown(self):
-        port = PORT_START + 3
-        server = TCPServer(
-            (HOST, port),
-            HandleResponseUnknown
-        )
-        t = Thread(target=server_thread, args=(server,))
+        url, t = new_server_thread(HandleResponseUnknown)
         t.start()
 
         api = overpy.Overpass()
-        api.url = "http://%s:%d" % (HOST, port)
+        api.url = url
         with pytest.raises(overpy.exception.OverpassUnknownContentType):
             api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
         t.join()
 
     def test_response_xml(self):
-        port = PORT_START + 3
-        server = TCPServer(
-            (HOST, port),
-            HandleResponseXML
-        )
-        t = Thread(target=server_thread, args=(server,))
+        url, t = new_server_thread(HandleResponseXML)
         t.start()
 
         api = overpy.Overpass()
-        api.url = "http://%s:%d" % (HOST, port)
+        api.url = url
         result = api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
         t.join()
         assert len(result.nodes) > 0
