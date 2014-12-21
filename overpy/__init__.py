@@ -45,13 +45,6 @@ class Overpass(object):
         except HTTPError as e:
             f = e
 
-        content_type = None
-        if PY2:
-            http_info = f.info()
-            content_type = http_info.getheader("content-type")
-        if PY3:
-            content_type = f.getheader("Content-Type")
-
         response = f.read(4096)
         while True:
             data = f.read(4096)
@@ -61,6 +54,12 @@ class Overpass(object):
         f.close()
 
         if f.code == 200:
+            if PY2:
+                http_info = f.info()
+                content_type = http_info.getheader("content-type")
+            else:
+                content_type = f.getheader("Content-Type")
+
             if content_type == "application/json":
                 return self.parse_json(response)
 
