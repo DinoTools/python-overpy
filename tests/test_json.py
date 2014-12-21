@@ -49,6 +49,19 @@ class TestDataError(object):
             )
 
         with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.RelationNode.from_json(
+                {
+                    "type": "foo"
+                }
+            )
+
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.RelationWay.from_json(
+                {
+                    "type": "foo"
+                }
+            )
+        with pytest.raises(overpy.exception.ElementDataWrongType):
             overpy.Way.from_json(
                 {
                     "type": "foo"

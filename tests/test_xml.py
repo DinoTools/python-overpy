@@ -50,6 +50,16 @@ class TestDataError(object):
             )
 
         with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.RelationNode.from_xml(
+                self._get_element_wrong_type()
+            )
+
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.RelationWay.from_xml(
+                self._get_element_wrong_type()
+            )
+
+        with pytest.raises(overpy.exception.ElementDataWrongType):
             overpy.Way.from_xml(
                 self._get_element_wrong_type()
             )
