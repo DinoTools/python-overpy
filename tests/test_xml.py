@@ -47,6 +47,24 @@ class TestDataError(object):
                 self._get_element_wrong_type()
             )
 
+    def test_node_missing_data(self):
+        import xml.etree.ElementTree as ET
+
+        # Tag without k attribute
+        data = """<node id="1234"><tag></tag></node>"""
+        node = ET.fromstring(data)
+        with pytest.raises(ValueError):
+            overpy.Node.from_xml(node)
+
+    def test_relation_missing_data(self):
+        import xml.etree.ElementTree as ET
+
+        # Tag without k attribute
+        data = """<relation id="1234"><tag></tag></relation>"""
+        node = ET.fromstring(data)
+        with pytest.raises(ValueError):
+            overpy.Relation.from_xml(node)
+
     def test_way_missing_data(self):
         import xml.etree.ElementTree as ET
 
