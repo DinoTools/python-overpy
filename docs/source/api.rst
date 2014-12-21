@@ -44,3 +44,10 @@ Relation Members
 
 .. autoclass:: RelationWay
     :members:
+
+
+Exceptions
+----------
+
+.. automodule:: overpy.exception
+    :members:

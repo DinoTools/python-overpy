@@ -1,12 +1,13 @@
 Changelog
 =========
 
-0.2 - `master`_
+0.2 (`master`_)
 ~~~~~~~~~~~~~~~
 
-* Support xml response data
+* Added support for xml response data
+* Added support for exceptions
 
-0.1 - 2014-12-14
+0.1 (2014-12-14)
 ~~~~~~~~~~~~~~~~
 
 Proof of concept

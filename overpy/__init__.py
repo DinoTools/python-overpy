@@ -3,6 +3,8 @@ import json
 import re
 import sys
 
+from overpy import exception
+
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
@@ -33,26 +35,11 @@ class Overpass(object):
         """
         if not isinstance(query, bytes):
             query = bytes(query, "utf-8")
+
         try:
             f = urlopen(self.url, query)
         except HTTPError as e:
-            msgs = []
-            response = e.read(4096)
-            while True:
-                data = e.read(4096)
-                if len(data) == 0:
-                    break
-                response = response + data
-
-            for msg in self._regex_extract_error_msg.finditer(response):
-                tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
-                try:
-                    tmp = tmp.decode("utf-8")
-                except:
-                    tmp = repr(tmp)
-                msgs.append(tmp)
-
-            raise Exception("\n".join(msgs))
+            f = e
 
         content_type = None
         if PY2:
@@ -67,16 +54,39 @@ class Overpass(object):
             if len(data) == 0:
                 break
             response = response + data
-
         f.close()
 
-        if content_type == "application/json":
-            return self.parse_json(response)
+        if f.code == 200:
+            if content_type == "application/json":
+                return self.parse_json(response)
 
-        if content_type == "application/osm3s+xml":
-            return self.parse_xml(response)
+            if content_type == "application/osm3s+xml":
+                return self.parse_xml(response)
 
-        raise Exception
+            raise exception.OverpassUnknownContentType(content_type)
+
+        if f.code == 400:
+            msgs = []
+            for msg in self._regex_extract_error_msg.finditer(response):
+                tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
+                try:
+                    tmp = tmp.decode("utf-8")
+                except UnicodeDecodeError:
+                    tmp = repr(tmp)
+                msgs.append(tmp)
+
+            raise exception.OverpassBadRequest(
+                query,
+                msgs=msgs
+            )
+
+        if f.code == 429:
+            raise exception.OverpassTooManyRequests
+
+        if f.code == 504:
+            raise exception.OverpassGatewayTimeout
+
+        raise exception.OverpassUnknownHTTPStatusCode(f.code)
 
     def parse_json(self, data, encoding="utf-8"):
         """
@@ -107,7 +117,7 @@ class Overpass(object):
         if isinstance(data, bytes):
             data = data.decode(encoding)
         if PY2 and not isinstance(data, str):
-            # Python 2.x: kConvert unicode strings
+            # Python 2.x: Convert unicode strings
             data = data.encode(encoding)
         import xml.etree.ElementTree as ET
         root = ET.fromstring(data)
@@ -138,9 +148,10 @@ class Result(object):
 
         :param other: Expand the result with the elements from this result.
         :type other: overpy.Result
+        :raises ValueError: If provided parameter is not instance of :class:`overpy.Result`
         """
         if not isinstance(other, Result):
-            raise Exception
+            raise ValueError("Provided argument has to be instance of overpy:Result()")
 
         def do(ids, elements):
             for element in elements:
@@ -232,8 +243,9 @@ class Result(object):
         Create a new instance and load data from xml object.
 
         :param data: Root element
+        :type data: xml.etree.ElementTree.Element
         :param api:
-        :type: Overpass
+        :type api: Overpass
         :return: New instance of Result object
         :rtype: Result
         """
@@ -254,11 +266,13 @@ class Result(object):
         :param resolve_missing: Query the Overpass API if the node is missing in the result set.
         :return: The node
         :rtype: overpy.Node
+        :raises overpy.exception.DataIncomplete: At least one referenced node is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and at least one node can't be resolved.
         """
         nodes = self.get_nodes(node_id=node_id)
         if len(nodes) == 0:
             if not resolve_missing:
-                raise Exception
+                raise exception.DataIncomplete("Resolve missing nodes is disabled")
 
             query = ("\n"
                     "[out:json];\n"
@@ -274,7 +288,7 @@ class Result(object):
             nodes = self.get_nodes(node_id=node_id)
 
         if len(nodes) == 0:
-            raise Exception
+            raise exception.DataIncomplete("Unable to resolve all nodes")
 
         return nodes[0]
 
@@ -297,11 +311,13 @@ class Result(object):
         :param resolve_missing: Query the Overpass API if the relation is missing in the result set.
         :return: The relation
         :rtype: overpy.Relation
+        :raises overpy.exception.DataIncomplete: The requested relation is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and the relation can't be resolved.
         """
         relations = self.get_relations(rel_id=rel_id)
         if len(relations) == 0:
             if resolve_missing is False:
-                raise Exception
+                raise exception.DataIncomplete("Resolve missing relations is disabled")
 
             query = ("\n"
                     "[out:json];\n"
@@ -317,7 +333,7 @@ class Result(object):
             relations = self.get_relations(rel_id=rel_id)
 
         if len(relations) == 0:
-            raise Exception
+            raise exception.DataIncomplete("Unable to resolve requested reference")
 
         return relations[0]
 
@@ -340,11 +356,13 @@ class Result(object):
         :param resolve_missing: Query the Overpass API if the way is missing in the result set.
         :return: The way
         :rtype: overpy.Way
+        :raises overpy.exception.DataIncomplete: The requested way is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and the way can't be resolved.
         """
         ways = self.get_ways(way_id=way_id)
         if len(ways) == 0:
             if resolve_missing is False:
-                raise Exception
+                raise exception.DataIncomplete("Resolve missing way is disabled")
 
             query = ("\n"
                     "[out:json];\n"
@@ -360,7 +378,7 @@ class Result(object):
             ways = self.get_ways(way_id=way_id)
 
         if len(ways) == 0:
-            raise Exception
+            raise exception.DataIncomplete("Unable to resolve requested way")
 
         return ways[0]
 
@@ -423,8 +441,22 @@ class Node(Element):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new Node element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of Node
+        :rtype: overpy.Node
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         tags = data.get("tags", {})
 
@@ -443,14 +475,31 @@ class Node(Element):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new way element from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this node belongs to
+        :type result: overpy.Result
+        :return: New Way oject
+        :rtype: overpy.Node
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        :raises ValueError: If a tag doesn't have a name
+        """
         if child.tag.lower() != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         tags = {}
 
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
                 name = sub_child.attrib.get("k")
+                if name is None:
+                    raise ValueError("Tag without name/key.")
                 value = sub_child.attrib.get("v")
                 tags[name] = value
 
@@ -507,6 +556,8 @@ class Way(Element):
         :type resolve_missing: Boolean
         :return: List of nodes
         :rtype: List of overpy.Node
+        :raises overpy.exception.DataIncomplete: At least one referenced node is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and at least one node can't be resolved.
         """
         result = []
         resolved = False
@@ -514,32 +565,36 @@ class Way(Element):
         for node_id in self._node_ids:
             try:
                 node = self._result.get_node(node_id)
-            except:
+            except exception.DataIncomplete:
                 node = None
+
+            if node is not None:
+                result.append(node)
+                continue
+
+            if resolved or not resolve_missing:
+                raise exception.DataIncomplete("Resolve missing nodes is disabled")
+
+            query = ("\n"
+                    "[out:json];\n"
+                    "way({way_id});\n"
+                    "node(w);\n"
+                    "out body;\n"
+            )
+            query = query.format(
+                way_id=self.id
+            )
+            tmp_result = self._result.api.query(query)
+            self._result.expand(tmp_result)
+            resolved = True
+
+            try:
+                node = self._result.get_node(node_id)
+            except exception.DataIncomplete:
+                node = None
+
             if node is None:
-                if resolved or not resolve_missing:
-                    raise Exception
-
-                query = ("\n"
-                        "[out:json];\n"
-                        "way({way_id});\n"
-                        "node(w);\n"
-                        "out body;\n"
-                )
-                query = query.format(
-                    way_id=self.id
-                )
-                tmp_result = self._result.api.query(query)
-                self._result.expand(tmp_result)
-                resolved = True
-
-                try:
-                    node = self._result.get_node(node_id)
-                except:
-                    node = None
-
-            if node is None:
-                raise Exception
+                exception.DataIncomplete("Unable to resolve all nodes")
 
             result.append(node)
 
@@ -547,8 +602,22 @@ class Way(Element):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new Way element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of Way
+        :rtype: overpy.Way
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         tags = data.get("tags", {})
 
@@ -566,8 +635,24 @@ class Way(Element):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new way element from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this node belongs to
+        :type result: overpy.Result
+        :return: New Way oject
+        :rtype: overpy.Way
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        :raises ValueError: If the ref attribute of the xml node is not provided
+        :raises ValueError: If a tag doesn't have a name
+        """
         if child.tag.lower() != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         tags = {}
         node_ids = []
@@ -575,12 +660,14 @@ class Way(Element):
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
                 name = sub_child.attrib.get("k")
+                if name is None:
+                    raise ValueError("Tag without name/key.")
                 value = sub_child.attrib.get("v")
                 tags[name] = value
             if sub_child.tag.lower() == "nd":
                 ref_id = sub_child.attrib.get("ref")
                 if ref_id is None:
-                    raise Exception
+                    raise ValueError("Unable to find required ref value.")
                 ref_id = int(ref_id)
                 node_ids.append(ref_id)
 
@@ -620,8 +707,22 @@ class Relation(Element):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new Relation element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of Relation
+        :rtype: overpy.Relation
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         tags = data.get("tags", {})
 
@@ -652,8 +753,23 @@ class Relation(Element):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new way element from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this node belongs to
+        :type result: overpy.Result
+        :return: New Way oject
+        :rtype: overpy.Relation
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        :raises ValueError: If a tag doesn't have a name
+        """
         if child.tag.lower() != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         tags = {}
         members = []
@@ -662,6 +778,8 @@ class Relation(Element):
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
                 name = sub_child.attrib.get("k")
+                if name is None:
+                    raise ValueError("Tag without name/key.")
                 value = sub_child.attrib.get("v")
                 tags[name] = value
             if sub_child.tag.lower() == "member":
@@ -707,8 +825,22 @@ class RelationMember(object):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new RelationMember element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of RelationMember
+        :rtype: overpy.RelationMember
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
 
         ref = data.get("ref")
         role = data.get("role")
@@ -716,8 +848,22 @@ class RelationMember(object):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new RelationMember from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New relation member oject
+        :rtype: overpy.RelationMember
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        """
         if child.attrib.get("type") != cls._type_value:
-            raise Exception
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
 
         ref = child.attrib.get("ref")
         if ref is not None:

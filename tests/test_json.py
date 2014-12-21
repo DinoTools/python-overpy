@@ -1,3 +1,5 @@
+import pytest
+
 import overpy
 
 from base_class import BaseTestNodes, BaseTestWay
@@ -21,3 +23,27 @@ class TestWay(BaseTestWay):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/way-02.json"))
         self._test_way02(result)
+
+
+class TestDataError(object):
+    def test_element_wrong_type(self):
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.Node.from_json(
+                {
+                    "type": "foo"
+                }
+            )
+
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.Relation.from_json(
+                {
+                    "type": "foo"
+                }
+            )
+
+        with pytest.raises(overpy.exception.ElementDataWrongType):
+            overpy.Way.from_json(
+                {
+                    "type": "foo"
+                }
+            )
