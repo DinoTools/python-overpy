@@ -46,3 +46,18 @@ class TestDataError(object):
             overpy.Way.from_xml(
                 self._get_element_wrong_type()
             )
+
+    def test_way_missing_data(self):
+        import xml.etree.ElementTree as ET
+
+        # Node without ref attribute
+        data = """<way id="1234"><nd></nd></way>"""
+        node = ET.fromstring(data)
+        with pytest.raises(ValueError):
+            overpy.Way.from_xml(node)
+
+        # Tag without k attribute
+        data = """<way id="1234"><tag></tag></way>"""
+        node = ET.fromstring(data)
+        with pytest.raises(ValueError):
+            overpy.Way.from_xml(node)
