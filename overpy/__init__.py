@@ -485,6 +485,7 @@ class Node(Element):
         :return: New Way oject
         :rtype: overpy.Node
         :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        :raises ValueError: If a tag doesn't have a name
         """
         if child.tag.lower() != cls._type_value:
             raise exception.ElementDataWrongType(
@@ -497,6 +498,8 @@ class Node(Element):
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
                 name = sub_child.attrib.get("k")
+                if name is None:
+                    raise ValueError("Tag without name/key.")
                 value = sub_child.attrib.get("v")
                 tags[name] = value
 
@@ -760,6 +763,7 @@ class Relation(Element):
         :return: New Way oject
         :rtype: overpy.Relation
         :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        :raises ValueError: If a tag doesn't have a name
         """
         if child.tag.lower() != cls._type_value:
             raise exception.ElementDataWrongType(
@@ -774,6 +778,8 @@ class Relation(Element):
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
                 name = sub_child.attrib.get("k")
+                if name is None:
+                    raise ValueError("Tag without name/key.")
                 value = sub_child.attrib.get("v")
                 tags[name] = value
             if sub_child.tag.lower() == "member":
