@@ -2,8 +2,8 @@ import pytest
 
 import overpy
 
-from base_class import BaseTestNodes, BaseTestWay
-from base_class import read_file
+from tests.base_class import BaseTestNodes, BaseTestWay
+from tests.base_class import read_file
 
 
 class TestNodes(BaseTestNodes):
