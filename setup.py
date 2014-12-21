@@ -18,7 +18,7 @@ setup(
     description=about["__summary__"],
     long_description=long_description,
     license=about["__license__"],
-    url=about["__url__"],
+    url=about["__uri__"],
 
     zip_safe=False,
     author=about["__author__"],
