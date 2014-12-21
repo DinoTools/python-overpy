@@ -192,6 +192,6 @@ class BaseTestWay(object):
             assert len(way_ids) == 1
             assert way_ids[0] == 317146077
 
-def read_file(filename):
+def read_file(filename, mode="r"):
     filename = os.path.join(os.path.dirname(__file__), filename)
-    return open(filename).read()
+    return open(filename, mode).read()
