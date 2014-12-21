@@ -216,10 +216,6 @@ class Result(object):
     def get_relation_ids(self):
         return self.get_ids(filter_cls=Relation)
 
-    node_ids = property(get_node_ids)
-    relation_ids = property(get_relation_ids)
-    way_ids = property(get_way_ids)
-
     @classmethod
     def from_json(cls, data, api=None):
         """
@@ -396,8 +392,11 @@ class Result(object):
         """
         return self.get_elements(Way, elem_id=way_id, **kwargs)
 
+    node_ids = property(get_node_ids)
     nodes = property(get_nodes)
+    relation_ids = property(get_relation_ids)
     relations = property(get_relations)
+    way_ids = property(get_way_ids)
     ways = property(get_ways)
 
 
