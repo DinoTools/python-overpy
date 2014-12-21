@@ -243,8 +243,9 @@ class Result(object):
         Create a new instance and load data from xml object.
 
         :param data: Root element
+        :type data: xml.etree.ElementTree.Element
         :param api:
-        :type: Overpass
+        :type api: Overpass
         :return: New instance of Result object
         :rtype: Result
         """
@@ -440,6 +441,17 @@ class Node(Element):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new Node element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of Node
+        :rtype: overpy.Node
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
@@ -463,6 +475,17 @@ class Node(Element):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new way element from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this node belongs to
+        :type result: overpy.Result
+        :return: New Way oject
+        :rtype: overpy.Node
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        """
         if child.tag.lower() != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
@@ -576,6 +599,17 @@ class Way(Element):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new Way element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of Way
+        :rtype: overpy.Way
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
@@ -598,6 +632,18 @@ class Way(Element):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new way element from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this node belongs to
+        :type result: overpy.Result
+        :return: New Way oject
+        :rtype: overpy.Way
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        :raises ValueError: If the ref attribute of the xml node is not provided
+        """
         if child.tag.lower() != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
@@ -655,6 +701,17 @@ class Relation(Element):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new Relation element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of Relation
+        :rtype: overpy.Relation
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
@@ -690,6 +747,17 @@ class Relation(Element):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new way element from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this node belongs to
+        :type result: overpy.Result
+        :return: New Way oject
+        :rtype: overpy.Relation
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        """
         if child.tag.lower() != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
@@ -748,6 +816,17 @@ class RelationMember(object):
 
     @classmethod
     def from_json(cls, data, result=None):
+        """
+        Create new RelationMember element from JSON data
+
+        :param child: Element data from JSON
+        :type child: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of RelationMember
+        :rtype: overpy.RelationMember
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
         if data.get("type") != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
@@ -760,6 +839,17 @@ class RelationMember(object):
 
     @classmethod
     def from_xml(cls, child, result=None):
+        """
+        Create new RelationMember from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New relation member oject
+        :rtype: overpy.RelationMember
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        """
         if child.attrib.get("type") != cls._type_value:
             raise exception.ElementDataWrongType(
                 type_expected=cls._type_value,
