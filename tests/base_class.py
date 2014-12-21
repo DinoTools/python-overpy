@@ -1,6 +1,8 @@
 from decimal import Decimal
 import os
 
+import pytest
+
 import overpy
 
 
@@ -53,6 +55,14 @@ class BaseTestNodes(object):
         # assert node.attributes["changeset"] == 23456789
         # assert node.attributes["user"] == "TestUser"
 
+        # try to get a single node by id
+        node = result.get_node(50878400)
+        assert node.id == 50878400
+
+        # try to get a single node by id not available in the result
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result.get_node(123456)
+
         # node_ids is an alias for get_node_ids() and should return the same data
         for node_ids in (result.node_ids, result.get_node_ids()):
             assert len(node_ids) == 3
@@ -102,6 +112,14 @@ class BaseTestWay(object):
         # assert way.attributes["user"] == "TestUser"
         # assert way.attributes["changeset"] == 23456789
 
+        # try to get a single way by id
+        way = result.get_way(317146077)
+        assert way.id == 317146077
+
+        # try to get a single way by id not available in the result
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result.get_way(123456)
+
         assert len(result.node_ids) == 0
         assert len(result.get_node_ids()) == 0
 
@@ -147,6 +165,14 @@ class BaseTestWay(object):
 
         assert isinstance(node, overpy.Node)
         assert node.id == 3233854241
+
+        # try to get a single way by id
+        way = result.get_way(317146077)
+        assert way.id == 317146077
+
+        # try to get a single way by id not available in the result
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result.get_way(123456)
 
         # node_ids is an alias for get_node_ids() and should return the same data
         for node_ids in (result.node_ids, result.get_node_ids()):
