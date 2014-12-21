@@ -3,6 +3,10 @@ import json
 import re
 import sys
 
+from overpy.__about__ import (
+    __author__, __copyright__, __email__, __license__, __summary__, __title__,
+    __uri__, __version__
+)
 from overpy import exception
 
 PY2 = sys.version_info[0] == 2
