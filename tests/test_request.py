@@ -12,3 +12,13 @@ class TestQuery(object):
                 "way(1)"
                 "out body;"
             ))
+
+    def test_json_response(self):
+        api = overpy.Overpass()
+        result = api.query("[out:json];node(50.745,7.17,50.75,7.18);out;")
+        assert len(result.nodes) > 0
+
+    def test_xml_response(self):
+        api = overpy.Overpass()
+        result = api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
+        assert len(result.nodes) > 0
