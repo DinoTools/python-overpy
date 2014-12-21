@@ -45,6 +45,40 @@ class TestResult(object):
         assert len(result1.ways) == 2
 
 
+class TestNode(object):
+    def test_missing_unresolvable(self):
+        url, t = new_server_thread(HandleResponseJSON02)
+        t.start()
+
+        api = overpy.Overpass()
+        api.url = url
+        result1 = api.parse_json(read_file("json/result-expand-01.json"))
+
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result1.get_node(123, resolve_missing=True)
+        t.join()
+
+    def test_missing_resolvable(self):
+        url, t = new_server_thread(HandleResponseJSON02)
+        t.start()
+
+        api = overpy.Overpass()
+        api.url = url
+        result1 = api.parse_json(read_file("json/result-expand-01.json"))
+
+        # Node must not be available
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result1.get_node(3233854235)
+
+        # Node must be available
+        node = result1.get_node(3233854235, resolve_missing=True)
+
+        assert isinstance(node, overpy.Node)
+        assert node.id == 3233854235
+
+        t.join()
+
+
 class TestWay(object):
     def test_missing_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
