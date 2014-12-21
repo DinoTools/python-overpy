@@ -4,7 +4,8 @@ Changelog
 0.2 (`master`_)
 ~~~~~~~~~~~~~~~
 
-* Support xml response data
+* Added support for xml response data
+* Added support for exceptions
 
 0.1 (2014-12-14)
 ~~~~~~~~~~~~~~~~
