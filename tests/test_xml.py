@@ -2,7 +2,7 @@ import pytest
 
 import overpy
 
-from tests.base_class import BaseTestNodes, BaseTestWay
+from tests.base_class import BaseTestNodes, BaseTestRelation, BaseTestWay
 from tests.base_class import read_file
 
 
@@ -11,6 +11,13 @@ class TestNodes(BaseTestNodes):
         api = overpy.Overpass()
         result = api.parse_xml(read_file("xml/node-01.xml"))
         self._test_node01(result)
+
+
+class TestRelation(BaseTestRelation):
+    def test_relation01(self):
+        api = overpy.Overpass()
+        result = api.parse_xml(read_file("xml/relation-01.xml"))
+        self._test_relation01(result)
 
 
 class TestWay(BaseTestWay):

@@ -78,6 +78,39 @@ class BaseTestNodes(object):
         assert len(result.way_ids) == 0
         assert len(result.get_way_ids()) == 0
 
+
+class BaseTestRelation(object):
+    def _test_relation01(self, result):
+        assert len(result.nodes) == 0
+        assert len(result.relations) == 1
+        assert len(result.ways) == 0
+
+        relation = result.relations[0]
+
+        assert isinstance(relation, overpy.Relation)
+        assert isinstance(relation.id, int)
+        assert relation.id == 2046898
+
+        assert isinstance(relation.tags, dict)
+        assert len(relation.tags) == 6
+        assert relation.tags["from"] == "Here"
+        assert relation.tags["name"] == "Test relation"
+        assert relation.tags["ref"] == "609"
+        assert relation.tags["route"] == "bus"
+        assert relation.tags["to"] == "There"
+        assert relation.tags["type"] == "route"
+
+        assert isinstance(relation.attributes, dict)
+        assert len(relation.attributes) == 5
+
+        assert len(relation.members) == 5
+        assert isinstance(relation.members[0], overpy.RelationNode)
+        assert isinstance(relation.members[1], overpy.RelationNode)
+        assert isinstance(relation.members[2], overpy.RelationNode)
+        assert isinstance(relation.members[3], overpy.RelationNode)
+        assert isinstance(relation.members[4], overpy.RelationWay)
+
+
 class BaseTestWay(object):
     def _test_way01(self, result):
         assert len(result.nodes) == 0
