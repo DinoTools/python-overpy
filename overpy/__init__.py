@@ -133,7 +133,7 @@ class Overpass(object):
             data = data.encode(encoding)
         import xml.etree.ElementTree as ET
         root = ET.fromstring(data)
-        return Result.from_xml(root)
+        return Result.from_xml(root, api=self)
 
 
 class Result(object):
