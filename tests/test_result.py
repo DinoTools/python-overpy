@@ -79,6 +79,40 @@ class TestNode(object):
         t.join()
 
 
+class TestRelation(object):
+    def test_missing_unresolvable(self):
+        url, t = new_server_thread(HandleResponseJSON02)
+        t.start()
+
+        api = overpy.Overpass()
+        api.url = url
+        result1 = api.parse_json(read_file("json/result-expand-01.json"))
+
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result1.get_relation(123, resolve_missing=True)
+        t.join()
+
+    def test_missing_resolvable(self):
+        url, t = new_server_thread(HandleResponseJSON02)
+        t.start()
+
+        api = overpy.Overpass()
+        api.url = url
+        result1 = api.parse_json(read_file("json/result-expand-01.json"))
+
+        # Relation must not be available
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result1.get_relation(2046898)
+
+        # Relation must be available
+        relation = result1.get_relation(2046898, resolve_missing=True)
+
+        assert isinstance(relation, overpy.Relation)
+        assert relation.id == 2046898
+
+        t.join()
+
+
 class TestWay(object):
     def test_missing_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
