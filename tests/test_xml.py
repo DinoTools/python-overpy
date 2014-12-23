@@ -19,6 +19,11 @@ class TestRelation(BaseTestRelation):
         result = api.parse_xml(read_file("xml/relation-01.xml"))
         self._test_relation01(result)
 
+    def test_relation02(self):
+        api = overpy.Overpass()
+        result = api.parse_xml(read_file("xml/relation-02.xml"))
+        self._test_relation02(result)
+
 
 class TestWay(BaseTestWay):
     def test_way01(self):
