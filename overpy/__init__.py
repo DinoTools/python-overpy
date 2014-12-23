@@ -24,10 +24,19 @@ class Overpass(object):
     """
     Class to access the Overpass API
     """
-    def __init__(self):
+    default_read_chunk_size = 4096
+
+    def __init__(self, read_chunk_size=None):
+        """
+        :param read_chunk_size: Max size of each chunk read from the server response
+        :type read_chunk_size: Integer
+        """
         self.url = "http://overpass-api.de/api/interpreter"
         self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
+        if read_chunk_size is None:
+            read_chunk_size = self.default_read_chunk_size
+        self.read_chunk_size = read_chunk_size
 
     def query(self, query):
         """
@@ -45,9 +54,9 @@ class Overpass(object):
         except HTTPError as e:
             f = e
 
-        response = f.read(4096)
+        response = f.read(self.read_chunk_size)
         while True:
-            data = f.read(4096)
+            data = f.read(self.read_chunk_size)
             if len(data) == 0:
                 break
             response = response + data
