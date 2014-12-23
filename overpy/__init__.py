@@ -552,11 +552,17 @@ class Way(Element):
         """
 
         Element.__init__(self, **kwargs)
+        #: The id of the way
         self.id = way_id
+
+        #: List of Ids of the associated nodes
         self._node_ids = node_ids
 
     @property
     def nodes(self):
+        """
+        List of nodes associated with the way.
+        """
         return self.get_nodes()
 
     def get_nodes(self, resolve_missing=False):
