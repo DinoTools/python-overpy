@@ -3,6 +3,10 @@ import json
 import re
 import sys
 
+from overpy.__about__ import (
+    __author__, __copyright__, __email__, __license__, __summary__, __title__,
+    __uri__, __version__
+)
 from overpy import exception
 
 PY2 = sys.version_info[0] == 2
@@ -20,10 +24,19 @@ class Overpass(object):
     """
     Class to access the Overpass API
     """
-    def __init__(self):
+    default_read_chunk_size = 4096
+
+    def __init__(self, read_chunk_size=None):
+        """
+        :param read_chunk_size: Max size of each chunk read from the server response
+        :type read_chunk_size: Integer
+        """
         self.url = "http://overpass-api.de/api/interpreter"
         self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
+        if read_chunk_size is None:
+            read_chunk_size = self.default_read_chunk_size
+        self.read_chunk_size = read_chunk_size
 
     def query(self, query):
         """
@@ -41,22 +54,21 @@ class Overpass(object):
         except HTTPError as e:
             f = e
 
-        content_type = None
-        if PY2:
-            http_info = f.info()
-            content_type = http_info.getheader("content-type")
-        if PY3:
-            content_type = f.getheader("Content-Type")
-
-        response = f.read(4096)
+        response = f.read(self.read_chunk_size)
         while True:
-            data = f.read(4096)
+            data = f.read(self.read_chunk_size)
             if len(data) == 0:
                 break
             response = response + data
         f.close()
 
         if f.code == 200:
+            if PY2:
+                http_info = f.info()
+                content_type = http_info.getheader("content-type")
+            else:
+                content_type = f.getheader("Content-Type")
+
             if content_type == "application/json":
                 return self.parse_json(response)
 
@@ -211,10 +223,6 @@ class Result(object):
 
     def get_relation_ids(self):
         return self.get_ids(filter_cls=Relation)
-
-    node_ids = property(get_node_ids)
-    relation_ids = property(get_relation_ids)
-    way_ids = property(get_way_ids)
 
     @classmethod
     def from_json(cls, data, api=None):
@@ -392,8 +400,11 @@ class Result(object):
         """
         return self.get_elements(Way, elem_id=way_id, **kwargs)
 
+    node_ids = property(get_node_ids)
     nodes = property(get_nodes)
+    relation_ids = property(get_relation_ids)
     relations = property(get_relations)
+    way_ids = property(get_way_ids)
     ways = property(get_ways)
 
 
@@ -572,8 +583,12 @@ class Way(Element):
                 result.append(node)
                 continue
 
-            if resolved or not resolve_missing:
+            if not resolve_missing:
                 raise exception.DataIncomplete("Resolve missing nodes is disabled")
+
+            # We tried to resolve the data but some nodes are still missing
+            if resolved:
+                raise exception.DataIncomplete("Unable to resolve all nodes")
 
             query = ("\n"
                     "[out:json];\n"
@@ -594,7 +609,7 @@ class Way(Element):
                 node = None
 
             if node is None:
-                exception.DataIncomplete("Unable to resolve all nodes")
+                raise exception.DataIncomplete("Unable to resolve all nodes")
 
             result.append(node)
 
@@ -787,15 +802,15 @@ class Relation(Element):
                 for member_cls in supported_members:
                     if member_cls._type_value == type_value:
                         members.append(
-                            member_cls.from_child(
+                            member_cls.from_xml(
                                 sub_child,
                                 result=result
                             )
                         )
 
-        way_id = child.attrib.get("id")
-        if way_id is not None:
-            way_id = int(way_id)
+        rel_id = child.attrib.get("id")
+        if rel_id is not None:
+            rel_id = int(rel_id)
 
         attributes = {}
         ignore = ["id"]
@@ -804,7 +819,7 @@ class Relation(Element):
                 continue
             attributes[n] = v
 
-        return cls(way_id=way_id, attributes=attributes, tags=tags, result=result)
+        return cls(rel_id=rel_id, attributes=attributes, members=members, tags=tags, result=result)
 
 
 class RelationMember(object):

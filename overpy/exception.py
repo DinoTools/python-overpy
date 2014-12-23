@@ -11,7 +11,7 @@ class DataIncomplete(OverPyException):
     def __init__(self, *args, **kwargs):
         OverPyException.__init__(
             self,
-            "Data incomplete try to improve the query or to resolve the missing data",
+            "Data incomplete try to improve the query to resolve the missing data",
             *args,
             **kwargs
         )
@@ -53,7 +53,13 @@ class OverpassBadRequest(OverPyException):
         self.msgs = msgs
 
     def __str__(self):
-        return "\n".join(self.msgs)
+        tmp_msgs = []
+        for tmp_msg in self.msgs:
+            if not isinstance(tmp_msg, str):
+                tmp_msg = str(tmp_msg)
+            tmp_msgs.append(tmp_msg)
+
+        return "\n".join(tmp_msgs)
 
 
 class OverpassGatewayTimeout(OverPyException):

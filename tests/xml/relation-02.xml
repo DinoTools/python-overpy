@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2014-12-14T13:34:02Z"/>
+  <node id="3233854233" lat="50.7494187" lon="7.1758731"/>
+  <node id="3233854234" lat="50.7494287" lon="7.1758731"/>
+  <node id="3233854235" lat="50.7494287" lon="7.1758731"/>
+  <way id="317146078">
+    <nd ref="3233854233"/>
+    <nd ref="3233854234"/>
+    <nd ref="3233854235"/>
+  </way>
+  <relation id="2046898" version="12" timestamp="2014-12-15T13:13:11Z" changeset="17433822" uid="12345" user="Username">
+    <member type="node" ref="3233854233" role="platform"/>
+    <member type="node" ref="3233854234" role="stop"/>
+    <member type="node" ref="3233854235" role="platform"/>
+    <member type="way" ref="317146078" role=""/>
+    <tag k="from" v="Here"/>
+    <tag k="name" v="Test relation"/>
+    <tag k="ref" v="609"/>
+    <tag k="route" v="bus"/>
+    <tag k="to" v="There"/>
+    <tag k="type" v="route"/>
+  </relation>
+</osm>

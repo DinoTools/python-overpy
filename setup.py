@@ -18,7 +18,7 @@ setup(
     description=about["__summary__"],
     long_description=long_description,
     license=about["__license__"],
-    url=about["__url__"],
+    url=about["__uri__"],
 
     zip_safe=False,
     author=about["__author__"],
@@ -27,7 +27,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
