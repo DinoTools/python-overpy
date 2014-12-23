@@ -110,6 +110,59 @@ class BaseTestRelation(object):
         assert isinstance(relation.members[3], overpy.RelationNode)
         assert isinstance(relation.members[4], overpy.RelationWay)
 
+    def _test_relation02(self, result):
+        assert len(result.nodes) == 3
+        assert len(result.relations) == 1
+        assert len(result.ways) == 1
+
+        relation = result.relations[0]
+
+        assert isinstance(relation, overpy.Relation)
+        assert isinstance(relation.id, int)
+        assert relation.id == 2046898
+
+        assert isinstance(relation.tags, dict)
+        assert len(relation.tags) == 6
+        assert relation.tags["from"] == "Here"
+        assert relation.tags["name"] == "Test relation"
+        assert relation.tags["ref"] == "609"
+        assert relation.tags["route"] == "bus"
+        assert relation.tags["to"] == "There"
+        assert relation.tags["type"] == "route"
+
+        assert isinstance(relation.attributes, dict)
+        assert len(relation.attributes) == 5
+
+        assert len(relation.members) == 4
+
+        member = relation.members[0]
+        assert isinstance(member, overpy.RelationNode)
+        node = member.resolve()
+        assert isinstance(node, overpy.Node)
+        assert node.id == 3233854233
+        assert member.ref == node.id
+
+        member = relation.members[1]
+        assert isinstance(member, overpy.RelationNode)
+        node = member.resolve()
+        assert isinstance(node, overpy.Node)
+        assert node.id == 3233854234
+        assert member.ref == node.id
+
+        member = relation.members[2]
+        assert isinstance(member, overpy.RelationNode)
+        node = member.resolve()
+        assert isinstance(node, overpy.Node)
+        assert node.id == 3233854235
+        assert member.ref == node.id
+
+        member = relation.members[3]
+        assert isinstance(member, overpy.RelationWay)
+        way = member.resolve()
+        assert isinstance(way, overpy.Way)
+        assert way.id == 317146078
+        assert member.ref == way.id
+
 
 class BaseTestWay(object):
     def _test_way01(self, result):

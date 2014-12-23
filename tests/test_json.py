@@ -19,6 +19,11 @@ class TestRelation(BaseTestRelation):
         result = api.parse_json(read_file("json/relation-01.json"))
         self._test_relation01(result)
 
+    def test_relation02(self):
+        api = overpy.Overpass()
+        result = api.parse_json(read_file("json/relation-02.json"))
+        self._test_relation02(result)
+
 
 class TestWay(BaseTestWay):
     def test_way01(self):
