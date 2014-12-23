@@ -574,8 +574,12 @@ class Way(Element):
                 result.append(node)
                 continue
 
-            if resolved or not resolve_missing:
+            if not resolve_missing:
                 raise exception.DataIncomplete("Resolve missing nodes is disabled")
+
+            # We tried to resolve the data but some nodes are still missing
+            if resolved:
+                raise exception.DataIncomplete("Unable to resolve all nodes")
 
             query = ("\n"
                     "[out:json];\n"
@@ -596,7 +600,7 @@ class Way(Element):
                 node = None
 
             if node is None:
-                exception.DataIncomplete("Unable to resolve all nodes")
+                raise exception.DataIncomplete("Unable to resolve all nodes")
 
             result.append(node)
 
