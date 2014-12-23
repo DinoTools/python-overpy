@@ -17,6 +17,16 @@ class HandleOverpassBadRequest(BaseRequestHandler):
         self.request.send(read_file("response/bad-request.html", "rb"))
 
 
+class HandleOverpassBadRequestEncoding(BaseRequestHandler):
+    """
+    """
+    def handle(self):
+        self.request.send(b"HTTP/1.0 400 Bad Request\r\n")
+        self.request.send(b"Content-Type	text/html; charset=utf-8\r\n")
+        self.request.send(b"\r\n")
+        self.request.send(read_file("response/bad-request-encoding.html", "rb"))
+
+
 class HandleOverpassTooManyRequests(BaseRequestHandler):
     """
     """
@@ -80,6 +90,25 @@ class HandleResponseUnknown(BaseRequestHandler):
 class TestQuery(object):
     def test_overpass_syntax_error(self):
         url, t = new_server_thread(HandleOverpassBadRequest)
+        t.start()
+
+        api = overpy.Overpass()
+        api.url = url
+        with pytest.raises(overpy.exception.OverpassBadRequest):
+            # Missing ; after way(1)
+            api.query((
+                "way(1)"
+                "out body;"
+            ))
+        t.join()
+
+    def test_overpass_syntax_error_encoding_error(self):
+        with pytest.raises(UnicodeDecodeError):
+            # File should be encoded with iso8859-15 and will raise an exception
+            tmp = read_file("response/bad-request-encoding.html", "rb")
+            tmp.decode("utf-8")
+
+        url, t = new_server_thread(HandleOverpassBadRequestEncoding)
         t.start()
 
         api = overpy.Overpass()
