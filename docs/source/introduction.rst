@@ -48,7 +48,7 @@ Usage
 -----
 
 It is recommended to have a look at the documentation of the `Overpass API`_ before using OverPy.
-For more examples have a look at the :doc:`examples page <example.rst>` or in the examples directory.
+For more examples have a look at the :doc:`examples page <example>` or in the examples directory.
 
 .. code-block:: python
 
