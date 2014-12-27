@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.2.0 (`master`_)
-~~~~~~~~~~~~~~~~~
+0.2.0 (2014-12-27)
+~~~~~~~~~~~~~~~~~~
 
 * Added support for xml response data
 * Added support for exceptions
