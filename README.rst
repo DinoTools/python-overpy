@@ -45,7 +45,7 @@ Supported Python versions:
 Examples
 --------
 
-Additional examples can be found in the *examples* directory.
+Additional examples can be found in the `documentation`_ and in the *examples* directory.
 
 .. code-block:: python
 
