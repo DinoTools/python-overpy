@@ -453,6 +453,9 @@ class Node(Element):
         self.id = node_id
         self.lat = lat
         self.lon = lon
+        
+    def __str__(self, *args, **kwargs):
+        return "<overpy.Node id={} lat={} lon={}>".format(self.id, self.lat, self.lon)
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -561,6 +564,9 @@ class Way(Element):
 
         #: List of Ids of the associated nodes
         self._node_ids = node_ids
+        
+    def __str__(self, *args, **kwargs):
+        return "<overpy.Way id={} nodes={}>".format(self.id, self._node_ids)
 
     @property
     def nodes(self):
@@ -729,6 +735,9 @@ class Relation(Element):
         Element.__init__(self, **kwargs)
         self.id = rel_id
         self.members = members
+        
+    def __str__(self, *args, **kwargs):
+        return "<overpy.Relation id={}>".format(self.id)
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -902,6 +911,9 @@ class RelationNode(RelationMember):
 
     def resolve(self, resolve_missing=False):
         return self._result.get_node(self.ref, resolve_missing=resolve_missing)
+    
+    def __str__(self, *args, **kwargs):
+        return "<overpy.RelationNode ref={} role={}>".format(self.ref, self.role)
 
 
 class RelationWay(RelationMember):
@@ -909,3 +921,6 @@ class RelationWay(RelationMember):
 
     def resolve(self, resolve_missing=False):
         return self._result.get_way(self.ref, resolve_missing=resolve_missing)
+    
+    def __str__(self, *args, **kwargs):
+        return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
