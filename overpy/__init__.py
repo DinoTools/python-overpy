@@ -23,6 +23,14 @@ elif PY3:
 
 
 def is_valid_type(element, cls):
+    """
+    Test if an element is of a given type.
+
+    :param Element() element: The element instance to test
+    :param Element cls: The element class to test
+    :return: False or True
+    :rtype: Boolean
+    """
     return isinstance(element, cls) and element.id is not None
 
 
