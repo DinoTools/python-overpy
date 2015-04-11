@@ -1,13 +1,15 @@
+from collections import OrderedDict
 from decimal import Decimal
 import json
 import re
 import sys
 
+from overpy import exception
 from overpy.__about__ import (
     __author__, __copyright__, __email__, __license__, __summary__, __title__,
     __uri__, __version__
 )
-from overpy import exception
+
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
@@ -18,6 +20,18 @@ if PY2:
 elif PY3:
     from urllib.request import urlopen
     from urllib.error import HTTPError
+
+
+def is_valid_type(element, cls):
+    """
+    Test if an element is of a given type.
+
+    :param Element() element: The element instance to test
+    :param Element cls: The element class to test
+    :return: False or True
+    :rtype: Boolean
+    """
+    return isinstance(element, cls) and element.id is not None
 
 
 class Overpass(object):
@@ -149,7 +163,10 @@ class Result(object):
         """
         if elements is None:
             elements = []
-        self._elements = elements
+        self._nodes = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Node))
+        self._ways = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Way))
+        self._relations = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Relation))
+        self._class_collection_map = {Node: self._nodes, Way: self._ways, Relation: self._relations}
         self.api = api
 
     def expand(self, other):
@@ -165,15 +182,11 @@ class Result(object):
         if not isinstance(other, Result):
             raise ValueError("Provided argument has to be instance of overpy:Result()")
 
-        def do(ids, elements):
-            for element in elements:
-                if element.id is not None and element.id not in ids:
-                    self._elements.append(element)
-                    ids.append(element.id)
-
-        do(self.node_ids, other.nodes)
-        do(self.way_ids, other.ways)
-        do(self.relation_ids, other.relations)
+        other_collection_map = {Node: other.nodes, Way: other.ways, Relation: other.relations}
+        for element_type, own_collection in self._class_collection_map.items():
+            for element in other_collection_map[element_type]:
+                if is_valid_type(element, element_type) and element.id not in own_collection:
+                    own_collection[element.id] = element
 
     def append(self, element):
         """
@@ -182,7 +195,8 @@ class Result(object):
         :param element: The element to append
         :type element: overpy.Element
         """
-        self._elements.append(element)
+        if is_valid_type(element, Element):
+            self._class_collection_map[element.__class__].setdefault(element.id, element)
 
     def get_elements(self, filter_cls, elem_id=None):
         """
@@ -195,12 +209,14 @@ class Result(object):
         :rtype: List
         """
         result = []
-        for e in self._elements:
-            if not isinstance(e, filter_cls):
-                continue
-            if elem_id is not None and e.id != elem_id:
-                continue
-            result.append(e)
+        if elem_id is not None:
+            try:
+                result = [self._class_collection_map[filter_cls][elem_id]]
+            except KeyError:
+                result = []
+        else:
+            for e in self._class_collection_map[filter_cls].values():
+                result.append(e)
         return result
 
     def get_ids(self, filter_cls):
@@ -209,11 +225,7 @@ class Result(object):
         :param filter_cls:
         :return:
         """
-        result = []
-        for node in self.get_elements(filter_cls):
-            if node.id is not None and node.id not in result:
-                result.append(node.id)
-        return result
+        return list(self._class_collection_map[filter_cls].keys())
 
     def get_node_ids(self):
         return self.get_ids(filter_cls=Node)
@@ -449,6 +461,9 @@ class Node(Element):
         self.id = node_id
         self.lat = lat
         self.lon = lon
+        
+    def __repr__(self):
+        return "<overpy.Node id={} lat={} lon={}>".format(self.id, self.lat, self.lon)
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -557,6 +572,9 @@ class Way(Element):
 
         #: List of Ids of the associated nodes
         self._node_ids = node_ids
+        
+    def __repr__(self):
+        return "<overpy.Way id={} nodes={}>".format(self.id, self._node_ids)
 
     @property
     def nodes(self):
@@ -725,6 +743,9 @@ class Relation(Element):
         Element.__init__(self, **kwargs)
         self.id = rel_id
         self.members = members
+        
+    def __repr__(self):
+        return "<overpy.Relation id={}>".format(self.id)
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -898,6 +919,9 @@ class RelationNode(RelationMember):
 
     def resolve(self, resolve_missing=False):
         return self._result.get_node(self.ref, resolve_missing=resolve_missing)
+    
+    def __repr__(self):
+        return "<overpy.RelationNode ref={} role={}>".format(self.ref, self.role)
 
 
 class RelationWay(RelationMember):
@@ -905,3 +929,6 @@ class RelationWay(RelationMember):
 
     def resolve(self, resolve_missing=False):
         return self._result.get_way(self.ref, resolve_missing=resolve_missing)
+    
+    def __repr__(self):
+        return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
