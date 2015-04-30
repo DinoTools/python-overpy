@@ -59,8 +59,6 @@ def get_intersection(street1, street2, areacode, api=None):
         out meta;
     """
 
-    print(query % (areacode, street1, street2))
-
     data = api.query(query % (areacode, street1, street2))
 
     return data.get_nodes()
