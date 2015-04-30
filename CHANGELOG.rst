@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.3.0 (2015-04-30)
+~~~~~~~~~~~~~~~~~~
+
+* Improve internal data handling (Dominik)
+* Add helper functions (Morris Jobke)
+
 0.2.0 (2014-12-27)
 ~~~~~~~~~~~~~~~~~~
 
