@@ -24,6 +24,7 @@ Features
 
 * Query Overpass API
 * Parse JSON and XML response data
+* Additional helper functions
 
 Install
 -------
