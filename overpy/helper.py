@@ -2,6 +2,7 @@ __author__ = 'mjob'
 
 import overpy
 
+
 def get_street(street, areacode, api=None):
         """
         Retrieve streets in a given bounding area
@@ -32,6 +33,7 @@ def get_street(street, areacode, api=None):
         data = api.query(query % (areacode, street))
 
         return data
+
 
 def get_intersection(street1, street2, areacode, api=None):
         """
