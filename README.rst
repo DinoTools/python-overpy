@@ -24,6 +24,7 @@ Features
 
 * Query Overpass API
 * Parse JSON and XML response data
+* Additional helper functions
 
 Install
 -------
@@ -66,6 +67,29 @@ Additional examples can be found in the `documentation`_ and in the *examples* d
         print("  Nodes:")
         for node in way.nodes:
             print("    Lat: %f, Lon: %f" % (node.lat, node.lon))
+
+
+Helper
+~~~~~~
+
+Helper methods are available to provide easy access to often used requests.
+
+.. code-block:: python
+
+    import overpy.helper
+
+    # 3600062594 is the OSM id of Chemnitz and is the bounding box for the request
+    street = overpy.helper.get_street(
+        "Straße der Nationen",
+        "3600062594"
+    )
+
+    # this finds an intersection between Straße der Nationen and Carolastraße in Chemnitz
+    intersection = overpy.helper.get_intersection(
+        "Straße der Nationen",
+        "Carolastraße",
+        "3600062594"
+    )
 
 
 License

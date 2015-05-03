@@ -51,3 +51,10 @@ Exceptions
 
 .. automodule:: overpy.exception
     :members:
+
+
+Helper
+------
+
+.. automodule:: overpy.helper
+    :members:

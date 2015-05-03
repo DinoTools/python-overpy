@@ -23,6 +23,14 @@ elif PY3:
 
 
 def is_valid_type(element, cls):
+    """
+    Test if an element is of a given type.
+
+    :param Element() element: The element instance to test
+    :param Element cls: The element class to test
+    :return: False or True
+    :rtype: Boolean
+    """
     return isinstance(element, cls) and element.id is not None
 
 
@@ -454,7 +462,7 @@ class Node(Element):
         self.lat = lat
         self.lon = lon
         
-    def __str__(self, *args, **kwargs):
+    def __repr__(self):
         return "<overpy.Node id={} lat={} lon={}>".format(self.id, self.lat, self.lon)
 
     @classmethod
@@ -565,7 +573,7 @@ class Way(Element):
         #: List of Ids of the associated nodes
         self._node_ids = node_ids
         
-    def __str__(self, *args, **kwargs):
+    def __repr__(self):
         return "<overpy.Way id={} nodes={}>".format(self.id, self._node_ids)
 
     @property
@@ -736,7 +744,7 @@ class Relation(Element):
         self.id = rel_id
         self.members = members
         
-    def __str__(self, *args, **kwargs):
+    def __repr__(self):
         return "<overpy.Relation id={}>".format(self.id)
 
     @classmethod
@@ -912,7 +920,7 @@ class RelationNode(RelationMember):
     def resolve(self, resolve_missing=False):
         return self._result.get_node(self.ref, resolve_missing=resolve_missing)
     
-    def __str__(self, *args, **kwargs):
+    def __repr__(self):
         return "<overpy.RelationNode ref={} role={}>".format(self.ref, self.role)
 
 
@@ -922,5 +930,5 @@ class RelationWay(RelationMember):
     def resolve(self, resolve_missing=False):
         return self._result.get_way(self.ref, resolve_missing=resolve_missing)
     
-    def __str__(self, *args, **kwargs):
+    def __repr__(self):
         return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
