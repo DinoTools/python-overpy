@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from decimal import Decimal
+from xml.sax import handler, make_parser
 import json
 import re
 import sys
@@ -150,6 +151,28 @@ class Overpass(object):
         root = ET.fromstring(data)
         return Result.from_xml(root, api=self)
 
+    def parse_xml_sax(self, data, encoding="utf-8"):
+        """
+
+        :param data: Raw XML Data
+        :type data: String or Bytes
+        :param encoding: Encoding to decode byte string
+        :type encoding: String
+        :return: Result object
+        :rtype: overpy.Result
+        """
+        if isinstance(data, bytes):
+            data = data.decode(encoding)
+        if PY2 and not isinstance(data, str):
+            # Python 2.x: Convert unicode strings
+            data = data.encode(encoding)
+        if PY2:
+            from StringIO import StringIO
+        else:
+            from io import StringIO
+        source = StringIO(data)
+        return Result.from_xml_sax(source, api=self)
+
 
 class Result(object):
 
@@ -279,6 +302,25 @@ class Result(object):
                 if child.tag.lower() == elem_cls._type_value:
                     result.append(elem_cls.from_xml(child, result=result))
 
+        return result
+
+    @classmethod
+    def from_xml_sax(cls, source, api=None):
+        """
+        Create a new instance and load data from xml input source.
+
+        :param source: input source for xml.sax.XMLReader
+        :type source: string
+        :param api:
+        :type api: Overpass
+        :return: New instance of Result object
+        :rtype: Result
+        """
+        result = cls(api=api)
+        handler = OSMSAXHandler(result)
+        parser = make_parser()
+        parser.setContentHandler(handler)
+        parser.parse(source)
         return result
 
     def get_node(self, node_id, resolve_missing=False):
@@ -952,3 +994,113 @@ class RelationRelation(RelationMember):
 
     def __repr__(self):
         return "<overpy.RelationRelation ref={} role={}>".format(self.ref, self.role)
+
+
+class OSMSAXHandler(handler.ContentHandler):
+
+    ignore_start = ('osm', 'meta', 'note')
+    ignore_end = ('osm', 'meta', 'note', 'tag', 'nd', 'member')
+
+    def __init__(self, result):
+        handler.ContentHandler.__init__(self)
+        self._result = result
+        self._curr = None
+        return
+
+    def startElement(self, name, attrs):
+        if name in self.ignore_start:
+            return
+        try:
+            handler = getattr(self, '_handle_start_%s' % name)
+        except AttributeError:
+            raise KeyError("Unknown element start '%s'" % name)
+        handler(attrs)
+        return
+
+    def endElement(self, name):
+        if name in self.ignore_end:
+            return
+        try:
+            handler = getattr(self, '_handle_end_%s' % name)
+        except AttributeError:
+            raise KeyError("Unknown element start '%s'" % name)
+        handler()
+        return
+
+    def _handle_start_tag(self, attrs):
+        try:
+            tag_key = attrs['k']
+        except KeyError:
+            raise ValueError("Tag without name/key.")
+        self._curr['tags'][tag_key] = attrs.get('v')
+        return
+
+    def _handle_start_node(self, attrs):
+        self._curr = {'tags': {}, 'node_id': None, 'lat': None, 'lon': None}
+        self._curr['attributes'] = dict(attrs)
+        if attrs.get('id', None) is not None:
+            self._curr['node_id'] = int(attrs['id'])
+            del self._curr['attributes']['id']
+        if attrs.get('lat', None) is not None:
+            self._curr['lat'] = Decimal(attrs['lat'])
+            del self._curr['attributes']['lat']
+        if attrs.get('lon', None) is not None:
+            self._curr['lon'] = Decimal(attrs['lon'])
+            del self._curr['attributes']['lon']
+        return
+
+    def _handle_end_node(self):
+        self._result.append(Node(result=self._result, **self._curr))
+        self._curr = None
+        return
+
+    def _handle_start_way(self, attrs):
+        self._curr = {'tags': {}, 'way_id': None, 'node_ids': []}
+        self._curr['attributes'] = dict(attrs)
+        if attrs.get('id', None) is not None:
+            self._curr['way_id'] = int(attrs['id'])
+            del self._curr['attributes']['id']
+        return
+
+    def _handle_end_way(self):
+        self._result.append(Way(result=self._result, **self._curr))
+        self._curr = None
+        return
+
+    def _handle_start_nd(self, attrs):
+        try:
+            node_ref = attrs['ref']
+        except KeyError:
+            raise ValueError("Unable to find required ref value.")
+        self._curr['node_ids'].append(int(node_ref))
+        return
+
+    def _handle_start_relation(self, attrs):
+        self._curr = {'tags': {}, 'rel_id': None, 'members': []}
+        self._curr['attributes'] = dict(attrs)
+        if attrs.get('id', None) is not None:
+            self._curr['rel_id'] = int(attrs['id'])
+            del self._curr['attributes']['id']
+        return
+
+    def _handle_end_relation(self):
+        self._result.append(Relation(result=self._result, **self._curr))
+        self._curr = None
+        return
+
+    def _handle_start_member(self, attrs):
+        params = {'ref': None, 'role': None, 'result': self._result}
+        if attrs.get('ref', None):
+            params['ref'] = int(attrs['ref'])
+        if attrs.get('role', None):
+            params['role'] = attrs['role']
+
+        if attrs['type'] == 'node':
+            self._curr['members'].append(RelationNode(**params))
+        elif attrs['type'] == 'way':
+            self._curr['members'].append(RelationWay(**params))
+        elif attrs['type'] == 'relation':
+            self._curr['members'].append(RelationRelation(**params))
+        else:
+            raise ValueError("Undefined type for member: '%s'" % attrs['type'])
+        return
