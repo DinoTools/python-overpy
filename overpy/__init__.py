@@ -35,6 +35,7 @@ def is_valid_type(element, cls):
 
 
 class Overpass(object):
+
     """
     Class to access the Overpass API
     """
@@ -151,9 +152,11 @@ class Overpass(object):
 
 
 class Result(object):
+
     """
     Class to handle the result.
     """
+
     def __init__(self, elements=None, api=None):
         """
 
@@ -165,7 +168,8 @@ class Result(object):
             elements = []
         self._nodes = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Node))
         self._ways = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Way))
-        self._relations = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Relation))
+        self._relations = OrderedDict((element.id, element)
+                                      for element in elements if is_valid_type(element, Relation))
         self._class_collection_map = {Node: self._nodes, Way: self._ways, Relation: self._relations}
         self.api = api
 
@@ -295,10 +299,10 @@ class Result(object):
                 raise exception.DataIncomplete("Resolve missing nodes is disabled")
 
             query = ("\n"
-                    "[out:json];\n"
-                    "node({node_id});\n"
-                    "out body;\n"
-            )
+                     "[out:json];\n"
+                     "node({node_id});\n"
+                     "out body;\n"
+                     )
             query = query.format(
                 node_id=node_id
             )
@@ -340,10 +344,10 @@ class Result(object):
                 raise exception.DataIncomplete("Resolve missing relations is disabled")
 
             query = ("\n"
-                    "[out:json];\n"
-                    "relation({relation_id});\n"
-                    "out body;\n"
-            )
+                     "[out:json];\n"
+                     "relation({relation_id});\n"
+                     "out body;\n"
+                     )
             query = query.format(
                 relation_id=rel_id
             )
@@ -385,10 +389,10 @@ class Result(object):
                 raise exception.DataIncomplete("Resolve missing way is disabled")
 
             query = ("\n"
-                    "[out:json];\n"
-                    "way({way_id});\n"
-                    "out body;\n"
-            )
+                     "[out:json];\n"
+                     "way({way_id});\n"
+                     "out body;\n"
+                     )
             query = query.format(
                 way_id=way_id
             )
@@ -421,6 +425,7 @@ class Result(object):
 
 
 class Element(object):
+
     """
     Base element
     """
@@ -440,6 +445,7 @@ class Element(object):
 
 
 class Node(Element):
+
     """
     Class to represent an element of type node
     """
@@ -461,7 +467,7 @@ class Node(Element):
         self.id = node_id
         self.lat = lat
         self.lon = lon
-        
+
     def __repr__(self):
         return "<overpy.Node id={} lat={} lon={}>".format(self.id, self.lat, self.lon)
 
@@ -550,6 +556,7 @@ class Node(Element):
 
 
 class Way(Element):
+
     """
     Class to represent an element of type way
     """
@@ -572,7 +579,7 @@ class Way(Element):
 
         #: List of Ids of the associated nodes
         self._node_ids = node_ids
-        
+
     def __repr__(self):
         return "<overpy.Way id={} nodes={}>".format(self.id, self._node_ids)
 
@@ -615,11 +622,11 @@ class Way(Element):
                 raise exception.DataIncomplete("Unable to resolve all nodes")
 
             query = ("\n"
-                    "[out:json];\n"
-                    "way({way_id});\n"
-                    "node(w);\n"
-                    "out body;\n"
-            )
+                     "[out:json];\n"
+                     "way({way_id});\n"
+                     "node(w);\n"
+                     "out body;\n"
+                     )
             query = query.format(
                 way_id=self.id
             )
@@ -725,6 +732,7 @@ class Way(Element):
 
 
 class Relation(Element):
+
     """
     Class to represent an element of type relation
     """
@@ -743,7 +751,7 @@ class Relation(Element):
         Element.__init__(self, **kwargs)
         self.id = rel_id
         self.members = members
-        
+
     def __repr__(self):
         return "<overpy.Relation id={}>".format(self.id)
 
@@ -772,7 +780,7 @@ class Relation(Element):
 
         members = []
 
-        supported_members = [RelationNode, RelationWay]
+        supported_members = [RelationNode, RelationWay, RelationRelation]
         for member in data.get("members", []):
             type_value = member.get("type")
             for member_cls in supported_members:
@@ -816,7 +824,7 @@ class Relation(Element):
         tags = {}
         members = []
 
-        supported_members = [RelationNode, RelationWay]
+        supported_members = [RelationNode, RelationWay, RelationRelation]
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
                 name = sub_child.attrib.get("k")
@@ -850,9 +858,11 @@ class Relation(Element):
 
 
 class RelationMember(object):
+
     """
     Base class to represent a member of a relation.
     """
+
     def __init__(self, ref=None, role=None, result=None):
         """
         :param ref: Reference Id
@@ -919,7 +929,7 @@ class RelationNode(RelationMember):
 
     def resolve(self, resolve_missing=False):
         return self._result.get_node(self.ref, resolve_missing=resolve_missing)
-    
+
     def __repr__(self):
         return "<overpy.RelationNode ref={} role={}>".format(self.ref, self.role)
 
@@ -929,6 +939,16 @@ class RelationWay(RelationMember):
 
     def resolve(self, resolve_missing=False):
         return self._result.get_way(self.ref, resolve_missing=resolve_missing)
-    
+
     def __repr__(self):
         return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
+
+
+class RelationRelation(RelationMember):
+    _type_value = "relation"
+
+    def resolve(self, resolve_missing=False):
+        return self._result.get_relation(self.ref, resolve_missing=resolve_missing)
+
+    def __repr__(self):
+        return "<overpy.RelationRelation ref={} role={}>".format(self.ref, self.role)
