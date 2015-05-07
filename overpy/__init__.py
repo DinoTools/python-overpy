@@ -142,6 +142,18 @@ class Overpass(object):
         :return: Result object
         :rtype: overpy.Result
         """
+        return self. parse_xml_sax(data, encoding=encoding)
+
+    def parse_xml_dom(self, data, encoding="utf-8"):
+        """
+
+        :param data: Raw XML Data
+        :type data: String or Bytes
+        :param encoding: Encoding to decode byte string
+        :type encoding: String
+        :return: Result object
+        :rtype: overpy.Result
+        """
         if isinstance(data, bytes):
             data = data.decode(encoding)
         if PY2 and not isinstance(data, str):
