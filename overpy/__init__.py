@@ -15,6 +15,9 @@ from overpy.__about__ import (
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
+XML_PARSER_DOM = 1
+XML_PARSER_SAX = 2
+
 if PY2:
     from urllib2 import urlopen
     from urllib2 import HTTPError
@@ -132,19 +135,7 @@ class Overpass(object):
         data = json.loads(data, parse_float=Decimal)
         return Result.from_json(data, api=self)
 
-    def parse_xml(self, data, encoding="utf-8"):
-        """
-
-        :param data: Raw XML Data
-        :type data: String or Bytes
-        :param encoding: Encoding to decode byte string
-        :type encoding: String
-        :return: Result object
-        :rtype: overpy.Result
-        """
-        return self. parse_xml_sax(data, encoding=encoding)
-
-    def parse_xml_dom(self, data, encoding="utf-8"):
+    def parse_xml(self, data, encoding="utf-8", parser=XML_PARSER_SAX):
         """
 
         :param data: Raw XML Data
@@ -159,31 +150,8 @@ class Overpass(object):
         if PY2 and not isinstance(data, str):
             # Python 2.x: Convert unicode strings
             data = data.encode(encoding)
-        import xml.etree.ElementTree as ET
-        root = ET.fromstring(data)
-        return Result.from_xml(root, api=self)
 
-    def parse_xml_sax(self, data, encoding="utf-8"):
-        """
-
-        :param data: Raw XML Data
-        :type data: String or Bytes
-        :param encoding: Encoding to decode byte string
-        :type encoding: String
-        :return: Result object
-        :rtype: overpy.Result
-        """
-        if isinstance(data, bytes):
-            data = data.decode(encoding)
-        if PY2 and not isinstance(data, str):
-            # Python 2.x: Convert unicode strings
-            data = data.encode(encoding)
-        if PY2:
-            from StringIO import StringIO
-        else:
-            from io import StringIO
-        source = StringIO(data)
-        return Result.from_xml_sax(source, api=self)
+        return Result.from_xml(data, api=self, parser=parser)
 
 
 class Result(object):
@@ -297,7 +265,7 @@ class Result(object):
         return result
 
     @classmethod
-    def from_xml(cls, root, api=None):
+    def from_xml(cls, data, api=None, parser=XML_PARSER_SAX):
         """
         Create a new instance and load data from xml object.
 
@@ -305,34 +273,34 @@ class Result(object):
         :type data: xml.etree.ElementTree.Element
         :param api:
         :type api: Overpass
+        :param parser: Specify the parser to use(DOM or SAX)
+        :type parser: Integer
         :return: New instance of Result object
         :rtype: Result
         """
         result = cls(api=api)
-        for elem_cls in [Node, Way, Relation]:
-            for child in root:
-                if child.tag.lower() == elem_cls._type_value:
-                    result.append(elem_cls.from_xml(child, result=result))
+        if parser == XML_PARSER_DOM:
+            import xml.etree.ElementTree as ET
+            root = ET.fromstring(data)
 
-        return result
+            for elem_cls in [Node, Way, Relation]:
+                for child in root:
+                    if child.tag.lower() == elem_cls._type_value:
+                        result.append(elem_cls.from_xml(child, result=result))
 
-    @classmethod
-    def from_xml_sax(cls, source, api=None):
-        """
-        Create a new instance and load data from xml input source.
-
-        :param source: input source for xml.sax.XMLReader
-        :type source: string
-        :param api:
-        :type api: Overpass
-        :return: New instance of Result object
-        :rtype: Result
-        """
-        result = cls(api=api)
-        handler = OSMSAXHandler(result)
-        parser = make_parser()
-        parser.setContentHandler(handler)
-        parser.parse(source)
+        elif parser == XML_PARSER_SAX:
+            if PY2:
+                from StringIO import StringIO
+            else:
+                from io import StringIO
+            source = StringIO(data)
+            sax_handler = OSMSAXHandler(result)
+            parser = make_parser()
+            parser.setContentHandler(sax_handler)
+            parser.parse(source)
+        else:
+            # ToDo: better exception
+            raise Exception("Unknown XML parser")
         return result
 
     def get_node(self, node_id, resolve_missing=False):
