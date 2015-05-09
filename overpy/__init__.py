@@ -45,10 +45,12 @@ class Overpass(object):
     """
     default_read_chunk_size = 4096
 
-    def __init__(self, read_chunk_size=None):
+    def __init__(self, read_chunk_size=None, xml_parser=XML_PARSER_SAX):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
+        :param xml_parser: The xml parser to use
+        :type xml_parser: Integer
         """
         self.url = "http://overpass-api.de/api/interpreter"
         self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
@@ -56,6 +58,7 @@ class Overpass(object):
         if read_chunk_size is None:
             read_chunk_size = self.default_read_chunk_size
         self.read_chunk_size = read_chunk_size
+        self.xml_parser = xml_parser
 
     def query(self, query):
         """
@@ -135,7 +138,7 @@ class Overpass(object):
         data = json.loads(data, parse_float=Decimal)
         return Result.from_json(data, api=self)
 
-    def parse_xml(self, data, encoding="utf-8", parser=XML_PARSER_SAX):
+    def parse_xml(self, data, encoding="utf-8", parser=None):
         """
 
         :param data: Raw XML Data
@@ -145,6 +148,9 @@ class Overpass(object):
         :return: Result object
         :rtype: overpy.Result
         """
+        if parser is None:
+            parser = self.xml_parser
+
         if isinstance(data, bytes):
             data = data.decode(encoding)
         if PY2 and not isinstance(data, str):
