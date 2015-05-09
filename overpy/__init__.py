@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from decimal import Decimal
+from xml.sax import handler, make_parser
 import json
 import re
 import sys
@@ -13,6 +14,9 @@ from overpy.__about__ import (
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
+
+XML_PARSER_DOM = 1
+XML_PARSER_SAX = 2
 
 if PY2:
     from urllib2 import urlopen
@@ -41,10 +45,12 @@ class Overpass(object):
     """
     default_read_chunk_size = 4096
 
-    def __init__(self, read_chunk_size=None):
+    def __init__(self, read_chunk_size=None, xml_parser=XML_PARSER_SAX):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
+        :param xml_parser: The xml parser to use
+        :type xml_parser: Integer
         """
         self.url = "http://overpass-api.de/api/interpreter"
         self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
@@ -52,6 +58,7 @@ class Overpass(object):
         if read_chunk_size is None:
             read_chunk_size = self.default_read_chunk_size
         self.read_chunk_size = read_chunk_size
+        self.xml_parser = xml_parser
 
     def query(self, query):
         """
@@ -131,7 +138,7 @@ class Overpass(object):
         data = json.loads(data, parse_float=Decimal)
         return Result.from_json(data, api=self)
 
-    def parse_xml(self, data, encoding="utf-8"):
+    def parse_xml(self, data, encoding="utf-8", parser=None):
         """
 
         :param data: Raw XML Data
@@ -141,14 +148,16 @@ class Overpass(object):
         :return: Result object
         :rtype: overpy.Result
         """
+        if parser is None:
+            parser = self.xml_parser
+
         if isinstance(data, bytes):
             data = data.decode(encoding)
         if PY2 and not isinstance(data, str):
             # Python 2.x: Convert unicode strings
             data = data.encode(encoding)
-        import xml.etree.ElementTree as ET
-        root = ET.fromstring(data)
-        return Result.from_xml(root, api=self)
+
+        return Result.from_xml(data, api=self, parser=parser)
 
 
 class Result(object):
@@ -262,7 +271,7 @@ class Result(object):
         return result
 
     @classmethod
-    def from_xml(cls, root, api=None):
+    def from_xml(cls, data, api=None, parser=XML_PARSER_SAX):
         """
         Create a new instance and load data from xml object.
 
@@ -270,15 +279,34 @@ class Result(object):
         :type data: xml.etree.ElementTree.Element
         :param api:
         :type api: Overpass
+        :param parser: Specify the parser to use(DOM or SAX)
+        :type parser: Integer
         :return: New instance of Result object
         :rtype: Result
         """
         result = cls(api=api)
-        for elem_cls in [Node, Way, Relation]:
-            for child in root:
-                if child.tag.lower() == elem_cls._type_value:
-                    result.append(elem_cls.from_xml(child, result=result))
+        if parser == XML_PARSER_DOM:
+            import xml.etree.ElementTree as ET
+            root = ET.fromstring(data)
 
+            for elem_cls in [Node, Way, Relation]:
+                for child in root:
+                    if child.tag.lower() == elem_cls._type_value:
+                        result.append(elem_cls.from_xml(child, result=result))
+
+        elif parser == XML_PARSER_SAX:
+            if PY2:
+                from StringIO import StringIO
+            else:
+                from io import StringIO
+            source = StringIO(data)
+            sax_handler = OSMSAXHandler(result)
+            parser = make_parser()
+            parser.setContentHandler(sax_handler)
+            parser.parse(source)
+        else:
+            # ToDo: better exception
+            raise Exception("Unknown XML parser")
         return result
 
     def get_node(self, node_id, resolve_missing=False):
@@ -952,3 +980,185 @@ class RelationRelation(RelationMember):
 
     def __repr__(self):
         return "<overpy.RelationRelation ref={} role={}>".format(self.ref, self.role)
+
+
+class OSMSAXHandler(handler.ContentHandler):
+    """
+    SAX parser for Overpass XML response.
+    """
+    #: Tuple of opening elements to ignore
+    ignore_start = ('osm', 'meta', 'note')
+    #: Tuple of closing elements to ignore
+    ignore_end = ('osm', 'meta', 'note', 'tag', 'nd', 'member')
+
+    def __init__(self, result):
+        """
+        :param result: Append results to this result set.
+        :type result: overpy.Result
+        """
+        handler.ContentHandler.__init__(self)
+        self._result = result
+        self._curr = {}
+
+    def startElement(self, name, attrs):
+        """
+        Handle opening elements.
+
+        :param name: Name of the element
+        :type name: String
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        if name in self.ignore_start:
+            return
+        try:
+            handler = getattr(self, '_handle_start_%s' % name)
+        except AttributeError:
+            raise KeyError("Unknown element start '%s'" % name)
+        handler(attrs)
+
+    def endElement(self, name):
+        """
+        Handle closing elements
+
+        :param name: Name of the element
+        :type name: String
+        """
+        if name in self.ignore_end:
+            return
+        try:
+            handler = getattr(self, '_handle_end_%s' % name)
+        except AttributeError:
+            raise KeyError("Unknown element start '%s'" % name)
+        handler()
+
+    def _handle_start_tag(self, attrs):
+        """
+        Handle opening tag element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        try:
+            tag_key = attrs['k']
+        except KeyError:
+            raise ValueError("Tag without name/key.")
+        self._curr['tags'][tag_key] = attrs.get('v')
+
+    def _handle_start_node(self, attrs):
+        """
+        Handle opening node element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        self._curr = {
+            'attributes': dict(attrs),
+            'lat': None,
+            'lon': None,
+            'node_id': None,
+            'tags': {}
+        }
+        if attrs.get('id', None) is not None:
+            self._curr['node_id'] = int(attrs['id'])
+            del self._curr['attributes']['id']
+        if attrs.get('lat', None) is not None:
+            self._curr['lat'] = Decimal(attrs['lat'])
+            del self._curr['attributes']['lat']
+        if attrs.get('lon', None) is not None:
+            self._curr['lon'] = Decimal(attrs['lon'])
+            del self._curr['attributes']['lon']
+
+    def _handle_end_node(self):
+        """
+        Handle closing node element
+        """
+        self._result.append(Node(result=self._result, **self._curr))
+        self._curr = {}
+
+    def _handle_start_way(self, attrs):
+        """
+        Handle opening way element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        self._curr = {
+            'attributes': dict(attrs),
+            'node_ids': [],
+            'tags': {},
+            'way_id': None
+        }
+        if attrs.get('id', None) is not None:
+            self._curr['way_id'] = int(attrs['id'])
+            del self._curr['attributes']['id']
+
+    def _handle_end_way(self):
+        """
+        Handle closing way element
+        """
+        self._result.append(Way(result=self._result, **self._curr))
+        self._curr = {}
+
+    def _handle_start_nd(self, attrs):
+        """
+        Handle opening nd element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        try:
+            node_ref = attrs['ref']
+        except KeyError:
+            raise ValueError("Unable to find required ref value.")
+        self._curr['node_ids'].append(int(node_ref))
+
+    def _handle_start_relation(self, attrs):
+        """
+        Handle opening relation element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        self._curr = {
+            'attributes': dict(attrs),
+            'members': [],
+            'rel_id': None,
+            'tags': {}
+        }
+        if attrs.get('id', None) is not None:
+            self._curr['rel_id'] = int(attrs['id'])
+            del self._curr['attributes']['id']
+
+    def _handle_end_relation(self):
+        """
+        Handle closing relation element
+        """
+        self._result.append(Relation(result=self._result, **self._curr))
+        self._curr = {}
+
+    def _handle_start_member(self, attrs):
+        """
+        Handle opening member element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        params = {
+            'ref': None,
+            'result': self._result,
+            'role': None
+        }
+        if attrs.get('ref', None):
+            params['ref'] = int(attrs['ref'])
+        if attrs.get('role', None):
+            params['role'] = attrs['role']
+
+        if attrs['type'] == 'node':
+            self._curr['members'].append(RelationNode(**params))
+        elif attrs['type'] == 'way':
+            self._curr['members'].append(RelationWay(**params))
+        elif attrs['type'] == 'relation':
+            self._curr['members'].append(RelationRelation(**params))
+        else:
+            raise ValueError("Undefined type for member: '%s'" % attrs['type'])
