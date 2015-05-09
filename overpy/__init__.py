@@ -1066,9 +1066,6 @@ class OSMSAXHandler(handler.ContentHandler):
     def _handle_end_node(self):
         """
         Handle closing node element
-
-        :param attrs: Attributes of the element
-        :type attrs: Dict
         """
         self._result.append(Node(result=self._result, **self._curr))
         self._curr = {}
@@ -1093,9 +1090,6 @@ class OSMSAXHandler(handler.ContentHandler):
     def _handle_end_way(self):
         """
         Handle closing way element
-
-        :param attrs: Attributes of the element
-        :type attrs: Dict
         """
         self._result.append(Way(result=self._result, **self._curr))
         self._curr = {}
@@ -1133,9 +1127,6 @@ class OSMSAXHandler(handler.ContentHandler):
     def _handle_end_relation(self):
         """
         Handle closing relation element
-
-        :param attrs: Attributes of the element
-        :type attrs: Dict
         """
         self._result.append(Relation(result=self._result, **self._curr))
         self._curr = {}
