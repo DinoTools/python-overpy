@@ -1046,8 +1046,13 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        self._curr = {'tags': {}, 'node_id': None, 'lat': None, 'lon': None}
-        self._curr['attributes'] = dict(attrs)
+        self._curr = {
+            'attributes': dict(attrs),
+            'lat': None,
+            'lon': None,
+            'node_id': None,
+            'tags': {}
+        }
         if attrs.get('id', None) is not None:
             self._curr['node_id'] = int(attrs['id'])
             del self._curr['attributes']['id']
@@ -1075,8 +1080,12 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        self._curr = {'tags': {}, 'way_id': None, 'node_ids': []}
-        self._curr['attributes'] = dict(attrs)
+        self._curr = {
+            'attributes': dict(attrs),
+            'node_ids': [],
+            'tags': {},
+            'way_id': None
+        }
         if attrs.get('id', None) is not None:
             self._curr['way_id'] = int(attrs['id'])
             del self._curr['attributes']['id']
@@ -1111,8 +1120,12 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        self._curr = {'tags': {}, 'rel_id': None, 'members': []}
-        self._curr['attributes'] = dict(attrs)
+        self._curr = {
+            'attributes': dict(attrs),
+            'members': [],
+            'rel_id': None,
+            'tags': {}
+        }
         if attrs.get('id', None) is not None:
             self._curr['rel_id'] = int(attrs['id'])
             del self._curr['attributes']['id']
@@ -1134,7 +1147,11 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        params = {'ref': None, 'role': None, 'result': self._result}
+        params = {
+            'ref': None,
+            'result': self._result,
+            'role': None
+        }
         if attrs.get('ref', None):
             params['ref'] = int(attrs['ref'])
         if attrs.get('role', None):
