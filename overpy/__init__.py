@@ -977,17 +977,33 @@ class RelationRelation(RelationMember):
 
 
 class OSMSAXHandler(handler.ContentHandler):
-
+    """
+    SAX parser for Overpass XML response.
+    """
+    #: Tuple of opening elements to ignore
     ignore_start = ('osm', 'meta', 'note')
+    #: Tuple of closing elements to ignore
     ignore_end = ('osm', 'meta', 'note', 'tag', 'nd', 'member')
 
     def __init__(self, result):
+        """
+        :param result: Append results to this result set.
+        :type result: overpy.Result
+        """
         handler.ContentHandler.__init__(self)
         self._result = result
         self._curr = None
         return
 
     def startElement(self, name, attrs):
+        """
+        Handle opening elements.
+
+        :param name: Name of the element
+        :type name: String
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         if name in self.ignore_start:
             return
         try:
@@ -998,6 +1014,12 @@ class OSMSAXHandler(handler.ContentHandler):
         return
 
     def endElement(self, name):
+        """
+        Handle closing elements
+
+        :param name: Name of the element
+        :type name: String
+        """
         if name in self.ignore_end:
             return
         try:
@@ -1008,6 +1030,12 @@ class OSMSAXHandler(handler.ContentHandler):
         return
 
     def _handle_start_tag(self, attrs):
+        """
+        Handle opening tag element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         try:
             tag_key = attrs['k']
         except KeyError:
@@ -1016,6 +1044,12 @@ class OSMSAXHandler(handler.ContentHandler):
         return
 
     def _handle_start_node(self, attrs):
+        """
+        Handle opening node element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         self._curr = {'tags': {}, 'node_id': None, 'lat': None, 'lon': None}
         self._curr['attributes'] = dict(attrs)
         if attrs.get('id', None) is not None:
@@ -1030,11 +1064,23 @@ class OSMSAXHandler(handler.ContentHandler):
         return
 
     def _handle_end_node(self):
+        """
+        Handle closing node element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         self._result.append(Node(result=self._result, **self._curr))
         self._curr = None
         return
 
     def _handle_start_way(self, attrs):
+        """
+        Handle opening way element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         self._curr = {'tags': {}, 'way_id': None, 'node_ids': []}
         self._curr['attributes'] = dict(attrs)
         if attrs.get('id', None) is not None:
@@ -1043,11 +1089,23 @@ class OSMSAXHandler(handler.ContentHandler):
         return
 
     def _handle_end_way(self):
+        """
+        Handle closing way element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         self._result.append(Way(result=self._result, **self._curr))
         self._curr = None
         return
 
     def _handle_start_nd(self, attrs):
+        """
+        Handle opening nd element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         try:
             node_ref = attrs['ref']
         except KeyError:
@@ -1056,6 +1114,12 @@ class OSMSAXHandler(handler.ContentHandler):
         return
 
     def _handle_start_relation(self, attrs):
+        """
+        Handle opening relation element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         self._curr = {'tags': {}, 'rel_id': None, 'members': []}
         self._curr['attributes'] = dict(attrs)
         if attrs.get('id', None) is not None:
@@ -1064,11 +1128,23 @@ class OSMSAXHandler(handler.ContentHandler):
         return
 
     def _handle_end_relation(self):
+        """
+        Handle closing relation element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         self._result.append(Relation(result=self._result, **self._curr))
         self._curr = None
         return
 
     def _handle_start_member(self, attrs):
+        """
+        Handle opening member element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
         params = {'ref': None, 'role': None, 'result': self._result}
         if attrs.get('ref', None):
             params['ref'] = int(attrs['ref'])
