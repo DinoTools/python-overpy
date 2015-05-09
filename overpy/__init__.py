@@ -992,7 +992,7 @@ class OSMSAXHandler(handler.ContentHandler):
         """
         handler.ContentHandler.__init__(self)
         self._result = result
-        self._curr = None
+        self._curr = {}
 
     def startElement(self, name, attrs):
         """
@@ -1066,7 +1066,7 @@ class OSMSAXHandler(handler.ContentHandler):
         :type attrs: Dict
         """
         self._result.append(Node(result=self._result, **self._curr))
-        self._curr = None
+        self._curr = {}
 
     def _handle_start_way(self, attrs):
         """
@@ -1089,7 +1089,7 @@ class OSMSAXHandler(handler.ContentHandler):
         :type attrs: Dict
         """
         self._result.append(Way(result=self._result, **self._curr))
-        self._curr = None
+        self._curr = {}
 
     def _handle_start_nd(self, attrs):
         """
@@ -1125,7 +1125,7 @@ class OSMSAXHandler(handler.ContentHandler):
         :type attrs: Dict
         """
         self._result.append(Relation(result=self._result, **self._curr))
-        self._curr = None
+        self._curr = {}
 
     def _handle_start_member(self, attrs):
         """
