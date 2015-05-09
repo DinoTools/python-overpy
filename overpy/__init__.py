@@ -993,7 +993,6 @@ class OSMSAXHandler(handler.ContentHandler):
         handler.ContentHandler.__init__(self)
         self._result = result
         self._curr = None
-        return
 
     def startElement(self, name, attrs):
         """
@@ -1011,7 +1010,6 @@ class OSMSAXHandler(handler.ContentHandler):
         except AttributeError:
             raise KeyError("Unknown element start '%s'" % name)
         handler(attrs)
-        return
 
     def endElement(self, name):
         """
@@ -1027,7 +1025,6 @@ class OSMSAXHandler(handler.ContentHandler):
         except AttributeError:
             raise KeyError("Unknown element start '%s'" % name)
         handler()
-        return
 
     def _handle_start_tag(self, attrs):
         """
@@ -1041,7 +1038,6 @@ class OSMSAXHandler(handler.ContentHandler):
         except KeyError:
             raise ValueError("Tag without name/key.")
         self._curr['tags'][tag_key] = attrs.get('v')
-        return
 
     def _handle_start_node(self, attrs):
         """
@@ -1061,7 +1057,6 @@ class OSMSAXHandler(handler.ContentHandler):
         if attrs.get('lon', None) is not None:
             self._curr['lon'] = Decimal(attrs['lon'])
             del self._curr['attributes']['lon']
-        return
 
     def _handle_end_node(self):
         """
@@ -1072,7 +1067,6 @@ class OSMSAXHandler(handler.ContentHandler):
         """
         self._result.append(Node(result=self._result, **self._curr))
         self._curr = None
-        return
 
     def _handle_start_way(self, attrs):
         """
@@ -1086,7 +1080,6 @@ class OSMSAXHandler(handler.ContentHandler):
         if attrs.get('id', None) is not None:
             self._curr['way_id'] = int(attrs['id'])
             del self._curr['attributes']['id']
-        return
 
     def _handle_end_way(self):
         """
@@ -1097,7 +1090,6 @@ class OSMSAXHandler(handler.ContentHandler):
         """
         self._result.append(Way(result=self._result, **self._curr))
         self._curr = None
-        return
 
     def _handle_start_nd(self, attrs):
         """
@@ -1111,7 +1103,6 @@ class OSMSAXHandler(handler.ContentHandler):
         except KeyError:
             raise ValueError("Unable to find required ref value.")
         self._curr['node_ids'].append(int(node_ref))
-        return
 
     def _handle_start_relation(self, attrs):
         """
@@ -1125,7 +1116,6 @@ class OSMSAXHandler(handler.ContentHandler):
         if attrs.get('id', None) is not None:
             self._curr['rel_id'] = int(attrs['id'])
             del self._curr['attributes']['id']
-        return
 
     def _handle_end_relation(self):
         """
@@ -1136,7 +1126,6 @@ class OSMSAXHandler(handler.ContentHandler):
         """
         self._result.append(Relation(result=self._result, **self._curr))
         self._curr = None
-        return
 
     def _handle_start_member(self, attrs):
         """
@@ -1159,4 +1148,3 @@ class OSMSAXHandler(handler.ContentHandler):
             self._curr['members'].append(RelationRelation(**params))
         else:
             raise ValueError("Undefined type for member: '%s'" % attrs['type'])
-        return
