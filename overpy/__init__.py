@@ -504,8 +504,8 @@ class Node(Element):
         """
         Create new Node element from JSON data
 
-        :param child: Element data from JSON
-        :type child: Dict
+        :param data: Element data from JSON
+        :type data: Dict
         :param result: The result this element belongs to
         :type result: overpy.Result
         :return: New instance of Node
@@ -679,8 +679,8 @@ class Way(Element):
         """
         Create new Way element from JSON data
 
-        :param child: Element data from JSON
-        :type child: Dict
+        :param data: Element data from JSON
+        :type data: Dict
         :param result: The result this element belongs to
         :type result: overpy.Result
         :return: New instance of Way
@@ -788,8 +788,8 @@ class Relation(Element):
         """
         Create new Relation element from JSON data
 
-        :param child: Element data from JSON
-        :type child: Dict
+        :param data: Element data from JSON
+        :type data: Dict
         :param result: The result this element belongs to
         :type result: overpy.Result
         :return: New instance of Relation
