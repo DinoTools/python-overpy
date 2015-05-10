@@ -469,6 +469,7 @@ class Element(object):
 
         self._result = result
         self.attributes = attributes
+        self.id = None
         self.tags = tags
 
 
