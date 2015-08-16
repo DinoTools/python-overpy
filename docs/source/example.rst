@@ -35,7 +35,7 @@ Lets start with an example from the Overpass API documentation.
     {}
 
 Line 1:
-    Import the required Pyhton module
+    Import the required Python module
 
 Line 2:
     Create a new instance of the Overpass() class.
