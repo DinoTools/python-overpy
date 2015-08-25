@@ -45,14 +45,19 @@ class Overpass(object):
     """
     default_read_chunk_size = 4096
 
-    def __init__(self, read_chunk_size=None, xml_parser=XML_PARSER_SAX):
+    def __init__(self, read_chunk_size=None, xml_parser=XML_PARSER_SAX, use_alt_url=False):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
         :param xml_parser: The xml parser to use
         :type xml_parser: Integer
+        :param: use_alt_url: Set to True to use the rambler.ru instance
+        :type use_alt_url: Boolean
         """
+        
         self.url = "http://overpass-api.de/api/interpreter"
+        if use_alt_url:
+            self.url = "http://overpass.osm.rambler.ru/cgi/interpreter"
         self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
         if read_chunk_size is None:
