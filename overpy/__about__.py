@@ -13,7 +13,7 @@ __title__ = "overpy"
 __summary__ = "Python Wrapper to access the OpenStreepMap Overpass API"
 __uri__ = "https://github.com/DinoTools/python-overpy"
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 __author__ = "PhiBo (DinoTools)"
 __email__ = ""
