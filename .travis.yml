@@ -8,9 +8,12 @@ python:
   - "pypy"
   - "pypy3"
 
+before_install:
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install 'coverage<4.0.0'; fi
+  - pip install coveralls
+
 install:
   - pip install .
-  - pip install coveralls
   - pip install pytest-cov
 
 script:
