@@ -1030,7 +1030,7 @@ class OSMSAXHandler(handler.ContentHandler):
         try:
             handler = getattr(self, '_handle_end_%s' % name)
         except AttributeError:
-            raise KeyError("Unknown element start '%s'" % name)
+            raise KeyError("Unknown element end '%s'" % name)
         handler()
 
     def _handle_start_tag(self, attrs):
