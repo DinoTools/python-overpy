@@ -592,7 +592,7 @@ class Way(Element):
 
     _type_value = "way"
 
-    def __init__(self, way_id=None, node_ids=None, **kwargs):
+    def __init__(self, way_id=None, center_lat=None, center_lon=None, node_ids=None, **kwargs):
         """
         :param node_ids: List of node IDs
         :type node_ids: List or Tuple
@@ -608,6 +608,10 @@ class Way(Element):
 
         #: List of Ids of the associated nodes
         self._node_ids = node_ids
+        
+        #: The lat/lon of the center of the way (optional depending on query)
+        self.center_lat = center_lat
+        self.center_lon = center_lon
 
     def __repr__(self):
         return "<overpy.Way id={} nodes={}>".format(self.id, self._node_ids)
@@ -745,6 +749,11 @@ class Way(Element):
                     raise ValueError("Unable to find required ref value.")
                 ref_id = int(ref_id)
                 node_ids.append(ref_id)
+            if sub_child.tag.lower() == "center":
+                center_lat = sub_child.attrib.get("lat")
+                center_lon = sub_child.attrib.get("lon")
+                if center_lat is None or center_lon is None:
+                    raise ValueError("Unable to get lat/lon of way center.")
 
         way_id = child.attrib.get("id")
         if way_id is not None:
@@ -757,7 +766,8 @@ class Way(Element):
                 continue
             attributes[n] = v
 
-        return cls(way_id=way_id, attributes=attributes, node_ids=node_ids, tags=tags, result=result)
+        return cls(way_id=way_id, center_lat=center_lat, center_lon=center_lon,
+                   attributes=attributes, node_ids=node_ids, tags=tags, result=result)
 
 
 class Relation(Element):
@@ -988,9 +998,9 @@ class OSMSAXHandler(handler.ContentHandler):
     SAX parser for Overpass XML response.
     """
     #: Tuple of opening elements to ignore
-    ignore_start = ('osm', 'meta', 'note')
+    ignore_start = ('osm', 'meta', 'note', 'bounds', 'remark')
     #: Tuple of closing elements to ignore
-    ignore_end = ('osm', 'meta', 'note', 'tag', 'nd', 'member')
+    ignore_end = ('osm', 'meta', 'note', 'bounds', 'remark', 'center', 'tag', 'nd', 'member')
 
     def __init__(self, result):
         """
@@ -1030,9 +1040,21 @@ class OSMSAXHandler(handler.ContentHandler):
         try:
             handler = getattr(self, '_handle_end_%s' % name)
         except AttributeError:
-            raise KeyError("Unknown element start '%s'" % name)
+            raise KeyError("Unknown element end '%s'" % name)
         handler()
 
+    def _handle_start_center(self, attrs):
+        """
+        Handle opening center element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        if attrs.get('lat', None) is not None:
+            self._curr['center_lat'] = Decimal(attrs['lat'])
+        if attrs.get('lon', None) is not None:
+            self._curr['center_lon'] = Decimal(attrs['lon'])
+    
     def _handle_start_tag(self, attrs):
         """
         Handle opening tag element
@@ -1085,6 +1107,8 @@ class OSMSAXHandler(handler.ContentHandler):
         :type attrs: Dict
         """
         self._curr = {
+            'center_lat': None,
+            'center_lon': None,
             'attributes': dict(attrs),
             'node_ids': [],
             'tags': {},
