@@ -988,9 +988,9 @@ class OSMSAXHandler(handler.ContentHandler):
     SAX parser for Overpass XML response.
     """
     #: Tuple of opening elements to ignore
-    ignore_start = ('osm', 'meta', 'note')
+    ignore_start = ('osm', 'meta', 'note', 'remark')
     #: Tuple of closing elements to ignore
-    ignore_end = ('osm', 'meta', 'note', 'tag', 'nd', 'member')
+    ignore_end = ('osm', 'meta', 'note', 'remark', 'tag', 'nd', 'member')
 
     def __init__(self, result):
         """
