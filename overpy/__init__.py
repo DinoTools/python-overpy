@@ -752,8 +752,8 @@ class Way(Element):
                 ref_id = int(ref_id)
                 node_ids.append(ref_id)
             if sub_child.tag.lower() == "center":
-                center_lat = sub_child.attrib.get("lat")
-                center_lon = sub_child.attrib.get("lon")
+                center_lat = Decimal(sub_child.attrib.get("lat"))
+                center_lon = Decimal(sub_child.attrib.get("lon"))
                 if center_lat is None or center_lon is None:
                     raise ValueError("Unable to get lat/lon of way center.")
 
