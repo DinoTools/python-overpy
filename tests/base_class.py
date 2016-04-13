@@ -281,7 +281,7 @@ class BaseTestWay(object):
             assert way_ids[0] == 317146077
 
     def _test_way03(self, result):
-        assert len(result.nodes) == 0
+        assert len(result.nodes) == 6
         assert len(result.relations) == 0
         assert len(result.ways) == 1
 
@@ -300,8 +300,7 @@ class BaseTestWay(object):
         assert way.center_lat == Decimal("50.7494852")
         assert way.center_lon == Decimal("7.1757466")
 
-        # the three assertions following this could break if the live OSM data changes
-        nodes = way.get_nodes(resolve_missing=True)
+        nodes = way.nodes
 
         assert len(nodes) == 7
 
