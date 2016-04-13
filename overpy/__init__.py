@@ -735,6 +735,8 @@ class Way(Element):
 
         tags = {}
         node_ids = []
+        center_lat = None
+        center_lon = None
 
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
