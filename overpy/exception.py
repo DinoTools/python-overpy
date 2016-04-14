@@ -64,10 +64,10 @@ class OverpassBadRequest(OverPyException):
 
 class OverpassGatewayTimeout(OverPyException):
     """
-    Raised if load of the Overpass API service is to high and it can't handle the request.
+    Raised if load of the Overpass API service is too high and it can't handle the request.
     """
     def __init__(self):
-        OverPyException.__init__(self, "Server load to high")
+        OverPyException.__init__(self, "Server load too high")
 
 
 class OverpassTooManyRequests(OverPyException):
