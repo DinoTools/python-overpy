@@ -934,7 +934,7 @@ class RelationMember(object):
                 continue
             attributes[n] = v
 
-        return cls(attributes=None, ref=ref, role=role, result=result)
+        return cls(attributes=attributes, ref=ref, role=role, result=result)
 
     @classmethod
     def from_xml(cls, child, result=None):
