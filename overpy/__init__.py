@@ -892,7 +892,7 @@ class RelationMember(object):
     Base class to represent a member of a relation.
     """
 
-    def __init__(self, ref=None, role=None, result=None):
+    def __init__(self, attributes=None, ref=None, role=None, result=None):
         """
         :param ref: Reference Id
         :type ref: Integer
@@ -903,6 +903,7 @@ class RelationMember(object):
         self.ref = ref
         self._result = result
         self.role = role
+        self.attributes = attributes
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -925,7 +926,15 @@ class RelationMember(object):
 
         ref = data.get("ref")
         role = data.get("role")
-        return cls(ref=ref, role=role, result=result)
+
+        attributes = {}
+        ignore = ["type", "ref", "role"]
+        for n, v in data.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        return cls(attributes=None, ref=ref, role=role, result=result)
 
     @classmethod
     def from_xml(cls, child, result=None):
@@ -950,7 +959,15 @@ class RelationMember(object):
         if ref is not None:
             ref = int(ref)
         role = child.attrib.get("role")
-        return cls(ref=ref, role=role, result=result)
+
+        attributes = {}
+        ignore = ["ref", "role"]
+        for n, v in child.attrib.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        return cls(attributes=attributes, ref=ref, role=role, result=result)
 
 
 class RelationNode(RelationMember):
