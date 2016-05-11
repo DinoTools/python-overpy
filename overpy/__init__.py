@@ -69,7 +69,7 @@ class Overpass(object):
         :rtype: overpy.Result
         """
         if not isinstance(query, bytes):
-            query = bytes(query, "utf-8")
+            query = query.encode("utf-8")
 
         try:
             f = urlopen(self.url, query)
