@@ -1,0 +1,23 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "osm3s": {
+    "timestamp_osm_base": "2016-07-24T21:44:03Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "way",
+      "id": 222402308,
+      "timestamp": "this is an invalid date",
+      "version": 2,
+      "changeset": 16471189,
+      "user": "BlueCelest",
+      "uid": 367472,
+      "tags": {
+        "highway": "residential",
+        "name": "Vers le Bois"
+      }
+    }
+  ]
+}

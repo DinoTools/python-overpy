@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from decimal import Decimal
 from xml.sax import handler, make_parser
+from datetime import datetime
 import json
 import re
 import sys
@@ -45,14 +46,16 @@ class Overpass(object):
     """
     default_read_chunk_size = 4096
 
-    def __init__(self, read_chunk_size=None, xml_parser=XML_PARSER_SAX):
+    def __init__(self, read_chunk_size=None, xml_parser=XML_PARSER_SAX, overpass_server="http://overpass-api.de/api/interpreter"):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
         :param xml_parser: The xml parser to use
         :type xml_parser: Integer
+        :param overpass_server: The overpass server to use. By default uses overpass-api.de
+        :type overpass_server: String
         """
-        self.url = "http://overpass-api.de/api/interpreter"
+        self.url = overpass_server
         self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
         if read_chunk_size is None:
@@ -468,9 +471,29 @@ class Element(object):
         """
 
         self._result = result
-        self.attributes = attributes
         self.id = None
         self.tags = tags
+
+        #Convert the convertible attributes. Ex: a `uid` is always an int
+        to_convert = {
+            'version': int,
+            'changeset': int,
+            'uid': int,
+            'timestamp': lambda ts: datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ")
+        }
+
+        machine_attributes = {}
+        for k in attributes:
+            v = attributes[k]
+            if k in to_convert:
+                try:
+                    new_type = to_convert[k](v)
+                    machine_attributes[k] = new_type
+                except: #never know what could happen
+                    machine_attributes[k] = v
+            else:
+                machine_attributes[k] = v
+        self.attributes = machine_attributes
 
 
 class Node(Element):
@@ -1163,3 +1186,6 @@ class OSMSAXHandler(handler.ContentHandler):
             self._curr['members'].append(RelationRelation(**params))
         else:
             raise ValueError("Undefined type for member: '%s'" % attrs['type'])
+
+# vim: set ts=4 et :
+

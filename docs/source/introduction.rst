@@ -50,25 +50,6 @@ Usage
 It is recommended to have a look at the documentation of the `Overpass API`_ before using OverPy.
 For more examples have a look at the :doc:`examples page <example>` or in the examples directory.
 
-.. code-block:: python
+.. literalinclude:: ../../examples/get_node.py
+.. literalinclude:: ../../examples/get_ways.py
 
-    import overpy
-
-    api = overpy.Overpass()
-
-    # fetch all ways and nodes
-    result = api.query("""
-        way(50.746,7.154,50.748,7.157) ["highway"];
-        (._;>;);
-        out body;
-        """)
-
-    for way in result.ways:
-        print("Name: %s" % way.tags.get("name", "n/a"))
-        print("  Highway: %s" % way.tags.get("highway", "n/a"))
-        print("  Nodes:")
-        for node in way.nodes:
-            print("    Lat: %f, Lon: %f" % (node.lat, node.lon))
-
-
-.. _Overpass API: https://wiki.openstreetmap.org/wiki/Overpass_API
