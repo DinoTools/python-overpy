@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from decimal import Decimal
 from xml.sax import handler, make_parser
+from datetime import datetime
 import json
 import re
 import sys
@@ -470,9 +471,29 @@ class Element(object):
         """
 
         self._result = result
-        self.attributes = attributes
         self.id = None
         self.tags = tags
+
+        #Convert the convertible attributes. Ex: a `uid` is always an int
+        to_convert = {
+            'version': int,
+            'changeset': int,
+            'uid': int,
+            'timestamp': lambda ts: datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ")
+        }
+
+        machine_attributes = {}
+        for k in attributes:
+            v = attributes[k]
+            if k in to_convert:
+                try:
+                    new_type = to_convert[k](v)
+                    machine_attributes[k] = new_type
+                except: #never know what could happen
+                    machine_attributes[k] = v
+            else:
+                machine_attributes[k] = v
+        self.attributes = machine_attributes
 
 
 class Node(Element):
@@ -1165,3 +1186,6 @@ class OSMSAXHandler(handler.ContentHandler):
             self._curr['members'].append(RelationRelation(**params))
         else:
             raise ValueError("Undefined type for member: '%s'" % attrs['type'])
+
+# vim: set ts=4 et :
+

@@ -16,3 +16,4 @@ for way in result.ways:
     print("  Nodes:")
     for node in way.nodes:
         print("    Lat: %f, Lon: %f" % (node.lat, node.lon))
+

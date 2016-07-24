@@ -21,7 +21,7 @@ Lets start with an example from the Overpass API documentation.
 
     >>> import overpy
     >>> api = overpy.Overpass()
-    >>> result = api.query("node(50.745,7.17,50.75,7.18);out;")
+    >>> result = api.query("node(50.745,7.17,50.75,7.18);out meta;")
     >>> len(result.nodes)
     1984
     >>> len(result.ways)
@@ -33,6 +33,10 @@ Lets start with an example from the Overpass API documentation.
     100792806
     >>> node.tags
     {}
+    >>> result.get_node(100792806).id == 100792806
+    True
+    >>> result.get_node(100792806).attributes['timestamp']
+    datetime.datetime(2014, 12, 13, 7, 9, 19)
 
 Line 1:
     Import the required Python module
@@ -53,6 +57,10 @@ Line 6-9:
 Line 10-14:
     Get the third node from the list.
     Display the ID and the tags of this node.
+Line 15:
+    You can also get a node directly by its id
+Line 17:
+    And, if specified during the query (`out meta`), access the metadata of an element
 
 
 Use Overpass QL or Overpass XML
