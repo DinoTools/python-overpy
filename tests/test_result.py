@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 
 import overpy
 
@@ -43,6 +44,27 @@ class TestResult(object):
         # Don't overwrite existing elements
         assert len(result1.nodes) == 3
         assert len(result1.ways) == 2
+
+class TestAttributesConversion(object):
+    def test_attribute_conversion(self):
+        api = overpy.Overpass()
+        result = api.parse_json(read_file("json/way-meta.json"))
+
+        for o in result.ways + result.nodes:
+            assert(type(o.attributes['uid']) == int)
+            assert(type(o.attributes['changeset']) == int)
+            assert(type(o.attributes['version']) == int)
+            assert(type(o.attributes['timestamp']) == datetime)
+    def test_attribute_invalid_date(self):
+        api = overpy.Overpass()
+        result = api.parse_json(read_file("json/way-meta_invalid-timestamp.json"))
+
+        for o in result.ways + result.nodes:
+            assert(type(o.attributes['uid']) == int)
+            assert(type(o.attributes['changeset']) == int)
+            assert(type(o.attributes['version']) == int)
+            assert('timestamp' in o.attributes)
+
 
 
 class TestNode(object):
@@ -145,3 +167,6 @@ class TestWay(object):
         assert way.id == 317146078
 
         t.join()
+
+# vim: set ts=4 et :
+
