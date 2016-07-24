@@ -1,0 +1,61 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "osm3s": {
+    "timestamp_osm_base": "2016-07-24T21:44:03Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "way",
+      "id": 222402308,
+      "timestamp": "2013-06-08T16:56:14Z",
+      "version": 2,
+      "changeset": 16471189,
+      "user": "BlueCelest",
+      "uid": 367472,
+      "nodes": [
+        2313721323,
+        2313721324,
+        2313721325
+      ],
+      "tags": {
+        "highway": "residential",
+        "name": "Vers le Bois"
+      }
+    },
+    {
+      "type": "node",
+      "id": 2313721323,
+      "lat": 46.4395263,
+      "lon": 4.5821464,
+      "timestamp": "2013-05-20T23:22:47Z",
+      "version": 1,
+      "changeset": 16217602,
+      "user": "Never Gönna",
+      "uid": 367472
+    },
+    {
+      "type": "node",
+      "id": 2313721324,
+      "lat": 46.440371,
+      "lon": 4.5828304,
+      "timestamp": "2013-05-20T23:22:47Z",
+      "version": 1,
+      "changeset": 16217602,
+      "user": "Give you",
+      "uid": 367472
+    },
+    {
+      "type": "node",
+      "id": 2313721325,
+      "lat": 46.4389015,
+      "lon": 4.5816073,
+      "timestamp": "2013-05-20T23:22:47Z",
+      "version": 1,
+      "changeset": 16217602,
+      "user": "",
+      "uid": 367472
+    }
+  ]
+}
