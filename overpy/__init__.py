@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import datetime
 from decimal import Decimal
 from xml.sax import handler, make_parser
 import json
@@ -474,7 +475,19 @@ class Element(object):
         """
 
         self._result = result
+        # Try to convert some common attributes
+        # http://wiki.openstreetmap.org/wiki/Elements#Common_attributes
+        self._attribute_modifiers = {
+            "changeset": int,
+            "timestamp": lambda ts: datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ"),
+            "uid": int,
+            "version": int,
+            "visible": lambda v: v.lower() == "true"
+        }
         self.attributes = attributes
+        for n, m in self._attribute_modifiers.items():
+            if n in self.attributes:
+                self.attributes[n] = m(self.attributes[n])
         self.id = None
         self.tags = tags
 
