@@ -44,6 +44,7 @@ class Overpass(object):
     Class to access the Overpass API
     """
     default_read_chunk_size = 4096
+    default_url = "http://overpass-api.de/api/interpreter"
 
     def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX):
         """
@@ -54,7 +55,7 @@ class Overpass(object):
         :param xml_parser: The xml parser to use
         :type xml_parser: Integer
         """
-        self.url = "http://overpass-api.de/api/interpreter"
+        self.url = self.default_url
         if url is not None:
             self.url = url
 
