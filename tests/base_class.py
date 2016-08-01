@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import datetime
 import os
 
 import pytest
@@ -53,9 +54,12 @@ class BaseTestNodes(object):
 
         assert isinstance(node.attributes, dict)
         assert len(node.attributes) == 5
-        # ToDo: fix
-        # assert node.attributes["changeset"] == 23456789
-        # assert node.attributes["user"] == "TestUser"
+
+        assert node.attributes["changeset"] == 23456789
+        assert node.attributes["timestamp"] == datetime(2014, 12, 14, 7, 27, 19, 0, None)
+        assert node.attributes["uid"] == 345678
+        assert node.attributes["user"] == "TestUser"
+        assert node.attributes["version"] == 1
 
         # try to get a single node by id
         node = result.get_node(50878400)
@@ -102,6 +106,12 @@ class BaseTestRelation(object):
 
         assert isinstance(relation.attributes, dict)
         assert len(relation.attributes) == 5
+
+        assert relation.attributes["changeset"] == 17433822
+        assert relation.attributes["timestamp"] == datetime(2014, 12, 15, 13, 13, 11, 0, None)
+        assert relation.attributes["uid"] == 12345
+        assert relation.attributes["user"] == "Username"
+        assert relation.attributes["version"] == 12
 
         assert len(relation.members) == 5
         assert isinstance(relation.members[0], overpy.RelationNode)
@@ -195,10 +205,11 @@ class BaseTestWay(object):
         assert isinstance(way.attributes, dict)
         assert len(way.attributes) == 5
 
-        # ToDo: fix it
-        # assert way.attributes["uid"] == 345678
-        # assert way.attributes["user"] == "TestUser"
-        # assert way.attributes["changeset"] == 23456789
+        assert way.attributes["changeset"] == 23456789
+        assert way.attributes["timestamp"] == datetime(2014, 12, 14, 7, 27, 21, 0, None)
+        assert way.attributes["uid"] == 345678
+        assert way.attributes["user"] == "TestUser"
+        assert way.attributes["version"] == 1
 
         # try to get a single way by id
         way = result.get_way(317146077)
