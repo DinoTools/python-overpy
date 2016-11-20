@@ -9,6 +9,7 @@ Contents:
    introduction
    example
    api
+   contributing
    changelog
 
 Indices and tables
