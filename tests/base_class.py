@@ -290,3 +290,58 @@ class BaseTestWay(object):
         for way_ids in (result.way_ids, result.get_way_ids()):
             assert len(way_ids) == 1
             assert way_ids[0] == 317146077
+
+    def _test_way03(self, result):
+        assert len(result.nodes) == 6
+        assert len(result.relations) == 0
+        assert len(result.ways) == 1
+
+        way = result.ways[0]
+
+        assert isinstance(way, overpy.Way)
+        assert isinstance(way.id, int)
+        assert way.id == 317146077
+
+        assert isinstance(way.tags, dict)
+        assert len(way.tags) == 1
+        assert way.tags["building"] == "yes"
+
+        assert isinstance(way.center_lat, Decimal)
+        assert isinstance(way.center_lon, Decimal)
+        assert way.center_lat == Decimal("50.7494852")
+        assert way.center_lon == Decimal("7.1757466")
+
+        nodes = way.nodes
+
+        assert len(nodes) == 7
+
+        node = nodes[0]
+
+        assert isinstance(node, overpy.Node)
+        assert node.id == 3233854241
+
+        # try to get a single way by id
+        way = result.get_way(317146077)
+        assert way.id == 317146077
+
+        # try to get a single way by id not available in the result
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result.get_way(123456)
+
+        # node_ids is an alias for get_node_ids() and should return the same data
+        for node_ids in (result.node_ids, result.get_node_ids()):
+            assert len(node_ids) == 6
+            assert node_ids[0] == 3233854233
+            assert node_ids[1] == 3233854234
+            assert node_ids[2] == 3233854236
+            assert node_ids[3] == 3233854237
+            assert node_ids[4] == 3233854238
+            assert node_ids[5] == 3233854241
+
+        assert len(result.relation_ids) == 0
+        assert len(result.get_relation_ids()) == 0
+
+        # way_ids is an alias for get_way_ids() and should return the same data
+        for way_ids in (result.way_ids, result.get_way_ids()):
+            assert len(way_ids) == 1
+            assert way_ids[0] == 317146077
