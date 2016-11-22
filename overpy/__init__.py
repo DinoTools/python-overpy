@@ -182,11 +182,12 @@ class Result(object):
         """
         if elements is None:
             elements = []
+        self._areas = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Area))
         self._nodes = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Node))
         self._ways = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Way))
         self._relations = OrderedDict((element.id, element)
                                       for element in elements if is_valid_type(element, Relation))
-        self._class_collection_map = {Node: self._nodes, Way: self._ways, Relation: self._relations}
+        self._class_collection_map = {Node: self._nodes, Way: self._ways, Relation: self._relations, Area: self._areas}
         self.api = api
 
     def expand(self, other):
@@ -202,7 +203,7 @@ class Result(object):
         if not isinstance(other, Result):
             raise ValueError("Provided argument has to be instance of overpy:Result()")
 
-        other_collection_map = {Node: other.nodes, Way: other.ways, Relation: other.relations}
+        other_collection_map = {Node: other.nodes, Way: other.ways, Relation: other.relations, Area: other.areas}
         for element_type, own_collection in self._class_collection_map.items():
             for element in other_collection_map[element_type]:
                 if is_valid_type(element, element_type) and element.id not in own_collection:
@@ -256,6 +257,9 @@ class Result(object):
     def get_relation_ids(self):
         return self.get_ids(filter_cls=Relation)
 
+    def get_area_ids(self):
+        return self.get_ids(filter_cls=Area)
+
     @classmethod
     def from_json(cls, data, api=None):
         """
@@ -269,7 +273,7 @@ class Result(object):
         :rtype: overpy.Result
         """
         result = cls(api=api)
-        for elem_cls in [Node, Way, Relation]:
+        for elem_cls in [Node, Way, Relation, Area]:
             for element in data.get("elements", []):
                 e_type = element.get("type")
                 if hasattr(e_type, "lower") and e_type.lower() == elem_cls._type_value:
@@ -296,7 +300,7 @@ class Result(object):
             import xml.etree.ElementTree as ET
             root = ET.fromstring(data)
 
-            for elem_cls in [Node, Way, Relation]:
+            for elem_cls in [Node, Way, Relation, Area]:
                 for child in root:
                     if child.tag.lower() == elem_cls._type_value:
                         result.append(elem_cls.from_xml(child, result=result))
@@ -451,12 +455,59 @@ class Result(object):
         """
         return self.get_elements(Way, elem_id=way_id, **kwargs)
 
+    def get_area(self, area_id, resolve_missing=False):
+        """
+        Get an area by its ID.
+
+        :param area_id: The way ID
+        :type area_id: Integer
+        :param resolve_missing: Query the Overpass API if the way is missing in the result set.
+        :return: The area
+        :rtype: overpy.Area
+        :raises overpy.exception.DataIncomplete: The requested way is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and the area can't be resolved.
+        """
+        areas = self.get_areas(area_id=area_id)
+        if len(areas) == 0:
+            if resolve_missing is False:
+                raise exception.DataIncomplete("Resolve missing area is disabled")
+
+            query = ("\n"
+                    "[out:json];\n"
+                    "area({area_id});\n"
+                    "out body;\n"
+            )
+            query = query.format(
+                area_id=area_id
+            )
+            tmp_result = self.api.query(query)
+            self.expand(tmp_result)
+
+            areas = self.get_ways(area_id=area_id)
+
+        if len(areas) == 0:
+            raise exception.DataIncomplete("Unable to resolve requested areas")
+
+        return areas[0]
+
+    def get_areas(self, area_id=None, **kwargs):
+        """
+        Alias for get_elements() but filter the result by Area
+
+        :param way_id: The Id of the area
+        :type way_id: Integer
+        :return: List of elements
+        """
+        return self.get_elements(Area, elem_id=area_id, **kwargs)
+
     node_ids = property(get_node_ids)
     nodes = property(get_nodes)
     relation_ids = property(get_relation_ids)
     relations = property(get_relations)
     way_ids = property(get_way_ids)
     ways = property(get_ways)
+    area_ids = property(get_area_ids)
+    areas = property(get_areas)
 
 
 class Element(object):
@@ -490,6 +541,106 @@ class Element(object):
                 self.attributes[n] = m(self.attributes[n])
         self.id = None
         self.tags = tags
+
+
+class Area(Element):
+
+    """
+    Class to represent an element of type area
+    """
+
+    _type_value = "area"
+
+    def __init__(self, area_id=None, **kwargs):
+        """
+        :param area_id: Id of the area element
+        :type area_id: Integer
+        :param kwargs: Additional arguments are passed directly to the parent class
+
+        """
+
+        Element.__init__(self, **kwargs)
+        #: The id of the way
+        self.id = area_id
+
+    def __repr__(self):
+        return "<overpy.Area id={}>".format(self.id)
+
+    @classmethod
+    def from_json(cls, data, result=None):
+        """
+        Create new Area element from JSON data
+
+        :param data: Element data from JSON
+        :type data: Dict
+        :param result: The result this element belongs to
+        :type result: overpy.Result
+        :return: New instance of Way
+        :rtype: overpy.Area
+        :raises overpy.exception.ElementDataWrongType: If type value of the passed JSON data does not match.
+        """
+        if data.get("type") != cls._type_value:
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=data.get("type")
+            )
+
+        tags = data.get("tags", {})
+
+        area_id = data.get("id")
+
+        attributes = {}
+        ignore = ["id", "tags", "type"]
+        for n, v in data.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        return cls(area_id=area_id, attributes=attributes, tags=tags, result=result)
+
+    @classmethod
+    def from_xml(cls, child, result=None):
+        """
+        Create new way element from XML data
+
+        :param child: XML node to be parsed
+        :type child: xml.etree.ElementTree.Element
+        :param result: The result this node belongs to
+        :type result: overpy.Result
+        :return: New Way oject
+        :rtype: overpy.Way
+        :raises overpy.exception.ElementDataWrongType: If name of the xml child node doesn't match
+        :raises ValueError: If the ref attribute of the xml node is not provided
+        :raises ValueError: If a tag doesn't have a name
+        """
+        if child.tag.lower() != cls._type_value:
+            raise exception.ElementDataWrongType(
+                type_expected=cls._type_value,
+                type_provided=child.tag.lower()
+            )
+
+        tags = {}
+
+        for sub_child in child:
+            if sub_child.tag.lower() == "tag":
+                name = sub_child.attrib.get("k")
+                if name is None:
+                    raise ValueError("Tag without name/key.")
+                value = sub_child.attrib.get("v")
+                tags[name] = value
+
+        area_id = child.attrib.get("id")
+        if area_id is not None:
+            area_id = int(area_id)
+
+        attributes = {}
+        ignore = ["id"]
+        for n, v in child.attrib.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        return cls(area_id=area_id, attributes=attributes, tags=tags, result=result)
 
 
 class Node(Element):
@@ -884,7 +1035,7 @@ class Relation(Element):
         tags = {}
         members = []
 
-        supported_members = [RelationNode, RelationWay, RelationRelation]
+        supported_members = [RelationNode, RelationWay, RelationRelation, RelationArea]
         for sub_child in child:
             if sub_child.tag.lower() == "tag":
                 name = sub_child.attrib.get("k")
@@ -1012,6 +1163,16 @@ class RelationRelation(RelationMember):
 
     def __repr__(self):
         return "<overpy.RelationRelation ref={} role={}>".format(self.ref, self.role)
+
+
+class RelationArea(RelationMember):
+    _type_value = "area"
+
+    def resolve(self, resolve_missing=False):
+        return self._result.get_area(self.ref, resolve_missing=resolve_missing)
+
+    def __repr__(self):
+        return "<overpy.RelationArea ref={} role={}>".format(self.ref, self.role)
 
 
 class OSMSAXHandler(handler.ContentHandler):
@@ -1146,6 +1307,29 @@ class OSMSAXHandler(handler.ContentHandler):
         self._result.append(Way(result=self._result, **self._curr))
         self._curr = {}
 
+    def _handle_start_area(self, attrs):
+        """
+        Handle opening area element
+
+        :param attrs: Attributes of the element
+        :type attrs: Dict
+        """
+        self._curr = {
+            'attributes': dict(attrs),
+            'tags': {},
+            'area_id': None
+        }
+        if attrs.get('id', None) is not None:
+            self._curr['area_id'] = int(attrs['id'])
+            del self._curr['attributes']['id']
+
+    def _handle_end_area(self):
+        """
+        Handle closing area element
+        """
+        self._result.append(Area(result=self._result, **self._curr))
+        self._curr = {}
+
     def _handle_start_nd(self, attrs):
         """
         Handle opening nd element
@@ -1206,5 +1390,7 @@ class OSMSAXHandler(handler.ContentHandler):
             self._curr['members'].append(RelationWay(**params))
         elif attrs['type'] == 'relation':
             self._curr['members'].append(RelationRelation(**params))
+        elif attrs['type'] == 'area':
+            self._curr['members'].append(RelationArea(**params))
         else:
             raise ValueError("Undefined type for member: '%s'" % attrs['type'])
