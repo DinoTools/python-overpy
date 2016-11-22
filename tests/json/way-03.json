@@ -1,0 +1,80 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "osm3s": {
+    "timestamp_osm_base": "2016-11-22T22:33:02Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 2343425523,
+  "lat": 41.8954452,
+  "lon": 12.5032169,
+  "timestamp": "2013-06-13T15:34:01Z",
+  "version": 1,
+  "changeset": 16539126,
+  "user": "Giardia",
+  "uid": 113909
+},
+{
+  "type": "node",
+  "id": 2343425525,
+  "lat": 41.8954752,
+  "lon": 12.5031604,
+  "timestamp": "2013-06-13T15:34:01Z",
+  "version": 1,
+  "changeset": 16539126,
+  "user": "Giardia",
+  "uid": 113909
+},
+{
+  "type": "node",
+  "id": 2343425526,
+  "lat": 41.8955244,
+  "lon": 12.5032926,
+  "timestamp": "2013-06-13T15:34:01Z",
+  "version": 1,
+  "changeset": 16539126,
+  "user": "Giardia",
+  "uid": 113909
+},
+{
+  "type": "node",
+  "id": 2343425528,
+  "lat": 41.8955543,
+  "lon": 12.5032362,
+  "timestamp": "2013-06-13T15:34:01Z",
+  "version": 1,
+  "changeset": 16539126,
+  "user": "Giardia",
+  "uid": 113909
+},
+{
+  "type": "way",
+  "id": 225576797,
+  "timestamp": "2013-06-13T15:34:01Z",
+  "version": 1,
+  "changeset": 16539126,
+  "user": "Giardia",
+  "uid": 113909,
+  "center": {
+    "lat": 41.8954998,
+    "lon": 12.5032265
+  },
+  "nodes": [
+    2343425525,
+    2343425528,
+    2343425526,
+    2343425523,
+    2343425525
+  ],
+  "tags": {
+    "building": "kiosk",
+    "shop": "florist"
+  }
+}
+
+  ]
+}

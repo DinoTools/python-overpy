@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2016-11-22T23:24:03Z"/>
+
+  <way id="225576797">
+    <center/>
+    <nd ref="2343425525"/>
+    <nd ref="2343425528"/>
+    <nd ref="2343425526"/>
+    <nd ref="2343425523"/>
+    <nd ref="2343425525"/>
+    <tag k="building" v="kiosk"/>
+    <tag k="shop" v="florist"/>
+  </way>
+
+</osm>

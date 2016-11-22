@@ -866,14 +866,33 @@ class Way(Element):
         way_id = data.get("id")
         node_ids = data.get("nodes")
 
+        center_lat = None
+        center_lon = None
+        center = data.get("center")
+        if isinstance(center, dict):
+            center_lat = center.get("lat")
+            center_lon = center.get("lon")
+            if center_lat is None or center_lon is None:
+                raise ValueError("Unable to get lat or lon of way center.")
+            center_lat = Decimal(center_lat)
+            center_lon = Decimal(center_lon)
+
         attributes = {}
-        ignore = ["id", "nodes", "tags", "type"]
+        ignore = ["center", "id", "nodes", "tags", "type"]
         for n, v in data.items():
             if n in ignore:
                 continue
             attributes[n] = v
 
-        return cls(way_id=way_id, attributes=attributes, node_ids=node_ids, tags=tags, result=result)
+        return cls(
+            attributes=attributes,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            node_ids=node_ids,
+            tags=tags,
+            result=result,
+            way_id=way_id
+        )
 
     @classmethod
     def from_xml(cls, child, result=None):
@@ -915,10 +934,12 @@ class Way(Element):
                 ref_id = int(ref_id)
                 node_ids.append(ref_id)
             if sub_child.tag.lower() == "center":
-                center_lat = Decimal(sub_child.attrib.get("lat"))
-                center_lon = Decimal(sub_child.attrib.get("lon"))
+                center_lat = sub_child.attrib.get("lat")
+                center_lon = sub_child.attrib.get("lon")
                 if center_lat is None or center_lon is None:
-                    raise ValueError("Unable to get lat/lon of way center.")
+                    raise ValueError("Unable to get lat or lon of way center.")
+                center_lat = Decimal(center_lat)
+                center_lon = Decimal(center_lon)
 
         way_id = child.attrib.get("id")
         if way_id is not None:
@@ -1223,10 +1244,12 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        if attrs.get('lat', None) is not None:
-            self._curr['center_lat'] = Decimal(attrs['lat'])
-        if attrs.get('lon', None) is not None:
-            self._curr['center_lon'] = Decimal(attrs['lon'])
+        center_lat = attrs.get("lat")
+        center_lon = attrs.get("lon")
+        if center_lat is None or center_lon is None:
+            raise ValueError("Unable to get lat or lon of way center.")
+        self._curr["center_lat"] = Decimal(center_lat)
+        self._curr["center_lon"] = Decimal(center_lon)
 
     def _handle_start_tag(self, attrs):
         """

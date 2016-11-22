@@ -76,6 +76,16 @@ class TestWay(BaseTestWay):
         result = api.parse_xml(read_file("xml/way-03.xml"), parser=overpy.XML_PARSER_SAX)
         self._test_way03(result)
 
+    def test_way04(self):
+        api = overpy.Overpass()
+        # DOM
+        with pytest.raises(ValueError):
+            api.parse_xml(read_file("xml/way-04.xml"), parser=overpy.XML_PARSER_DOM)
+
+        # SAX
+        with pytest.raises(ValueError):
+            api.parse_xml(read_file("xml/way-04.xml"), parser=overpy.XML_PARSER_SAX)
+
 
 class TestDataError(object):
     def _get_element_wrong_type(self):
