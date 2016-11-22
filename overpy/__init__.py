@@ -12,7 +12,6 @@ from overpy.__about__ import (
     __uri__, __version__
 )
 
-
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
@@ -40,7 +39,6 @@ def is_valid_type(element, cls):
 
 
 class Overpass(object):
-
     """
     Class to access the Overpass API
     """
@@ -168,7 +166,6 @@ class Overpass(object):
 
 
 class Result(object):
-
     """
     Class to handle the result.
     """
@@ -338,10 +335,10 @@ class Result(object):
                 raise exception.DataIncomplete("Resolve missing area is disabled")
 
             query = ("\n"
-                    "[out:json];\n"
-                    "area({area_id});\n"
-                    "out body;\n"
-            )
+                     "[out:json];\n"
+                     "area({area_id});\n"
+                     "out body;\n"
+                     )
             query = query.format(
                 area_id=area_id
             )
@@ -511,7 +508,6 @@ class Result(object):
 
 
 class Element(object):
-
     """
     Base element
     """
@@ -544,7 +540,6 @@ class Element(object):
 
 
 class Area(Element):
-
     """
     Class to represent an element of type area
     """
@@ -644,7 +639,6 @@ class Area(Element):
 
 
 class Node(Element):
-
     """
     Class to represent an element of type node
     """
@@ -755,7 +749,6 @@ class Node(Element):
 
 
 class Way(Element):
-
     """
     Class to represent an element of type way
     """
@@ -778,7 +771,7 @@ class Way(Element):
 
         #: List of Ids of the associated nodes
         self._node_ids = node_ids
-        
+
         #: The lat/lon of the center of the way (optional depending on query)
         self.center_lat = center_lat
         self.center_lon = center_lon
@@ -943,7 +936,6 @@ class Way(Element):
 
 
 class Relation(Element):
-
     """
     Class to represent an element of type relation
     """
@@ -1069,7 +1061,6 @@ class Relation(Element):
 
 
 class RelationMember(object):
-
     """
     Base class to represent a member of a relation.
     """
@@ -1236,7 +1227,7 @@ class OSMSAXHandler(handler.ContentHandler):
             self._curr['center_lat'] = Decimal(attrs['lat'])
         if attrs.get('lon', None) is not None:
             self._curr['center_lon'] = Decimal(attrs['lon'])
-    
+
     def _handle_start_tag(self, attrs):
         """
         Handle opening tag element
