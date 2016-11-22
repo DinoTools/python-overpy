@@ -48,6 +48,11 @@ class TestWay(BaseTestWay):
         result = api.parse_json(read_file("json/way-03.json"))
         self._test_way03(result)
 
+    def test_way04(self):
+        api = overpy.Overpass()
+        with pytest.raises(ValueError):
+            api.parse_json(read_file("json/way-04.json"))
+
 
 class TestDataError(object):
     def test_element_wrong_type(self):

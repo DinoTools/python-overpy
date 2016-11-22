@@ -1,0 +1,28 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "osm3s": {
+    "timestamp_osm_base": "2016-11-22T23:25:02Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 225576797,
+  "center": {},
+  "nodes": [
+    2343425525,
+    2343425528,
+    2343425526,
+    2343425523,
+    2343425525
+  ],
+  "tags": {
+    "building": "kiosk",
+    "shop": "florist"
+  }
+}
+
+  ]
+}
