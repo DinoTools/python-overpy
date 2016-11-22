@@ -23,6 +23,9 @@ Elements
 .. autoclass:: Element
     :members:
 
+.. autoclass:: Area
+    :members:
+
 .. autoclass:: Node
     :members:
 
@@ -37,6 +40,9 @@ Relation Members
 ----------------
 
 .. autoclass:: RelationMember
+    :members:
+
+.. autoclass:: RelationArea
     :members:
 
 .. autoclass:: RelationNode
