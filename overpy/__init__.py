@@ -345,7 +345,7 @@ class Result(object):
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
-            areas = self.get_ways(area_id=area_id)
+            areas = self.get_areas(area_id=area_id)
 
         if len(areas) == 0:
             raise exception.DataIncomplete("Unable to resolve requested areas")
