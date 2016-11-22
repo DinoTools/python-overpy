@@ -1244,10 +1244,12 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        if attrs.get('lat', None) is not None:
-            self._curr['center_lat'] = Decimal(attrs['lat'])
-        if attrs.get('lon', None) is not None:
-            self._curr['center_lon'] = Decimal(attrs['lon'])
+        center_lat = attrs.get("lat")
+        center_lon = attrs.get("lon")
+        if center_lat is None or center_lon is None:
+            raise ValueError("Unable to get lat or lon of way center.")
+        self._curr["center_lat"] = Decimal(center_lat)
+        self._curr["center_lon"] = Decimal(center_lon)
 
     def _handle_start_tag(self, attrs):
         """
