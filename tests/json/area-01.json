@@ -1,0 +1,92 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "osm3s": {
+    "timestamp_osm_base": "2016-11-22T21:04:02Z",
+    "timestamp_areas_base": "2016-11-22T20:25:03Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "area",
+  "id": 2448756446,
+  "tags": {
+    "addr:city": "Troisdorf",
+    "addr:postcode": "53840",
+    "area": "yes",
+    "description": "Troisdorf Bahnsteig Gleis 9",
+    "name": "Troisdorf",
+    "public_transport": "platform",
+    "railway": "platform",
+    "ref": "9",
+    "train": "yes",
+    "wheelchair": "no",
+    "wheelchair:description": "Plattformlift ist vorhanden, Betriebsbereitschaft nach 8 Jahren stillstand fraglich.",
+    "width": "5"
+  }
+}
+,
+{
+  "type": "area",
+  "id": 3600055060,
+  "tags": {
+    "TMC:cid_58:tabcd_1:Class": "Area",
+    "TMC:cid_58:tabcd_1:LCLversion": "8.00",
+    "TMC:cid_58:tabcd_1:LocationCode": "2550",
+    "admin_level": "8",
+    "boundary": "administrative",
+    "de:amtlicher_gemeindeschluessel": "05382068",
+    "de:place": "town",
+    "de:regionalschluessel": "053820068068",
+    "name": "Troisdorf",
+    "name:prefix": "Stadt",
+    "type": "boundary",
+    "wikidata": "Q3900",
+    "wikipedia": "de:Troisdorf"
+  }
+}
+,
+{
+  "type": "area",
+  "id": 3605945175,
+  "tags": {
+    "addr:city": "Troisdorf",
+    "addr:postcode": "53840",
+    "description": "Troisdorf Bahnsteig Gleis 1+2",
+    "local_ref": "1;2",
+    "name": "Troisdorf",
+    "public_transport": "platform",
+    "railway": "platform",
+    "ref": "1/2",
+    "tactile_paving": "yes",
+    "train": "yes",
+    "type": "multipolygon",
+    "wheelchair": "yes"
+  }
+}
+,
+{
+  "type": "area",
+  "id": 3605945176,
+  "tags": {
+    "addr:city": "Troisdorf",
+    "addr:postcode": "53840",
+    "description": "Troisdorf Bahnsteig Gleis 5+6",
+    "name": "Troisdorf",
+    "phone": "+49 221 1411055",
+    "public_transport": "platform",
+    "railway": "platform",
+    "ref": "5/6",
+    "tactile_paving": "yes",
+    "train": "yes",
+    "type": "multipolygon",
+    "wheelchair": "yes",
+    "wheelchair:description": "Der Aufzug zu diesem Bahnsteig ist oft defekt, bitte informieren. Betriebszustand kann bei 3S-Zentrale erfragt werden (siehe Telefonnummer, aber Vorsicht, die sind nicht immer informiert!)",
+    "width": "6"
+  }
+}
+
+
+  ]
+}

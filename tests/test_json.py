@@ -2,8 +2,15 @@ import pytest
 
 import overpy
 
-from tests.base_class import BaseTestNodes, BaseTestRelation, BaseTestWay
+from tests.base_class import BaseTestAreas, BaseTestNodes, BaseTestRelation, BaseTestWay
 from tests.base_class import read_file
+
+
+class TestAreas(BaseTestAreas):
+    def test_area01(self):
+        api = overpy.Overpass()
+        result = api.parse_json(read_file("json/area-01.json"))
+        self._test_area01(result)
 
 
 class TestNodes(BaseTestNodes):
