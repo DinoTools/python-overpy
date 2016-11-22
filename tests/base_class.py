@@ -9,6 +9,73 @@ import overpy
 from tests import read_file
 
 
+class BaseTestAreas(object):
+    def _test_area01(self, result):
+        assert len(result.areas) == 4
+        assert len(result.nodes) == 0
+        assert len(result.relations) == 0
+        assert len(result.ways) == 0
+
+        area = result.areas[0]
+
+        assert isinstance(area, overpy.Area)
+        assert isinstance(area.id, int)
+        assert area.id == 2448756446
+
+        assert isinstance(area.tags, dict)
+        assert len(area.tags) == 12
+
+        area = result.areas[1]
+
+        assert isinstance(area, overpy.Area)
+        assert isinstance(area.id, int)
+        assert area.id == 3600055060
+
+        assert isinstance(area.tags, dict)
+        assert len(area.tags) == 13
+
+        area = result.areas[2]
+        assert isinstance(area, overpy.Area)
+        assert isinstance(area.id, int)
+        assert area.id == 3605945175
+
+        assert isinstance(area.tags, dict)
+        assert len(area.tags) == 12
+
+        area = result.areas[3]
+        assert isinstance(area, overpy.Area)
+        assert isinstance(area.id, int)
+        assert area.id == 3605945176
+
+        assert isinstance(area.tags, dict)
+        assert len(area.tags) == 14
+
+        # try to get a single area by id
+        area = result.get_area(3605945175)
+        assert area.id == 3605945175
+
+        # try to get a single area by id not available in the result
+        with pytest.raises(overpy.exception.DataIncomplete):
+            result.get_node(123456)
+
+        # area_ids is an alias for get_node_ids() and should return the same data
+        for area_ids in (result.area_ids, result.get_area_ids()):
+            assert len(area_ids) == 4
+            assert area_ids[0] == 2448756446
+            assert area_ids[1] == 3600055060
+            assert area_ids[2] == 3605945175
+            assert area_ids[3] == 3605945176
+
+        assert len(result.node_ids) == 0
+        assert len(result.get_node_ids()) == 0
+
+        assert len(result.relation_ids) == 0
+        assert len(result.get_relation_ids()) == 0
+
+        assert len(result.way_ids) == 0
+        assert len(result.get_way_ids()) == 0
+
+
 class BaseTestNodes(object):
     def _test_node01(self, result):
         assert len(result.nodes) == 3
