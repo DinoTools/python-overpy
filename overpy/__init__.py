@@ -320,6 +320,51 @@ class Result(object):
             raise Exception("Unknown XML parser")
         return result
 
+    def get_area(self, area_id, resolve_missing=False):
+        """
+        Get an area by its ID.
+
+        :param area_id: The way ID
+        :type area_id: Integer
+        :param resolve_missing: Query the Overpass API if the way is missing in the result set.
+        :return: The area
+        :rtype: overpy.Area
+        :raises overpy.exception.DataIncomplete: The requested way is not available in the result cache.
+        :raises overpy.exception.DataIncomplete: If resolve_missing is True and the area can't be resolved.
+        """
+        areas = self.get_areas(area_id=area_id)
+        if len(areas) == 0:
+            if resolve_missing is False:
+                raise exception.DataIncomplete("Resolve missing area is disabled")
+
+            query = ("\n"
+                    "[out:json];\n"
+                    "area({area_id});\n"
+                    "out body;\n"
+            )
+            query = query.format(
+                area_id=area_id
+            )
+            tmp_result = self.api.query(query)
+            self.expand(tmp_result)
+
+            areas = self.get_ways(area_id=area_id)
+
+        if len(areas) == 0:
+            raise exception.DataIncomplete("Unable to resolve requested areas")
+
+        return areas[0]
+
+    def get_areas(self, area_id=None, **kwargs):
+        """
+        Alias for get_elements() but filter the result by Area
+
+        :param way_id: The Id of the area
+        :type way_id: Integer
+        :return: List of elements
+        """
+        return self.get_elements(Area, elem_id=area_id, **kwargs)
+
     def get_node(self, node_id, resolve_missing=False):
         """
         Get a node by its ID.
@@ -455,59 +500,14 @@ class Result(object):
         """
         return self.get_elements(Way, elem_id=way_id, **kwargs)
 
-    def get_area(self, area_id, resolve_missing=False):
-        """
-        Get an area by its ID.
-
-        :param area_id: The way ID
-        :type area_id: Integer
-        :param resolve_missing: Query the Overpass API if the way is missing in the result set.
-        :return: The area
-        :rtype: overpy.Area
-        :raises overpy.exception.DataIncomplete: The requested way is not available in the result cache.
-        :raises overpy.exception.DataIncomplete: If resolve_missing is True and the area can't be resolved.
-        """
-        areas = self.get_areas(area_id=area_id)
-        if len(areas) == 0:
-            if resolve_missing is False:
-                raise exception.DataIncomplete("Resolve missing area is disabled")
-
-            query = ("\n"
-                    "[out:json];\n"
-                    "area({area_id});\n"
-                    "out body;\n"
-            )
-            query = query.format(
-                area_id=area_id
-            )
-            tmp_result = self.api.query(query)
-            self.expand(tmp_result)
-
-            areas = self.get_ways(area_id=area_id)
-
-        if len(areas) == 0:
-            raise exception.DataIncomplete("Unable to resolve requested areas")
-
-        return areas[0]
-
-    def get_areas(self, area_id=None, **kwargs):
-        """
-        Alias for get_elements() but filter the result by Area
-
-        :param way_id: The Id of the area
-        :type way_id: Integer
-        :return: List of elements
-        """
-        return self.get_elements(Area, elem_id=area_id, **kwargs)
-
+    area_ids = property(get_area_ids)
+    areas = property(get_areas)
     node_ids = property(get_node_ids)
     nodes = property(get_nodes)
     relation_ids = property(get_relation_ids)
     relations = property(get_relations)
     way_ids = property(get_way_ids)
     ways = property(get_ways)
-    area_ids = property(get_area_ids)
-    areas = property(get_areas)
 
 
 class Element(object):
