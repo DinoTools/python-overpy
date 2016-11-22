@@ -1375,13 +1375,13 @@ class OSMSAXHandler(handler.ContentHandler):
         if attrs.get('role', None):
             params['role'] = attrs['role']
 
-        if attrs['type'] == 'node':
+        if attrs['type'] == 'area':
+            self._curr['members'].append(RelationArea(**params))
+        elif attrs['type'] == 'node':
             self._curr['members'].append(RelationNode(**params))
         elif attrs['type'] == 'way':
             self._curr['members'].append(RelationWay(**params))
         elif attrs['type'] == 'relation':
             self._curr['members'].append(RelationRelation(**params))
-        elif attrs['type'] == 'area':
-            self._curr['members'].append(RelationArea(**params))
         else:
             raise ValueError("Undefined type for member: '%s'" % attrs['type'])
