@@ -866,14 +866,33 @@ class Way(Element):
         way_id = data.get("id")
         node_ids = data.get("nodes")
 
+        center_lat = None
+        center_lon = None
+        center = data.get("center")
+        if isinstance(center, dict):
+            center_lat = center.get("lat")
+            center_lon = center.get("lon")
+            if center_lat is None or center_lon is None:
+                raise ValueError("Unable to get lat or lon of way center.")
+            center_lat = Decimal(center_lat)
+            center_lon = Decimal(center_lon)
+
         attributes = {}
-        ignore = ["id", "nodes", "tags", "type"]
+        ignore = ["center", "id", "nodes", "tags", "type"]
         for n, v in data.items():
             if n in ignore:
                 continue
             attributes[n] = v
 
-        return cls(way_id=way_id, attributes=attributes, node_ids=node_ids, tags=tags, result=result)
+        return cls(
+            attributes=attributes,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            node_ids=node_ids,
+            tags=tags,
+            result=result,
+            way_id=way_id
+        )
 
     @classmethod
     def from_xml(cls, child, result=None):
