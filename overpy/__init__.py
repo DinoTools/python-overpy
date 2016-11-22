@@ -324,9 +324,9 @@ class Result(object):
         """
         Get an area by its ID.
 
-        :param area_id: The way ID
+        :param area_id: The area ID
         :type area_id: Integer
-        :param resolve_missing: Query the Overpass API if the way is missing in the result set.
+        :param resolve_missing: Query the Overpass API if the area is missing in the result set.
         :return: The area
         :rtype: overpy.Area
         :raises overpy.exception.DataIncomplete: The requested way is not available in the result cache.
@@ -359,8 +359,8 @@ class Result(object):
         """
         Alias for get_elements() but filter the result by Area
 
-        :param way_id: The Id of the area
-        :type way_id: Integer
+        :param area_id: The Id of the area
+        :type area_id: Integer
         :return: List of elements
         """
         return self.get_elements(Area, elem_id=area_id, **kwargs)
