@@ -20,3 +20,13 @@ way-03.xml (2016-11-22)
 (way(225576797);>;);
 out meta center;
 ```
+
+way-04 (2016-11-22)
+-------------------
+
+```
+(way(225576797););
+out center;
+```
+
+* With empty center information to test exception, this should never happen
