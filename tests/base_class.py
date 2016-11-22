@@ -56,7 +56,7 @@ class BaseTestAreas(object):
 
         # try to get a single area by id not available in the result
         with pytest.raises(overpy.exception.DataIncomplete):
-            result.get_node(123456)
+            result.get_area(123456)
 
         # area_ids is an alias for get_node_ids() and should return the same data
         for area_ids in (result.area_ids, result.get_area_ids()):
