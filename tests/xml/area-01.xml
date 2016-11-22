@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2016-11-22T20:23:03Z" areas="2016-11-22T19:07:02Z"/>
+
+  <area id="2448756446">
+    <tag k="addr:city" v="Troisdorf"/>
+    <tag k="addr:postcode" v="53840"/>
+    <tag k="area" v="yes"/>
+    <tag k="description" v="Troisdorf Bahnsteig Gleis 9"/>
+    <tag k="name" v="Troisdorf"/>
+    <tag k="public_transport" v="platform"/>
+    <tag k="railway" v="platform"/>
+    <tag k="ref" v="9"/>
+    <tag k="train" v="yes"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wheelchair:description" v="Plattformlift ist vorhanden, Betriebsbereitschaft nach 8 Jahren stillstand fraglich."/>
+    <tag k="width" v="5"/>
+  </area>
+  <area id="3600055060">
+    <tag k="TMC:cid_58:tabcd_1:Class" v="Area"/>
+    <tag k="TMC:cid_58:tabcd_1:LCLversion" v="8.00"/>
+    <tag k="TMC:cid_58:tabcd_1:LocationCode" v="2550"/>
+    <tag k="admin_level" v="8"/>
+    <tag k="boundary" v="administrative"/>
+    <tag k="de:amtlicher_gemeindeschluessel" v="05382068"/>
+    <tag k="de:place" v="town"/>
+    <tag k="de:regionalschluessel" v="053820068068"/>
+    <tag k="name" v="Troisdorf"/>
+    <tag k="name:prefix" v="Stadt"/>
+    <tag k="type" v="boundary"/>
+    <tag k="wikidata" v="Q3900"/>
+    <tag k="wikipedia" v="de:Troisdorf"/>
+  </area>
+  <area id="3605945175">
+    <tag k="addr:city" v="Troisdorf"/>
+    <tag k="addr:postcode" v="53840"/>
+    <tag k="description" v="Troisdorf Bahnsteig Gleis 1+2"/>
+    <tag k="local_ref" v="1;2"/>
+    <tag k="name" v="Troisdorf"/>
+    <tag k="public_transport" v="platform"/>
+    <tag k="railway" v="platform"/>
+    <tag k="ref" v="1/2"/>
+    <tag k="tactile_paving" v="yes"/>
+    <tag k="train" v="yes"/>
+    <tag k="type" v="multipolygon"/>
+    <tag k="wheelchair" v="yes"/>
+  </area>
+  <area id="3605945176">
+    <tag k="addr:city" v="Troisdorf"/>
+    <tag k="addr:postcode" v="53840"/>
+    <tag k="description" v="Troisdorf Bahnsteig Gleis 5+6"/>
+    <tag k="name" v="Troisdorf"/>
+    <tag k="phone" v="+49 221 1411055"/>
+    <tag k="public_transport" v="platform"/>
+    <tag k="railway" v="platform"/>
+    <tag k="ref" v="5/6"/>
+    <tag k="tactile_paving" v="yes"/>
+    <tag k="train" v="yes"/>
+    <tag k="type" v="multipolygon"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wheelchair:description" v="Der Aufzug zu diesem Bahnsteig ist oft defekt, bitte informieren. Betriebszustand kann bei 3S-Zentrale erfragt werden (siehe Telefonnummer, aber Vorsicht, die sind nicht immer informiert!)"/>
+    <tag k="width" v="6"/>
+  </area>
+
+</osm>

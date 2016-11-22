@@ -2,8 +2,19 @@ import pytest
 
 import overpy
 
-from tests.base_class import BaseTestNodes, BaseTestRelation, BaseTestWay
+from tests.base_class import BaseTestAreas, BaseTestNodes, BaseTestRelation, BaseTestWay
 from tests.base_class import read_file
+
+
+class TestAreas(BaseTestAreas):
+    def test_node01(self):
+        api = overpy.Overpass()
+        # DOM
+        result = api.parse_xml(read_file("xml/area-01.xml"), parser=overpy.XML_PARSER_DOM)
+        self._test_area01(result)
+        # SAX
+        result = api.parse_xml(read_file("xml/area-01.xml"), parser=overpy.XML_PARSER_SAX)
+        self._test_area01(result)
 
 
 class TestNodes(BaseTestNodes):
