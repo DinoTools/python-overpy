@@ -240,6 +240,25 @@ class BaseTestRelation(object):
         assert way.id == 317146078
         assert member.ref == way.id
 
+    def _test_relation03(self, result):
+        assert len(result.nodes) == 0
+        assert len(result.relations) == 1
+        assert len(result.ways) == 0
+
+        relation = result.relations[0]
+
+        assert isinstance(relation, overpy.Relation)
+        assert isinstance(relation.id, int)
+        assert relation.id == 23092
+
+        assert isinstance(relation.tags, dict)
+        assert len(relation.tags) == 10
+
+        assert isinstance(relation.center_lat, Decimal)
+        assert isinstance(relation.center_lon, Decimal)
+        assert relation.center_lat == Decimal("50.8176646")
+        assert relation.center_lon == Decimal("7.0208539")
+
 
 class BaseTestWay(object):
     def _test_way01(self, result):
