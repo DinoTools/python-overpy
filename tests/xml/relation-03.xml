@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2016-11-23T20:27:02Z"/>
+
+  <relation id="23092">
+    <center lat="50.8176646" lon="7.0208539"/>
+    <member type="way" ref="4334856" role=""/>
+    <member type="way" ref="234434903" role=""/>
+    <member type="way" ref="37881522" role=""/>
+    <member type="way" ref="37881521" role=""/>
+    <member type="way" ref="4356491" role=""/>
+    <member type="way" ref="235363211" role=""/>
+    <member type="way" ref="48290877" role=""/>
+    <member type="way" ref="210683519" role=""/>
+    <member type="way" ref="42743961" role=""/>
+    <member type="way" ref="210683522" role=""/>
+    <member type="way" ref="48290881" role=""/>
+    <member type="way" ref="235363214" role=""/>
+    <member type="way" ref="4400137" role=""/>
+    <member type="way" ref="230940375" role=""/>
+    <member type="way" ref="4400140" role=""/>
+    <member type="way" ref="4400142" role=""/>
+    <member type="way" ref="235824476" role=""/>
+    <member type="way" ref="4400143" role=""/>
+    <member type="way" ref="235824475" role=""/>
+    <member type="way" ref="178797123" role=""/>
+    <member type="way" ref="233553030" role=""/>
+    <member type="way" ref="4829989" role=""/>
+    <member type="way" ref="99834112" role=""/>
+    <member type="way" ref="133081219" role=""/>
+    <member type="way" ref="234434905" role=""/>
+    <member type="way" ref="20661567" role=""/>
+    <member type="way" ref="230941900" role=""/>
+    <member type="way" ref="20661568" role=""/>
+    <member type="way" ref="20661572" role=""/>
+    <member type="way" ref="230940374" role=""/>
+    <member type="way" ref="20661573" role=""/>
+    <member type="way" ref="20662817" role=""/>
+    <member type="way" ref="230941903" role=""/>
+    <member type="way" ref="20662819" role=""/>
+    <member type="way" ref="20662824" role=""/>
+    <member type="way" ref="20662827" role=""/>
+    <member type="way" ref="27492515" role=""/>
+    <member type="way" ref="129125122" role=""/>
+    <member type="way" ref="234434901" role=""/>
+    <member type="way" ref="234434904" role=""/>
+    <member type="way" ref="27492542" role=""/>
+    <member type="way" ref="27492543" role=""/>
+    <member type="way" ref="29233646" role=""/>
+    <member type="way" ref="235820561" role=""/>
+    <member type="way" ref="29233647" role=""/>
+    <member type="way" ref="235820559" role=""/>
+    <member type="way" ref="235820562" role=""/>
+    <member type="way" ref="29233648" role=""/>
+    <member type="way" ref="29382960" role=""/>
+    <member type="way" ref="271008229" role=""/>
+    <member type="way" ref="271008238" role=""/>
+    <member type="way" ref="271008230" role=""/>
+    <member type="way" ref="271008226" role=""/>
+    <member type="way" ref="40033062" role=""/>
+    <member type="way" ref="40033063" role=""/>
+    <member type="way" ref="29384561" role=""/>
+    <member type="way" ref="29384563" role=""/>
+    <member type="way" ref="271008224" role=""/>
+    <member type="way" ref="271008227" role=""/>
+    <member type="way" ref="271008237" role=""/>
+    <member type="way" ref="271008232" role=""/>
+    <member type="way" ref="271008239" role=""/>
+    <member type="way" ref="29384564" role=""/>
+    <member type="way" ref="31282638" role=""/>
+    <member type="way" ref="31282787" role=""/>
+    <member type="way" ref="383262762" role=""/>
+    <member type="way" ref="31304443" role=""/>
+    <member type="way" ref="128541594" role=""/>
+    <member type="way" ref="31304503" role=""/>
+    <member type="way" ref="31363881" role=""/>
+    <member type="way" ref="31363891" role=""/>
+    <member type="way" ref="31363892" role=""/>
+    <member type="way" ref="31363898" role=""/>
+    <member type="way" ref="31363910" role=""/>
+    <member type="way" ref="31364152" role=""/>
+    <member type="way" ref="31364158" role=""/>
+    <member type="way" ref="31364178" role=""/>
+    <member type="way" ref="31364384" role=""/>
+    <member type="way" ref="31364387" role=""/>
+    <member type="way" ref="31364484" role=""/>
+    <member type="way" ref="31364512" role=""/>
+    <member type="way" ref="31364656" role=""/>
+    <member type="way" ref="31364667" role=""/>
+    <member type="way" ref="271008234" role=""/>
+    <member type="way" ref="31364888" role=""/>
+    <member type="way" ref="122158730" role=""/>
+    <member type="way" ref="31364985" role=""/>
+    <member type="way" ref="271008235" role=""/>
+    <member type="way" ref="271008231" role=""/>
+    <member type="way" ref="271008233" role=""/>
+    <member type="way" ref="31365377" role=""/>
+    <member type="way" ref="31365425" role=""/>
+    <member type="way" ref="271008236" role=""/>
+    <member type="way" ref="36447898" role=""/>
+    <member type="way" ref="271008228" role=""/>
+    <member type="way" ref="31366812" role=""/>
+    <member type="way" ref="31366880" role=""/>
+    <member type="way" ref="31367017" role=""/>
+    <member type="way" ref="31367443" role=""/>
+    <member type="way" ref="31367449" role=""/>
+    <member type="way" ref="31367526" role=""/>
+    <member type="way" ref="31367534" role=""/>
+    <member type="way" ref="31369852" role=""/>
+    <member type="way" ref="449397558" role=""/>
+    <member type="way" ref="31797389" role=""/>
+    <member type="way" ref="31798039" role=""/>
+    <member type="way" ref="235363212" role=""/>
+    <member type="way" ref="156492546" role=""/>
+    <member type="way" ref="156492545" role=""/>
+    <member type="way" ref="130749935" role=""/>
+    <member type="way" ref="32472877" role=""/>
+    <member type="way" ref="31798988" role=""/>
+    <member type="way" ref="31798989" role=""/>
+    <member type="way" ref="235820560" role=""/>
+    <member type="way" ref="235820563" role=""/>
+    <member type="way" ref="235820564" role=""/>
+    <member type="way" ref="235820570" role=""/>
+    <member type="way" ref="32472855" role=""/>
+    <member type="way" ref="32472856" role=""/>
+    <member type="way" ref="37881520" role=""/>
+    <member type="way" ref="37881519" role=""/>
+    <member type="way" ref="234434902" role=""/>
+    <member type="way" ref="32472875" role=""/>
+    <member type="way" ref="32473071" role=""/>
+    <member type="way" ref="128522486" role=""/>
+    <member type="way" ref="36447896" role=""/>
+    <member type="way" ref="32473075" role=""/>
+    <member type="way" ref="32473086" role=""/>
+    <member type="way" ref="32473087" role=""/>
+    <member type="way" ref="40033064" role=""/>
+    <member type="way" ref="189189059" role=""/>
+    <member type="way" ref="271008225" role=""/>
+    <member type="way" ref="41550921" role=""/>
+    <tag k="TMC:cid_58:tabcd_1:Class" v="Road"/>
+    <tag k="TMC:cid_58:tabcd_1:LCLversion" v="8.00"/>
+    <tag k="TMC:cid_58:tabcd_1:LocationCode" v="7142"/>
+    <tag k="name" v="Bundesautobahn 555"/>
+    <tag k="network" v="BAB"/>
+    <tag k="operator" v="Bundesrepublik Deutschland"/>
+    <tag k="ref" v="A 555"/>
+    <tag k="route" v="road"/>
+    <tag k="type" v="route"/>
+    <tag k="wikipedia" v="de:Bundesautobahn 555"/>
+  </relation>
+
+</osm>
