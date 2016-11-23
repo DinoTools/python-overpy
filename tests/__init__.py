@@ -1,6 +1,7 @@
 import os
 import sys
-from threading import Thread, Lock
+from multiprocessing import Process
+from threading import Lock
 
 PY2 = sys.version_info[0] == 2
 if PY2:
@@ -43,5 +44,5 @@ def new_server_thread(handle_cls, port=None):
     )
     return (
         "http://%s:%d" % (HOST, port),
-        Thread(target=server_thread, args=(server,))
+        Process(target=server_thread, args=(server,))
     )
