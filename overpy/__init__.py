@@ -538,6 +538,37 @@ class Element(object):
         self.id = None
         self.tags = tags
 
+    @classmethod
+    def get_center_from_json(cls, data):
+        """
+        Get center information from json data
+
+        :param data: json data
+        :return: tuple with two elements: lat and lon
+        :rtype: tuple
+        """
+        center_lat = None
+        center_lon = None
+        center = data.get("center")
+        if isinstance(center, dict):
+            center_lat = center.get("lat")
+            center_lon = center.get("lon")
+            if center_lat is None or center_lon is None:
+                raise ValueError("Unable to get lat or lon of way center.")
+            center_lat = Decimal(center_lat)
+            center_lon = Decimal(center_lon)
+        return (center_lat, center_lon)
+
+    @classmethod
+    def get_center_from_xml_dom(cls, sub_child):
+        center_lat = sub_child.attrib.get("lat")
+        center_lon = sub_child.attrib.get("lon")
+        if center_lat is None or center_lon is None:
+            raise ValueError("Unable to get lat or lon of way center.")
+        center_lat = Decimal(center_lat)
+        center_lon = Decimal(center_lon)
+        return center_lat, center_lon
+
 
 class Area(Element):
     """
@@ -865,17 +896,7 @@ class Way(Element):
 
         way_id = data.get("id")
         node_ids = data.get("nodes")
-
-        center_lat = None
-        center_lon = None
-        center = data.get("center")
-        if isinstance(center, dict):
-            center_lat = center.get("lat")
-            center_lon = center.get("lon")
-            if center_lat is None or center_lon is None:
-                raise ValueError("Unable to get lat or lon of way center.")
-            center_lat = Decimal(center_lat)
-            center_lon = Decimal(center_lon)
+        (center_lat, center_lon) = cls.get_center_from_json(data=data)
 
         attributes = {}
         ignore = ["center", "id", "nodes", "tags", "type"]
@@ -934,12 +955,7 @@ class Way(Element):
                 ref_id = int(ref_id)
                 node_ids.append(ref_id)
             if sub_child.tag.lower() == "center":
-                center_lat = sub_child.attrib.get("lat")
-                center_lon = sub_child.attrib.get("lon")
-                if center_lat is None or center_lon is None:
-                    raise ValueError("Unable to get lat or lon of way center.")
-                center_lat = Decimal(center_lat)
-                center_lon = Decimal(center_lon)
+                (center_lat, center_lon) = cls.get_center_from_xml_dom(sub_child=sub_child)
 
         way_id = child.attrib.get("id")
         if way_id is not None:
@@ -963,7 +979,7 @@ class Relation(Element):
 
     _type_value = "relation"
 
-    def __init__(self, rel_id=None, members=None, **kwargs):
+    def __init__(self, rel_id=None, center_lat=None, center_lon=None, members=None, **kwargs):
         """
         :param members:
         :param rel_id: Id of the relation element
@@ -975,6 +991,10 @@ class Relation(Element):
         Element.__init__(self, **kwargs)
         self.id = rel_id
         self.members = members
+
+        #: The lat/lon of the center of the way (optional depending on query)
+        self.center_lat = center_lat
+        self.center_lon = center_lon
 
     def __repr__(self):
         return "<overpy.Relation id={}>".format(self.id)
@@ -1001,6 +1021,7 @@ class Relation(Element):
         tags = data.get("tags", {})
 
         rel_id = data.get("id")
+        (center_lat, center_lon) = cls.get_center_from_json(data=data)
 
         members = []
 
@@ -1023,7 +1044,15 @@ class Relation(Element):
                 continue
             attributes[n] = v
 
-        return cls(rel_id=rel_id, attributes=attributes, members=members, tags=tags, result=result)
+        return cls(
+            rel_id=rel_id,
+            attributes=attributes,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            members=members,
+            tags=tags,
+            result=result
+        )
 
     @classmethod
     def from_xml(cls, child, result=None):
@@ -1047,6 +1076,8 @@ class Relation(Element):
 
         tags = {}
         members = []
+        center_lat = None
+        center_lon = None
 
         supported_members = [RelationNode, RelationWay, RelationRelation, RelationArea]
         for sub_child in child:
@@ -1066,6 +1097,8 @@ class Relation(Element):
                                 result=result
                             )
                         )
+            if sub_child.tag.lower() == "center":
+                (center_lat, center_lon) = cls.get_center_from_xml_dom(sub_child=sub_child)
 
         rel_id = child.attrib.get("id")
         if rel_id is not None:
@@ -1078,7 +1111,15 @@ class Relation(Element):
                 continue
             attributes[n] = v
 
-        return cls(rel_id=rel_id, attributes=attributes, members=members, tags=tags, result=result)
+        return cls(
+            rel_id=rel_id,
+            attributes=attributes,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            members=members,
+            tags=tags,
+            result=result
+        )
 
 
 class RelationMember(object):
