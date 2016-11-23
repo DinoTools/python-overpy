@@ -1076,6 +1076,8 @@ class Relation(Element):
 
         tags = {}
         members = []
+        center_lat = None
+        center_lon = None
 
         supported_members = [RelationNode, RelationWay, RelationRelation, RelationArea]
         for sub_child in child:
@@ -1095,6 +1097,8 @@ class Relation(Element):
                                 result=result
                             )
                         )
+            if sub_child.tag.lower() == "center":
+                (center_lat, center_lon) = cls.get_center_from_xml_dom(sub_child=sub_child)
 
         rel_id = child.attrib.get("id")
         if rel_id is not None:
@@ -1107,7 +1111,15 @@ class Relation(Element):
                 continue
             attributes[n] = v
 
-        return cls(rel_id=rel_id, attributes=attributes, members=members, tags=tags, result=result)
+        return cls(
+            rel_id=rel_id,
+            attributes=attributes,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            members=members,
+            tags=tags,
+            result=result
+        )
 
 
 class RelationMember(object):
