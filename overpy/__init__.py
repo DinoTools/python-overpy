@@ -974,7 +974,7 @@ class Relation(Element):
 
     _type_value = "relation"
 
-    def __init__(self, rel_id=None, members=None, **kwargs):
+    def __init__(self, rel_id=None, center_lat=None, center_lon=None, members=None, **kwargs):
         """
         :param members:
         :param rel_id: Id of the relation element
@@ -986,6 +986,10 @@ class Relation(Element):
         Element.__init__(self, **kwargs)
         self.id = rel_id
         self.members = members
+
+        #: The lat/lon of the center of the way (optional depending on query)
+        self.center_lat = center_lat
+        self.center_lon = center_lon
 
     def __repr__(self):
         return "<overpy.Relation id={}>".format(self.id)
@@ -1012,6 +1016,7 @@ class Relation(Element):
         tags = data.get("tags", {})
 
         rel_id = data.get("id")
+        (center_lat, center_lon) = cls.get_center_from_json(data=data)
 
         members = []
 
@@ -1034,7 +1039,15 @@ class Relation(Element):
                 continue
             attributes[n] = v
 
-        return cls(rel_id=rel_id, attributes=attributes, members=members, tags=tags, result=result)
+        return cls(
+            rel_id=rel_id,
+            attributes=attributes,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            members=members,
+            tags=tags,
+            result=result
+        )
 
     @classmethod
     def from_xml(cls, child, result=None):
