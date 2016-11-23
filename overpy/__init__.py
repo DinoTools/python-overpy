@@ -538,6 +538,27 @@ class Element(object):
         self.id = None
         self.tags = tags
 
+    @classmethod
+    def get_center_from_json(cls, data):
+        """
+        Get center information from json data
+
+        :param data: json data
+        :return: tuple with two elements: lat and lon
+        :rtype: tuple
+        """
+        center_lat = None
+        center_lon = None
+        center = data.get("center")
+        if isinstance(center, dict):
+            center_lat = center.get("lat")
+            center_lon = center.get("lon")
+            if center_lat is None or center_lon is None:
+                raise ValueError("Unable to get lat or lon of way center.")
+            center_lat = Decimal(center_lat)
+            center_lon = Decimal(center_lon)
+        return (center_lat, center_lon)
+
 
 class Area(Element):
     """
@@ -865,17 +886,7 @@ class Way(Element):
 
         way_id = data.get("id")
         node_ids = data.get("nodes")
-
-        center_lat = None
-        center_lon = None
-        center = data.get("center")
-        if isinstance(center, dict):
-            center_lat = center.get("lat")
-            center_lon = center.get("lon")
-            if center_lat is None or center_lon is None:
-                raise ValueError("Unable to get lat or lon of way center.")
-            center_lat = Decimal(center_lat)
-            center_lon = Decimal(center_lon)
+        (center_lat, center_lon) = cls.get_center_from_json(data=data)
 
         attributes = {}
         ignore = ["center", "id", "nodes", "tags", "type"]
