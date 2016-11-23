@@ -559,6 +559,16 @@ class Element(object):
             center_lon = Decimal(center_lon)
         return (center_lat, center_lon)
 
+    @classmethod
+    def get_center_from_xml_dom(cls, sub_child):
+        center_lat = sub_child.attrib.get("lat")
+        center_lon = sub_child.attrib.get("lon")
+        if center_lat is None or center_lon is None:
+            raise ValueError("Unable to get lat or lon of way center.")
+        center_lat = Decimal(center_lat)
+        center_lon = Decimal(center_lon)
+        return center_lat, center_lon
+
 
 class Area(Element):
     """
@@ -945,12 +955,7 @@ class Way(Element):
                 ref_id = int(ref_id)
                 node_ids.append(ref_id)
             if sub_child.tag.lower() == "center":
-                center_lat = sub_child.attrib.get("lat")
-                center_lon = sub_child.attrib.get("lon")
-                if center_lat is None or center_lon is None:
-                    raise ValueError("Unable to get lat or lon of way center.")
-                center_lat = Decimal(center_lat)
-                center_lon = Decimal(center_lon)
+                (center_lat, center_lon) = cls.get_center_from_xml_dom(sub_child=sub_child)
 
         way_id = child.attrib.get("id")
         if way_id is not None:
