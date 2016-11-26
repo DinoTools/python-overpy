@@ -1300,7 +1300,7 @@ class OSMSAXHandler(handler.ContentHandler):
     #: Tuple of opening elements to ignore
     ignore_start = ('osm', 'meta', 'note', 'bounds', 'remark')
     #: Tuple of closing elements to ignore
-    ignore_end = ('osm', 'meta', 'note', 'bounds', 'remark', 'tag', 'nd', 'member', 'center')
+    ignore_end = ('osm', 'meta', 'note', 'bounds', 'remark', 'tag', 'nd', 'center')
 
     def __init__(self, result):
         """
@@ -1310,6 +1310,8 @@ class OSMSAXHandler(handler.ContentHandler):
         handler.ContentHandler.__init__(self)
         self._result = result
         self._curr = {}
+        #: Current relation member object
+        self.cur_relation_member = None
 
     def startElement(self, name, attrs):
         """
@@ -1457,11 +1459,21 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        try:
-            node_ref = attrs['ref']
-        except KeyError:
-            raise ValueError("Unable to find required ref value.")
-        self._curr['node_ids'].append(int(node_ref))
+        if isinstance(self.cur_relation_member, RelationWay):
+            if self.cur_relation_member.geometry is None:
+                self.cur_relation_member.geometry = []
+            self.cur_relation_member.geometry.append(
+                RelationWayGeometryValue(
+                    lat=Decimal(attrs["lat"]),
+                    lon=Decimal(attrs["lon"])
+                )
+            )
+        else:
+            try:
+                node_ref = attrs['ref']
+            except KeyError:
+                raise ValueError("Unable to find required ref value.")
+            self._curr['node_ids'].append(int(node_ref))
 
     def _handle_start_relation(self, attrs):
         """
@@ -1494,6 +1506,7 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
+
         params = {
             'ref': None,
             'result': self._result,
@@ -1504,13 +1517,18 @@ class OSMSAXHandler(handler.ContentHandler):
         if attrs.get('role', None):
             params['role'] = attrs['role']
 
-        if attrs['type'] == 'area':
-            self._curr['members'].append(RelationArea(**params))
-        elif attrs['type'] == 'node':
-            self._curr['members'].append(RelationNode(**params))
-        elif attrs['type'] == 'way':
-            self._curr['members'].append(RelationWay(**params))
-        elif attrs['type'] == 'relation':
-            self._curr['members'].append(RelationRelation(**params))
-        else:
+        cls_map = {
+            "area": RelationArea,
+            "node": RelationNode,
+            "relation": RelationRelation,
+            "way": RelationWay
+        }
+        cls = cls_map.get(attrs["type"])
+        if cls is None:
             raise ValueError("Undefined type for member: '%s'" % attrs['type'])
+
+        self.cur_relation_member = cls(**params)
+        self._curr['members'].append(self.cur_relation_member)
+
+    def _handle_end_member(self):
+        self.cur_relation_member = None
