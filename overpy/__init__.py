@@ -1508,6 +1508,8 @@ class OSMSAXHandler(handler.ContentHandler):
         """
 
         params = {
+            # ToDo: Parse attributes
+            'attributes': {},
             'ref': None,
             'result': self._result,
             'role': None
