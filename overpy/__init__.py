@@ -1127,7 +1127,7 @@ class RelationMember(object):
     Base class to represent a member of a relation.
     """
 
-    def __init__(self, attributes=None, ref=None, role=None, result=None):
+    def __init__(self, attributes=None, geometry=None, ref=None, role=None, result=None):
         """
         :param ref: Reference Id
         :type ref: Integer
@@ -1139,6 +1139,7 @@ class RelationMember(object):
         self._result = result
         self.role = role
         self.attributes = attributes
+        self.geometry = geometry
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -1196,13 +1197,31 @@ class RelationMember(object):
         role = child.attrib.get("role")
 
         attributes = {}
-        ignore = ["ref", "role"]
+        ignore = ["geometry", "ref", "role", "type"]
         for n, v in child.attrib.items():
             if n in ignore:
                 continue
             attributes[n] = v
 
-        return cls(attributes=attributes, ref=ref, role=role, result=result)
+        geometry = None
+        for sub_child in child:
+            if sub_child.tag.lower() == "nd":
+                if geometry is None:
+                    geometry = []
+                geometry.append(
+                    RelationWayGeometryValue(
+                        lat=Decimal(sub_child.attrib["lat"]),
+                        lon=Decimal(sub_child.attrib["lon"])
+                    )
+                )
+
+        return cls(
+            attributes=attributes,
+            geometry=geometry,
+            ref=ref,
+            role=role,
+            result=result
+        )
 
 
 class RelationNode(RelationMember):
@@ -1223,6 +1242,15 @@ class RelationWay(RelationMember):
 
     def __repr__(self):
         return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
+
+
+class RelationWayGeometryValue(object):
+    def __init__(self, lat, lon):
+        self.lat = lat
+        self.lon = lon
+
+    def __repr__(self):
+        return "<overpy.RelationWayGeometryValue lat={} lon={}>".format(self.lat, self.lon)
 
 
 class RelationRelation(RelationMember):
