@@ -56,6 +56,15 @@ class TestRelation(BaseTestRelation):
         result = api.parse_xml(read_file("xml/relation-03.xml"), parser=overpy.XML_PARSER_SAX)
         self._test_relation03(result)
 
+    def test_relation04(self):
+        api = overpy.Overpass()
+        # DOM
+        result = api.parse_xml(read_file("xml/relation-04.xml"), parser=overpy.XML_PARSER_DOM)
+        self._test_relation04(result)
+        # SAX
+        result = api.parse_xml(read_file("xml/relation-04.xml"), parser=overpy.XML_PARSER_SAX)
+        self._test_relation04(result)
+
 
 class TestWay(BaseTestWay):
     def test_way01(self):
