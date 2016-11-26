@@ -276,17 +276,16 @@ class BaseTestRelation(object):
         way = relation.members[2]
 
         assert isinstance(way, overpy.RelationWay)
-        assert len(way.attributes) == 1
+        assert len(way.attributes) == 0
         assert isinstance(way.attributes, dict)
 
-        geometry = way.attributes["geometry"]
-        assert isinstance(geometry, list)
-        assert len(geometry) == 2
-        assert isinstance(geometry[0], dict)
-        assert isinstance(geometry[0]["lat"], Decimal)
-        assert isinstance(geometry[0]["lon"], Decimal)
-        assert geometry[0]["lat"] == Decimal("50.8137408")
-        assert geometry[0]["lon"] == Decimal("6.9813352")
+        assert isinstance(way.geometry, list)
+        assert len(way.geometry) == 2
+        assert isinstance(way.geometry[0], overpy.RelationWayGeometryValue)
+        assert isinstance(way.geometry[0].lat, Decimal)
+        assert isinstance(way.geometry[0].lon, Decimal)
+        assert way.geometry[0].lat == Decimal("50.8137408")
+        assert way.geometry[0].lon == Decimal("6.9813352")
 
 
 class BaseTestWay(object):
