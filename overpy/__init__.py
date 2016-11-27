@@ -1127,7 +1127,7 @@ class RelationMember(object):
     Base class to represent a member of a relation.
     """
 
-    def __init__(self, ref=None, role=None, result=None):
+    def __init__(self, attributes=None, geometry=None, ref=None, role=None, result=None):
         """
         :param ref: Reference Id
         :type ref: Integer
@@ -1138,6 +1138,8 @@ class RelationMember(object):
         self.ref = ref
         self._result = result
         self.role = role
+        self.attributes = attributes
+        self.geometry = geometry
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -1160,7 +1162,35 @@ class RelationMember(object):
 
         ref = data.get("ref")
         role = data.get("role")
-        return cls(ref=ref, role=role, result=result)
+
+        attributes = {}
+        ignore = ["geometry", "type", "ref", "role"]
+        for n, v in data.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        geometry = data.get("geometry")
+        if isinstance(geometry, list):
+            geometry_orig = geometry
+            geometry = []
+            for v in geometry_orig:
+                geometry.append(
+                    RelationWayGeometryValue(
+                        lat=v.get("lat"),
+                        lon=v.get("lon")
+                    )
+                )
+        else:
+            geometry = None
+
+        return cls(
+            attributes=attributes,
+            geometry=geometry,
+            ref=ref,
+            role=role,
+            result=result
+        )
 
     @classmethod
     def from_xml(cls, child, result=None):
@@ -1185,7 +1215,33 @@ class RelationMember(object):
         if ref is not None:
             ref = int(ref)
         role = child.attrib.get("role")
-        return cls(ref=ref, role=role, result=result)
+
+        attributes = {}
+        ignore = ["geometry", "ref", "role", "type"]
+        for n, v in child.attrib.items():
+            if n in ignore:
+                continue
+            attributes[n] = v
+
+        geometry = None
+        for sub_child in child:
+            if sub_child.tag.lower() == "nd":
+                if geometry is None:
+                    geometry = []
+                geometry.append(
+                    RelationWayGeometryValue(
+                        lat=Decimal(sub_child.attrib["lat"]),
+                        lon=Decimal(sub_child.attrib["lon"])
+                    )
+                )
+
+        return cls(
+            attributes=attributes,
+            geometry=geometry,
+            ref=ref,
+            role=role,
+            result=result
+        )
 
 
 class RelationNode(RelationMember):
@@ -1206,6 +1262,15 @@ class RelationWay(RelationMember):
 
     def __repr__(self):
         return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
+
+
+class RelationWayGeometryValue(object):
+    def __init__(self, lat, lon):
+        self.lat = lat
+        self.lon = lon
+
+    def __repr__(self):
+        return "<overpy.RelationWayGeometryValue lat={} lon={}>".format(self.lat, self.lon)
 
 
 class RelationRelation(RelationMember):
@@ -1235,7 +1300,7 @@ class OSMSAXHandler(handler.ContentHandler):
     #: Tuple of opening elements to ignore
     ignore_start = ('osm', 'meta', 'note', 'bounds', 'remark')
     #: Tuple of closing elements to ignore
-    ignore_end = ('osm', 'meta', 'note', 'bounds', 'remark', 'tag', 'nd', 'member', 'center')
+    ignore_end = ('osm', 'meta', 'note', 'bounds', 'remark', 'tag', 'nd', 'center')
 
     def __init__(self, result):
         """
@@ -1245,6 +1310,8 @@ class OSMSAXHandler(handler.ContentHandler):
         handler.ContentHandler.__init__(self)
         self._result = result
         self._curr = {}
+        #: Current relation member object
+        self.cur_relation_member = None
 
     def startElement(self, name, attrs):
         """
@@ -1392,11 +1459,21 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
-        try:
-            node_ref = attrs['ref']
-        except KeyError:
-            raise ValueError("Unable to find required ref value.")
-        self._curr['node_ids'].append(int(node_ref))
+        if isinstance(self.cur_relation_member, RelationWay):
+            if self.cur_relation_member.geometry is None:
+                self.cur_relation_member.geometry = []
+            self.cur_relation_member.geometry.append(
+                RelationWayGeometryValue(
+                    lat=Decimal(attrs["lat"]),
+                    lon=Decimal(attrs["lon"])
+                )
+            )
+        else:
+            try:
+                node_ref = attrs['ref']
+            except KeyError:
+                raise ValueError("Unable to find required ref value.")
+            self._curr['node_ids'].append(int(node_ref))
 
     def _handle_start_relation(self, attrs):
         """
@@ -1429,7 +1506,10 @@ class OSMSAXHandler(handler.ContentHandler):
         :param attrs: Attributes of the element
         :type attrs: Dict
         """
+
         params = {
+            # ToDo: Parse attributes
+            'attributes': {},
             'ref': None,
             'result': self._result,
             'role': None
@@ -1439,13 +1519,18 @@ class OSMSAXHandler(handler.ContentHandler):
         if attrs.get('role', None):
             params['role'] = attrs['role']
 
-        if attrs['type'] == 'area':
-            self._curr['members'].append(RelationArea(**params))
-        elif attrs['type'] == 'node':
-            self._curr['members'].append(RelationNode(**params))
-        elif attrs['type'] == 'way':
-            self._curr['members'].append(RelationWay(**params))
-        elif attrs['type'] == 'relation':
-            self._curr['members'].append(RelationRelation(**params))
-        else:
+        cls_map = {
+            "area": RelationArea,
+            "node": RelationNode,
+            "relation": RelationRelation,
+            "way": RelationWay
+        }
+        cls = cls_map.get(attrs["type"])
+        if cls is None:
             raise ValueError("Undefined type for member: '%s'" % attrs['type'])
+
+        self.cur_relation_member = cls(**params)
+        self._curr['members'].append(self.cur_relation_member)
+
+    def _handle_end_member(self):
+        self.cur_relation_member = None

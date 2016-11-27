@@ -259,6 +259,34 @@ class BaseTestRelation(object):
         assert relation.center_lat == Decimal("50.8176646")
         assert relation.center_lon == Decimal("7.0208539")
 
+    def _test_relation04(self, result):
+        assert len(result.nodes) == 0
+        assert len(result.relations) == 1
+        assert len(result.ways) == 0
+
+        relation = result.relations[0]
+
+        assert isinstance(relation, overpy.Relation)
+        assert isinstance(relation.id, int)
+        assert relation.id == 23092
+
+        assert isinstance(relation.tags, dict)
+        assert len(relation.tags) == 10
+
+        way = relation.members[2]
+
+        assert isinstance(way, overpy.RelationWay)
+        assert len(way.attributes) == 0
+        assert isinstance(way.attributes, dict)
+
+        assert isinstance(way.geometry, list)
+        assert len(way.geometry) == 2
+        assert isinstance(way.geometry[0], overpy.RelationWayGeometryValue)
+        assert isinstance(way.geometry[0].lat, Decimal)
+        assert isinstance(way.geometry[0].lon, Decimal)
+        assert way.geometry[0].lat == Decimal("50.8137408")
+        assert way.geometry[0].lon == Decimal("6.9813352")
+
 
 class BaseTestWay(object):
     def _test_way01(self, result):
