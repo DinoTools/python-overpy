@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from multiprocessing import Process
 from threading import Lock
 
@@ -12,7 +13,7 @@ else:
 TCPServer.allow_reuse_address = True
 
 HOST = "127.0.0.1"
-PORT_START = 10000
+PORT_START = sys.version_info[0] * 10000 + sys.version_info[1] * 100
 
 current_port = PORT_START
 test_lock = Lock()
@@ -42,7 +43,12 @@ def new_server_thread(handle_cls, port=None):
         (HOST, port),
         handle_cls
     )
+    p = Process(target=server_thread, args=(server,))
+    p.start()
+    # Give the server some time to bind
+    # Is there a better option?
+    time.sleep(0.2)
     return (
         "http://%s:%d" % (HOST, port),
-        Process(target=server_thread, args=(server,))
+        p
     )
