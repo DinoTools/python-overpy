@@ -6,7 +6,7 @@ Changelog
 
 .. note:: This version is not yet released and is under development.
 
-0.4 (2016-12-xx)
+0.4 (2016-12-08)
 ~~~~~~~~~~~~~~~~
 
 * Add SAX parser
