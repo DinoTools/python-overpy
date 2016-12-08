@@ -48,7 +48,6 @@ class TestResult(object):
 class TestArea(object):
     def test_missing_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -60,7 +59,6 @@ class TestArea(object):
 
     def test_missing_resolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -82,7 +80,6 @@ class TestArea(object):
 class TestNode(object):
     def test_missing_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -94,7 +91,6 @@ class TestNode(object):
 
     def test_missing_resolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -116,7 +112,6 @@ class TestNode(object):
 class TestRelation(object):
     def test_missing_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -128,7 +123,6 @@ class TestRelation(object):
 
     def test_missing_resolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -150,7 +144,6 @@ class TestRelation(object):
 class TestWay(object):
     def test_missing_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -162,7 +155,6 @@ class TestWay(object):
 
     def test_missing_resolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url

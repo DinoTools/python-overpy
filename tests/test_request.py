@@ -90,7 +90,6 @@ class HandleResponseUnknown(BaseRequestHandler):
 class TestQuery(object):
     def test_chunk_size(self):
         url, t = new_server_thread(HandleResponseJSON)
-        t.start()
 
         api = overpy.Overpass(read_chunk_size=128)
         api.url = url
@@ -100,7 +99,6 @@ class TestQuery(object):
 
     def test_overpass_syntax_error(self):
         url, t = new_server_thread(HandleOverpassBadRequest)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -119,7 +117,6 @@ class TestQuery(object):
             tmp.decode("utf-8")
 
         url, t = new_server_thread(HandleOverpassBadRequestEncoding)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -133,7 +130,6 @@ class TestQuery(object):
 
     def test_overpass_too_many_requests(self):
         url, t = new_server_thread(HandleOverpassTooManyRequests)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -146,7 +142,6 @@ class TestQuery(object):
 
     def test_overpass_gateway_timeout(self):
         url, t = new_server_thread(HandleOverpassGatewayTimeout)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -159,7 +154,6 @@ class TestQuery(object):
 
     def test_overpass_unknown_status_code(self):
         url, t = new_server_thread(HandleOverpassUnknownHTTPStatusCode)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -172,7 +166,6 @@ class TestQuery(object):
 
     def test_response_json(self):
         url, t = new_server_thread(HandleResponseJSON)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -182,7 +175,6 @@ class TestQuery(object):
 
     def test_response_unknown(self):
         url, t = new_server_thread(HandleResponseUnknown)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -192,7 +184,6 @@ class TestQuery(object):
 
     def test_response_xml(self):
         url, t = new_server_thread(HandleResponseXML)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url

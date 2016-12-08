@@ -42,10 +42,13 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy"
     ],
+    keywords="OverPy Overpass OSM OpenStreetMap",
     install_requires=[],
     packages=find_packages(exclude=["*.tests", "*.tests.*"]),
     include_package_data=True,
     package_data={
         #"": ["README"],
     },
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
 )

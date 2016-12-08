@@ -38,7 +38,6 @@ class HandleResponseJSON03(BaseRequestHandler):
 class TestNodes(object):
     def test_missing_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON01)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -61,7 +60,6 @@ class TestNodes(object):
 
     def test_missing_partly_unresolvable(self):
         url, t = new_server_thread(HandleResponseJSON02)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
@@ -84,7 +82,6 @@ class TestNodes(object):
 
     def test_missing_resolvable(self):
         url, t = new_server_thread(HandleResponseJSON03)
-        t.start()
 
         api = overpy.Overpass()
         api.url = url
