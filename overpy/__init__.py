@@ -43,10 +43,12 @@ class Overpass(object):
     """
     Class to access the Overpass API
     """
+    default_max_retry_count = 0
     default_read_chunk_size = 4096
+    default_retry_timeout = 1.0
     default_url = "http://overpass-api.de/api/interpreter"
 
-    def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX):
+    def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX, max_retry_count=None, retry_timeout=None):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
@@ -64,8 +66,15 @@ class Overpass(object):
         if read_chunk_size is None:
             read_chunk_size = self.default_read_chunk_size
         self.read_chunk_size = read_chunk_size
-        self.max_retry_count = 0
-        self.retry_timeout = 1.0
+
+        if max_retry_count is None:
+            max_retry_count = self.default_max_retry_count
+        self.max_retry_count = max_retry_count
+
+        if retry_timeout is None:
+            retry_timeout = self.default_retry_timeout
+        self.retry_timeout = retry_timeout
+
         self.xml_parser = xml_parser
 
     def query(self, query):
