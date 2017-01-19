@@ -31,7 +31,20 @@ def server_thread(server):
     server.socket.close()
 
 
-def new_server_thread(handle_cls, port=None):
+def server_thread_retry(server):
+    num_requests = 3
+    while num_requests > 0:
+        print(num_requests)
+        request = server.get_request()
+        server.process_request(*request)
+        num_requests = num_requests - 1
+    server.server_close()
+    server.socket.close()
+
+
+def new_server_thread(handle_cls, handle_func=None, port=None):
+    if handle_func is None:
+        handle_func = server_thread
     global current_port
     if port is None:
         test_lock.acquire()
@@ -43,7 +56,7 @@ def new_server_thread(handle_cls, port=None):
         (HOST, port),
         handle_cls
     )
-    p = Process(target=server_thread, args=(server,))
+    p = Process(target=handle_func, args=(server,))
     p.start()
     # Give the server some time to bind
     # Is there a better option?

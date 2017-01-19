@@ -3,7 +3,7 @@ import pytest
 import overpy
 
 from tests import BaseRequestHandler
-from tests import read_file, new_server_thread
+from tests import read_file, new_server_thread, server_thread_retry
 
 
 class HandleOverpassBadRequest(BaseRequestHandler):
@@ -85,6 +85,10 @@ class HandleResponseUnknown(BaseRequestHandler):
         self.request.send(b"Content-Type: application/foobar\r\n")
         self.request.send(b"\r\n")
         self.request.send(read_file("xml/way-02.xml", "rb"))
+
+
+class HandleRetry(HandleOverpassTooManyRequests):
+    pass
 
 
 class TestQuery(object):
@@ -190,3 +194,16 @@ class TestQuery(object):
         result = api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
         t.join()
         assert len(result.nodes) > 0
+
+    def test_retry(self):
+        url, t = new_server_thread(HandleRetry, handle_func=server_thread_retry)
+
+        api = overpy.Overpass()
+        api.max_retry_count = 2
+        api.url = url
+        with pytest.raises(overpy.exception.MaxRetriesReached):
+            api.query((
+                "way(1);"
+                "out body;"
+            ))
+        t.join()
