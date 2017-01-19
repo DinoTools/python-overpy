@@ -5,6 +5,7 @@ from xml.sax import handler, make_parser
 import json
 import re
 import sys
+import time
 
 from overpy import exception
 from overpy.__about__ import (
@@ -82,6 +83,8 @@ class Overpass(object):
         retry_exceptions = []
         do_retry = True if self.max_retry_count > 0 else False
         while retry_num <= self.max_retry_count:
+            if retry_num > 0:
+                time.sleep(self.retry_timeout)
             retry_num += 1
             try:
                 f = urlopen(self.url, query)
