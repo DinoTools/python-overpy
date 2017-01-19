@@ -32,7 +32,8 @@ def server_thread(server):
 
 
 def server_thread_retry(server):
-    num_requests = 3
+    from .test_request import HandleRetry
+    num_requests = len(HandleRetry.default_handler_cls)
     while num_requests > 0:
         print(num_requests)
         request = server.get_request()

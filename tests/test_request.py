@@ -87,8 +87,22 @@ class HandleResponseUnknown(BaseRequestHandler):
         self.request.send(read_file("xml/way-02.xml", "rb"))
 
 
-class HandleRetry(HandleOverpassTooManyRequests):
-    pass
+class HandleRetry(BaseRequestHandler):
+    default_handler_cls = [
+        HandleOverpassBadRequest,
+        HandleOverpassBadRequestEncoding,
+        HandleOverpassTooManyRequests,
+        HandleOverpassGatewayTimeout,
+        HandleOverpassUnknownHTTPStatusCode,
+        HandleResponseUnknown
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(HandleRetry, self).__init__(*args, **kwargs)
+
+    def handle(self):
+        h = self.default_handler_cls.pop(0)
+        h.handle(self)
 
 
 class TestQuery(object):
@@ -199,7 +213,7 @@ class TestQuery(object):
         url, t = new_server_thread(HandleRetry, handle_func=server_thread_retry)
 
         api = overpy.Overpass()
-        api.max_retry_count = 2
+        api.max_retry_count = len(HandleRetry.default_handler_cls) - 1
         api.url = url
         with pytest.raises(overpy.exception.MaxRetriesReached):
             api.query((
