@@ -63,6 +63,8 @@ class Overpass(object):
         if read_chunk_size is None:
             read_chunk_size = self.default_read_chunk_size
         self.read_chunk_size = read_chunk_size
+        self.max_retry_count = 0
+        self.retry_timeout = 1.0
         self.xml_parser = xml_parser
 
     def query(self, query):
@@ -76,56 +78,83 @@ class Overpass(object):
         if not isinstance(query, bytes):
             query = query.encode("utf-8")
 
-        try:
-            f = urlopen(self.url, query)
-        except HTTPError as e:
-            f = e
+        retry_num = 0
+        retry_exceptions = []
+        do_retry = True if self.max_retry_count > 0 else False
+        while retry_num <= self.max_retry_count:
+            retry_num += 1
+            try:
+                f = urlopen(self.url, query)
+            except HTTPError as e:
+                f = e
 
-        response = f.read(self.read_chunk_size)
-        while True:
-            data = f.read(self.read_chunk_size)
-            if len(data) == 0:
-                break
-            response = response + data
-        f.close()
+            response = f.read(self.read_chunk_size)
+            while True:
+                data = f.read(self.read_chunk_size)
+                if len(data) == 0:
+                    break
+                response = response + data
+            f.close()
 
-        if f.code == 200:
-            if PY2:
-                http_info = f.info()
-                content_type = http_info.getheader("content-type")
-            else:
-                content_type = f.getheader("Content-Type")
+            if f.code == 200:
+                if PY2:
+                    http_info = f.info()
+                    content_type = http_info.getheader("content-type")
+                else:
+                    content_type = f.getheader("Content-Type")
 
-            if content_type == "application/json":
-                return self.parse_json(response)
+                if content_type == "application/json":
+                    return self.parse_json(response)
 
-            if content_type == "application/osm3s+xml":
-                return self.parse_xml(response)
+                if content_type == "application/osm3s+xml":
+                    return self.parse_xml(response)
 
-            raise exception.OverpassUnknownContentType(content_type)
+                e = exception.OverpassUnknownContentType(content_type)
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
 
-        if f.code == 400:
-            msgs = []
-            for msg in self._regex_extract_error_msg.finditer(response):
-                tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
-                try:
-                    tmp = tmp.decode("utf-8")
-                except UnicodeDecodeError:
-                    tmp = repr(tmp)
-                msgs.append(tmp)
+            if f.code == 400:
+                msgs = []
+                for msg in self._regex_extract_error_msg.finditer(response):
+                    tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
+                    try:
+                        tmp = tmp.decode("utf-8")
+                    except UnicodeDecodeError:
+                        tmp = repr(tmp)
+                    msgs.append(tmp)
 
-            raise exception.OverpassBadRequest(
-                query,
-                msgs=msgs
-            )
+                e = exception.OverpassBadRequest(
+                    query,
+                    msgs=msgs
+                )
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
 
-        if f.code == 429:
-            raise exception.OverpassTooManyRequests
+            if f.code == 429:
+                e = exception.OverpassTooManyRequests
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
 
-        if f.code == 504:
-            raise exception.OverpassGatewayTimeout
+            if f.code == 504:
+                e = exception.OverpassGatewayTimeout
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
 
-        raise exception.OverpassUnknownHTTPStatusCode(f.code)
+            e = exception.OverpassUnknownHTTPStatusCode(f.code)
+            if not do_retry:
+                raise e
+            retry_exceptions.append(e)
+            continue
+
+        raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
 
     def parse_json(self, data, encoding="utf-8"):
         """
