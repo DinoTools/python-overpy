@@ -42,6 +42,9 @@ def is_valid_type(element, cls):
 class Overpass(object):
     """
     Class to access the Overpass API
+
+    :cvar default_max_retry_count: Global max number of retries (Default: 0)
+    :cvar default_retry_timeout: Global time to wait between tries (Default: 1.0s)
     """
     default_max_retry_count = 0
     default_read_chunk_size = 4096
@@ -56,6 +59,10 @@ class Overpass(object):
         :type url: str
         :param xml_parser: The xml parser to use
         :type xml_parser: Integer
+        :param max_retry_count: Max number of retries (Default: default_max_retry_count)
+        :type max_retry_count: Integer
+        :param retry_timeout: Time to wait between tries (Default: default_retry_timeout)
+        :type retry_timeout: float
         """
         self.url = self.default_url
         if url is not None:
