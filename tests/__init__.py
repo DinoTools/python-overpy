@@ -19,6 +19,16 @@ current_port = PORT_START
 test_lock = Lock()
 
 
+class OverpyBaseRequestHandler(BaseRequestHandler):
+    def handle(self):
+        for data in self.get_response(self):
+            self.request.send(data)
+
+    @staticmethod
+    def get_response(self):
+        yield b""
+
+
 def read_file(filename, mode="r"):
     filename = os.path.join(os.path.dirname(__file__), filename)
     return open(filename, mode).read()

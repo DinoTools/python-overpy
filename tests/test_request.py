@@ -2,92 +2,100 @@ import pytest
 
 import overpy
 
-from tests import BaseRequestHandler
+from tests import OverpyBaseRequestHandler
 from tests import read_file, new_server_thread, server_thread_retry
 
 
-class HandleOverpassBadRequest(BaseRequestHandler):
+class HandleOverpassBadRequest(OverpyBaseRequestHandler):
     """
     Simulate the response if the query string has syntax errors
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 400 Bad Request\r\n")
-        self.request.send(b"Content-Type	text/html; charset=utf-8\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("response/bad-request.html", "rb"))
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 400 Bad Request\r\n"
+        yield b"Content-Type	text/html; charset=utf-8\r\n"
+        yield b"\r\n"
+        yield read_file("response/bad-request.html", "rb")
 
 
-class HandleOverpassBadRequestEncoding(BaseRequestHandler):
+class HandleOverpassBadRequestEncoding(OverpyBaseRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 400 Bad Request\r\n")
-        self.request.send(b"Content-Type	text/html; charset=utf-8\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("response/bad-request-encoding.html", "rb"))
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 400 Bad Request\r\n"
+        yield b"Content-Type	text/html; charset=utf-8\r\n"
+        yield b"\r\n"
+        yield read_file("response/bad-request-encoding.html", "rb")
 
 
-class HandleOverpassTooManyRequests(BaseRequestHandler):
+class HandleOverpassTooManyRequests(OverpyBaseRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 429 Too Many Requests\r\n")
-        self.request.send(b"Content-Type	text/html; charset=utf-8\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(b"Too Many Requests")
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 429 Too Many Requests\r\n"
+        yield b"Content-Type	text/html; charset=utf-8\r\n"
+        yield b"\r\n"
+        yield b"Too Many Requests"
 
 
-class HandleOverpassGatewayTimeout(BaseRequestHandler):
+class HandleOverpassGatewayTimeout(OverpyBaseRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 504 Gateway Timeout\r\n")
-        self.request.send(b"Content-Type	text/html; charset=utf-8\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(b"Gateway Timeout")
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 504 Gateway Timeout\r\n"
+        yield b"Content-Type	text/html; charset=utf-8\r\n"
+        yield b"\r\n"
+        yield b"Gateway Timeout"
 
 
-class HandleOverpassUnknownHTTPStatusCode(BaseRequestHandler):
+class HandleOverpassUnknownHTTPStatusCode(OverpyBaseRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 123 Unknown\r\n")
-        self.request.send(b"Content-Type	text/html; charset=utf-8\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(b"Unknown status code")
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 123 Unknown\r\n"
+        yield b"Content-Type	text/html; charset=utf-8\r\n"
+        yield b"\r\n"
+        yield b"Unknown status code"
 
 
-class HandleResponseJSON(BaseRequestHandler):
+class HandleResponseJSON(OverpyBaseRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/json\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("json/way-02.json", "rb"))
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 200 OK\r\n"
+        yield b"Content-Type: application/json\r\n"
+        yield b"\r\n"
+        yield read_file("json/way-02.json", "rb")
 
 
-class HandleResponseXML(BaseRequestHandler):
+class HandleResponseXML(OverpyBaseRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/osm3s+xml\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("xml/way-02.xml", "rb"))
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 200 OK\r\n"
+        yield b"Content-Type: application/osm3s+xml\r\n"
+        yield b"\r\n"
+        yield read_file("xml/way-02.xml", "rb")
 
 
-class HandleResponseUnknown(BaseRequestHandler):
+class HandleResponseUnknown(OverpyBaseRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/foobar\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("xml/way-02.xml", "rb"))
+    @staticmethod
+    def get_response(self):
+        yield b"HTTP/1.0 200 OK\r\n"
+        yield b"Content-Type: application/foobar\r\n"
+        yield b"\r\n"
+        yield read_file("xml/way-02.xml", "rb")
 
 
-class HandleRetry(BaseRequestHandler):
+class HandleRetry(OverpyBaseRequestHandler):
     default_handler_cls = [
         HandleOverpassBadRequest,
         HandleOverpassBadRequestEncoding,
@@ -97,12 +105,10 @@ class HandleRetry(BaseRequestHandler):
         HandleResponseUnknown
     ]
 
-    def __init__(self, *args, **kwargs):
-        super(HandleRetry, self).__init__(*args, **kwargs)
-
-    def handle(self):
+    @staticmethod
+    def get_response(self):
         h = self.default_handler_cls.pop(0)
-        h.handle(self)
+        return h.get_response(self)
 
 
 class TestQuery(object):
@@ -213,6 +219,7 @@ class TestQuery(object):
         url, t = new_server_thread(HandleRetry, handle_func=server_thread_retry)
 
         api = overpy.Overpass()
+        # HandleRetry.default_handler_cls should contain at least 2 classes to process
         api.max_retry_count = len(HandleRetry.default_handler_cls) - 1
         api.url = url
         with pytest.raises(overpy.exception.MaxRetriesReached):
