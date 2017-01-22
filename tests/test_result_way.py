@@ -2,7 +2,7 @@ import pytest
 
 import overpy
 
-from tests import read_file, new_server_thread, BaseRequestHandler
+from tests import read_file, new_server_thread, stop_server_thread, BaseRequestHandler
 
 
 class HandleResponseJSON01(BaseRequestHandler):
@@ -37,7 +37,7 @@ class HandleResponseJSON03(BaseRequestHandler):
 
 class TestNodes(object):
     def test_missing_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON01)
+        url, server = new_server_thread(HandleResponseJSON01)
 
         api = overpy.Overpass()
         api.url = url
@@ -56,10 +56,10 @@ class TestNodes(object):
             way.get_nodes(resolve_missing=True)
 
         assert len(result.nodes) == 0
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_partly_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -78,10 +78,10 @@ class TestNodes(object):
             way.get_nodes(resolve_missing=True)
 
         assert len(result.nodes) == 1
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_resolvable(self):
-        url, t = new_server_thread(HandleResponseJSON03)
+        url, server = new_server_thread(HandleResponseJSON03)
 
         api = overpy.Overpass()
         api.url = url
@@ -100,4 +100,4 @@ class TestNodes(object):
 
         assert len(nodes) == 2
 
-        t.join()
+        stop_server_thread(server)

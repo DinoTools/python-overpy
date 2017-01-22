@@ -3,7 +3,7 @@ import pytest
 import overpy
 
 from tests import OverpyBaseRequestHandler
-from tests import read_file, new_server_thread, server_thread_retry
+from tests import read_file, new_server_thread, stop_server_thread
 
 
 class HandleOverpassBadRequest(OverpyBaseRequestHandler):
@@ -113,16 +113,16 @@ class HandleRetry(OverpyBaseRequestHandler):
 
 class TestQuery(object):
     def test_chunk_size(self):
-        url, t = new_server_thread(HandleResponseJSON)
+        url, server = new_server_thread(HandleResponseJSON)
 
         api = overpy.Overpass(read_chunk_size=128)
         api.url = url
         result = api.query("[out:json];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
         assert len(result.nodes) > 0
 
     def test_overpass_syntax_error(self):
-        url, t = new_server_thread(HandleOverpassBadRequest)
+        url, server = new_server_thread(HandleOverpassBadRequest)
 
         api = overpy.Overpass()
         api.url = url
@@ -132,7 +132,7 @@ class TestQuery(object):
                 "way(1)"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_syntax_error_encoding_error(self):
         with pytest.raises(UnicodeDecodeError):
@@ -140,7 +140,7 @@ class TestQuery(object):
             tmp = read_file("response/bad-request-encoding.html", "rb")
             tmp.decode("utf-8")
 
-        url, t = new_server_thread(HandleOverpassBadRequestEncoding)
+        url, server = new_server_thread(HandleOverpassBadRequestEncoding)
 
         api = overpy.Overpass()
         api.url = url
@@ -150,10 +150,10 @@ class TestQuery(object):
                 "way(1)"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_too_many_requests(self):
-        url, t = new_server_thread(HandleOverpassTooManyRequests)
+        url, server = new_server_thread(HandleOverpassTooManyRequests)
 
         api = overpy.Overpass()
         api.url = url
@@ -162,10 +162,10 @@ class TestQuery(object):
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_gateway_timeout(self):
-        url, t = new_server_thread(HandleOverpassGatewayTimeout)
+        url, server = new_server_thread(HandleOverpassGatewayTimeout)
 
         api = overpy.Overpass()
         api.url = url
@@ -174,10 +174,10 @@ class TestQuery(object):
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_unknown_status_code(self):
-        url, t = new_server_thread(HandleOverpassUnknownHTTPStatusCode)
+        url, server = new_server_thread(HandleOverpassUnknownHTTPStatusCode)
 
         api = overpy.Overpass()
         api.url = url
@@ -186,37 +186,37 @@ class TestQuery(object):
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_response_json(self):
-        url, t = new_server_thread(HandleResponseJSON)
+        url, server = new_server_thread(HandleResponseJSON)
 
         api = overpy.Overpass()
         api.url = url
         result = api.query("[out:json];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
         assert len(result.nodes) > 0
 
     def test_response_unknown(self):
-        url, t = new_server_thread(HandleResponseUnknown)
+        url, server = new_server_thread(HandleResponseUnknown)
 
         api = overpy.Overpass()
         api.url = url
         with pytest.raises(overpy.exception.OverpassUnknownContentType):
             api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
 
     def test_response_xml(self):
-        url, t = new_server_thread(HandleResponseXML)
+        url, server = new_server_thread(HandleResponseXML)
 
         api = overpy.Overpass()
         api.url = url
         result = api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
         assert len(result.nodes) > 0
 
     def test_retry(self):
-        url, t = new_server_thread(HandleRetry, handle_func=server_thread_retry)
+        url, server = new_server_thread(HandleRetry)
 
         api = overpy.Overpass()
         # HandleRetry.default_handler_cls should contain at least 2 classes to process
@@ -227,4 +227,4 @@ class TestQuery(object):
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)

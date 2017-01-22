@@ -1,14 +1,13 @@
 import os
 import sys
-import time
-from multiprocessing import Process
+import threading
 from threading import Lock
 
 PY2 = sys.version_info[0] == 2
 if PY2:
-    from SocketServer import TCPServer, BaseRequestHandler
+    from SocketServer import BaseRequestHandler, TCPServer, ThreadingMixIn
 else:
-    from socketserver import TCPServer, BaseRequestHandler
+    from socketserver import BaseRequestHandler, TCPServer, ThreadingMixIn
 
 TCPServer.allow_reuse_address = True
 
@@ -29,33 +28,16 @@ class OverpyBaseRequestHandler(BaseRequestHandler):
         yield b""
 
 
+class ThreadedTCPServer(ThreadingMixIn, TCPServer):
+    pass
+
+
 def read_file(filename, mode="r"):
     filename = os.path.join(os.path.dirname(__file__), filename)
     return open(filename, mode).read()
 
 
-def server_thread(server):
-    request = server.get_request()
-    server.process_request(*request)
-    server.server_close()
-    server.socket.close()
-
-
-def server_thread_retry(server):
-    from .test_request import HandleRetry
-    num_requests = len(HandleRetry.default_handler_cls)
-    while num_requests > 0:
-        print(num_requests)
-        request = server.get_request()
-        server.process_request(*request)
-        num_requests = num_requests - 1
-    server.server_close()
-    server.socket.close()
-
-
-def new_server_thread(handle_cls, handle_func=None, port=None):
-    if handle_func is None:
-        handle_func = server_thread
+def new_server_thread(handle_cls, port=None):
     global current_port
     if port is None:
         test_lock.acquire()
@@ -63,16 +45,19 @@ def new_server_thread(handle_cls, handle_func=None, port=None):
         current_port += 1
         test_lock.release()
 
-    server = TCPServer(
+    server = ThreadedTCPServer(
         (HOST, port),
         handle_cls
     )
-    p = Process(target=handle_func, args=(server,))
-    p.start()
-    # Give the server some time to bind
-    # Is there a better option?
-    time.sleep(0.2)
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
     return (
         "http://%s:%d" % (HOST, port),
-        p
+        server
     )
+
+
+def stop_server_thread(server):
+    server.shutdown()
+    server.server_close()
