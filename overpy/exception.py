@@ -37,6 +37,18 @@ class ElementDataWrongType(OverPyException):
         )
 
 
+class MaxRetriesReached(OverPyException):
+    """
+    Raised if max retries reached and the Overpass server didn't respond with a result.
+    """
+    def __init__(self, retry_count, exceptions):
+        self.exceptions = exceptions
+        self.retry_count = retry_count
+
+    def __str__(self):
+        return "Unable get any result from the Overpass API server after %d retries." % self.retry_count
+
+
 class OverpassBadRequest(OverPyException):
     """
     Raised if the Overpass API service returns a syntax error.
