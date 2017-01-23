@@ -6,8 +6,10 @@ from threading import Lock
 PY2 = sys.version_info[0] == 2
 if PY2:
     from SocketServer import BaseRequestHandler, TCPServer, ThreadingMixIn
+    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 else:
     from socketserver import BaseRequestHandler, TCPServer, ThreadingMixIn
+    from http.server import BaseHTTPRequestHandler, HTTPServer
 
 TCPServer.allow_reuse_address = True
 
@@ -28,7 +30,7 @@ class OverpyBaseRequestHandler(BaseRequestHandler):
         yield b""
 
 
-class ThreadedTCPServer(ThreadingMixIn, TCPServer):
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 
 
@@ -45,7 +47,7 @@ def new_server_thread(handle_cls, port=None):
         current_port += 1
         test_lock.release()
 
-    server = ThreadedTCPServer(
+    server = ThreadedHTTPServer(
         (HOST, port),
         handle_cls
     )

@@ -2,17 +2,17 @@ import pytest
 
 import overpy
 
-from tests import read_file, new_server_thread, stop_server_thread, BaseRequestHandler
+from tests import read_file, new_server_thread, stop_server_thread, BaseHTTPRequestHandler
 
 
-class HandleResponseJSON02(BaseRequestHandler):
+class HandleResponseJSON02(BaseHTTPRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/json\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("json/result-expand-02.json", "rb"))
+    def do_POST(self):
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(read_file("json/result-expand-02.json", "rb"))
 
 
 class TestResult(object):
