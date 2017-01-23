@@ -34,6 +34,13 @@ def handle_gateway_timeout(request):
     request.wfile.write(b"Gateway Timeout")
 
 
+def handle_unknown_content_type(request):
+    request.send_response(200, "OK")
+    request.send_header("Content-Type", "application/foobar")
+    request.end_headers()
+    request.wfile.write(read_file("xml/way-02.xml", "rb"))
+
+
 def handle_unknown_http_status_code(request):
     request.send_response(123, "Unknown")
     request.send_header("Content-Type", "text/html; charset=utf-8")
@@ -101,10 +108,7 @@ class HandleResponseUnknown(BaseHTTPRequestHandler):
     """
     """
     def do_POST(self):
-        self.send_response(200, "OK")
-        self.send_header("Content-Type", "application/foobar")
-        self.end_headers()
-        self.wfile.write(read_file("xml/way-02.xml", "rb"))
+        handle_unknown_content_type(self)
 
 
 class HandleRetry(BaseHTTPRequestHandler):
@@ -113,6 +117,7 @@ class HandleRetry(BaseHTTPRequestHandler):
         handle_bad_request_encoding,
         handle_too_many_requests,
         handle_gateway_timeout,
+        handle_unknown_content_type,
         handle_unknown_http_status_code
     ]
 
