@@ -2,127 +2,142 @@ import pytest
 
 import overpy
 
-from tests import OverpyBaseRequestHandler
-from tests import read_file, new_server_thread, server_thread_retry
+from tests import BaseHTTPRequestHandler
+from tests import read_file, new_server_thread, stop_server_thread
 
 
-class HandleOverpassBadRequest(OverpyBaseRequestHandler):
+def handle_bad_request(request):
+    request.send_response(400, "Bad Request")
+    request.send_header("Content-Type", "text/html; charset=utf-8")
+    request.end_headers()
+    request.wfile.write(read_file("response/bad-request.html", "rb"))
+
+
+def handle_bad_request_encoding(request):
+    request.send_response(400, "Bad Request")
+    request.send_header("Content-Type", "text/html; charset=utf-8")
+    request.end_headers()
+    request.wfile.write(read_file("response/bad-request-encoding.html", "rb"))
+
+
+def handle_too_many_requests(request):
+    request.send_response(429, "Too Many Requests")
+    request.send_header("Content-Type", "text/html; charset=utf-8")
+    request.end_headers()
+    request.wfile.write(b"Too Many Requests")
+
+
+def handle_gateway_timeout(request):
+    request.send_response(504, "Gateway Timeout")
+    request.send_header("Content-Type", "text/html; charset=utf-8")
+    request.end_headers()
+    request.wfile.write(b"Gateway Timeout")
+
+
+def handle_unknown_content_type(request):
+    request.send_response(200, "OK")
+    request.send_header("Content-Type", "application/foobar")
+    request.end_headers()
+    request.wfile.write(read_file("xml/way-02.xml", "rb"))
+
+
+def handle_unknown_http_status_code(request):
+    request.send_response(123, "Unknown")
+    request.send_header("Content-Type", "text/html; charset=utf-8")
+    request.end_headers()
+    request.wfile.write(b"Unknown status code")
+
+
+class HandleOverpassBadRequest(BaseHTTPRequestHandler):
     """
     Simulate the response if the query string has syntax errors
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 400 Bad Request\r\n"
-        yield b"Content-Type	text/html; charset=utf-8\r\n"
-        yield b"\r\n"
-        yield read_file("response/bad-request.html", "rb")
+    def do_POST(self):
+        handle_bad_request(self)
 
 
-class HandleOverpassBadRequestEncoding(OverpyBaseRequestHandler):
+class HandleOverpassBadRequestEncoding(BaseHTTPRequestHandler):
     """
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 400 Bad Request\r\n"
-        yield b"Content-Type	text/html; charset=utf-8\r\n"
-        yield b"\r\n"
-        yield read_file("response/bad-request-encoding.html", "rb")
+    def do_POST(self):
+        handle_bad_request_encoding(self)
 
 
-class HandleOverpassTooManyRequests(OverpyBaseRequestHandler):
+class HandleOverpassTooManyRequests(BaseHTTPRequestHandler):
     """
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 429 Too Many Requests\r\n"
-        yield b"Content-Type	text/html; charset=utf-8\r\n"
-        yield b"\r\n"
-        yield b"Too Many Requests"
+    def do_POST(self):
+        handle_too_many_requests(self)
 
 
-class HandleOverpassGatewayTimeout(OverpyBaseRequestHandler):
+class HandleOverpassGatewayTimeout(BaseHTTPRequestHandler):
     """
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 504 Gateway Timeout\r\n"
-        yield b"Content-Type	text/html; charset=utf-8\r\n"
-        yield b"\r\n"
-        yield b"Gateway Timeout"
+    def do_POST(self):
+        handle_gateway_timeout(self)
 
 
-class HandleOverpassUnknownHTTPStatusCode(OverpyBaseRequestHandler):
+class HandleOverpassUnknownHTTPStatusCode(BaseHTTPRequestHandler):
     """
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 123 Unknown\r\n"
-        yield b"Content-Type	text/html; charset=utf-8\r\n"
-        yield b"\r\n"
-        yield b"Unknown status code"
+    def do_POST(self):
+        handle_unknown_http_status_code(self)
 
 
-class HandleResponseJSON(OverpyBaseRequestHandler):
+class HandleResponseJSON(BaseHTTPRequestHandler):
     """
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 200 OK\r\n"
-        yield b"Content-Type: application/json\r\n"
-        yield b"\r\n"
-        yield read_file("json/way-02.json", "rb")
+    def do_POST(self):
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(read_file("json/way-02.json", "rb"))
 
 
-class HandleResponseXML(OverpyBaseRequestHandler):
+class HandleResponseXML(BaseHTTPRequestHandler):
     """
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 200 OK\r\n"
-        yield b"Content-Type: application/osm3s+xml\r\n"
-        yield b"\r\n"
-        yield read_file("xml/way-02.xml", "rb")
+    def do_POST(self):
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/osm3s+xml")
+        self.end_headers()
+        self.wfile.write(read_file("xml/way-02.xml", "rb"))
 
 
-class HandleResponseUnknown(OverpyBaseRequestHandler):
+class HandleResponseUnknown(BaseHTTPRequestHandler):
     """
     """
-    @staticmethod
-    def get_response(self):
-        yield b"HTTP/1.0 200 OK\r\n"
-        yield b"Content-Type: application/foobar\r\n"
-        yield b"\r\n"
-        yield read_file("xml/way-02.xml", "rb")
+    def do_POST(self):
+        handle_unknown_content_type(self)
 
 
-class HandleRetry(OverpyBaseRequestHandler):
-    default_handler_cls = [
-        HandleOverpassBadRequest,
-        HandleOverpassBadRequestEncoding,
-        HandleOverpassTooManyRequests,
-        HandleOverpassGatewayTimeout,
-        HandleOverpassUnknownHTTPStatusCode,
-        HandleResponseUnknown
+class HandleRetry(BaseHTTPRequestHandler):
+    default_handler_func = [
+        handle_bad_request,
+        handle_bad_request_encoding,
+        handle_too_many_requests,
+        handle_gateway_timeout,
+        handle_unknown_content_type,
+        handle_unknown_http_status_code
     ]
 
-    @staticmethod
-    def get_response(self):
-        h = self.default_handler_cls.pop(0)
-        return h.get_response(self)
+    def do_POST(self):
+        f = self.default_handler_func.pop(0)
+        f(self)
 
 
 class TestQuery(object):
     def test_chunk_size(self):
-        url, t = new_server_thread(HandleResponseJSON)
+        url, server = new_server_thread(HandleResponseJSON)
 
         api = overpy.Overpass(read_chunk_size=128)
         api.url = url
         result = api.query("[out:json];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
         assert len(result.nodes) > 0
 
     def test_overpass_syntax_error(self):
-        url, t = new_server_thread(HandleOverpassBadRequest)
+        url, server = new_server_thread(HandleOverpassBadRequest)
 
         api = overpy.Overpass()
         api.url = url
@@ -132,7 +147,7 @@ class TestQuery(object):
                 "way(1)"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_syntax_error_encoding_error(self):
         with pytest.raises(UnicodeDecodeError):
@@ -140,7 +155,7 @@ class TestQuery(object):
             tmp = read_file("response/bad-request-encoding.html", "rb")
             tmp.decode("utf-8")
 
-        url, t = new_server_thread(HandleOverpassBadRequestEncoding)
+        url, server = new_server_thread(HandleOverpassBadRequestEncoding)
 
         api = overpy.Overpass()
         api.url = url
@@ -150,10 +165,10 @@ class TestQuery(object):
                 "way(1)"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_too_many_requests(self):
-        url, t = new_server_thread(HandleOverpassTooManyRequests)
+        url, server = new_server_thread(HandleOverpassTooManyRequests)
 
         api = overpy.Overpass()
         api.url = url
@@ -162,10 +177,10 @@ class TestQuery(object):
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_gateway_timeout(self):
-        url, t = new_server_thread(HandleOverpassGatewayTimeout)
+        url, server = new_server_thread(HandleOverpassGatewayTimeout)
 
         api = overpy.Overpass()
         api.url = url
@@ -174,10 +189,10 @@ class TestQuery(object):
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_overpass_unknown_status_code(self):
-        url, t = new_server_thread(HandleOverpassUnknownHTTPStatusCode)
+        url, server = new_server_thread(HandleOverpassUnknownHTTPStatusCode)
 
         api = overpy.Overpass()
         api.url = url
@@ -186,45 +201,45 @@ class TestQuery(object):
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)
 
     def test_response_json(self):
-        url, t = new_server_thread(HandleResponseJSON)
+        url, server = new_server_thread(HandleResponseJSON)
 
         api = overpy.Overpass()
         api.url = url
         result = api.query("[out:json];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
         assert len(result.nodes) > 0
 
     def test_response_unknown(self):
-        url, t = new_server_thread(HandleResponseUnknown)
+        url, server = new_server_thread(HandleResponseUnknown)
 
         api = overpy.Overpass()
         api.url = url
         with pytest.raises(overpy.exception.OverpassUnknownContentType):
             api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
 
     def test_response_xml(self):
-        url, t = new_server_thread(HandleResponseXML)
+        url, server = new_server_thread(HandleResponseXML)
 
         api = overpy.Overpass()
         api.url = url
         result = api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
-        t.join()
+        stop_server_thread(server)
         assert len(result.nodes) > 0
 
     def test_retry(self):
-        url, t = new_server_thread(HandleRetry, handle_func=server_thread_retry)
+        url, server = new_server_thread(HandleRetry)
 
         api = overpy.Overpass()
         # HandleRetry.default_handler_cls should contain at least 2 classes to process
-        api.max_retry_count = len(HandleRetry.default_handler_cls) - 1
+        api.max_retry_count = len(HandleRetry.default_handler_func) - 1
         api.url = url
         with pytest.raises(overpy.exception.MaxRetriesReached):
             api.query((
                 "way(1);"
                 "out body;"
             ))
-        t.join()
+        stop_server_thread(server)

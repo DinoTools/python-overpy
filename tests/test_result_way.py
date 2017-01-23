@@ -2,42 +2,43 @@ import pytest
 
 import overpy
 
-from tests import read_file, new_server_thread, BaseRequestHandler
+from tests import BaseHTTPRequestHandler
+from tests import read_file, new_server_thread, stop_server_thread
 
 
-class HandleResponseJSON01(BaseRequestHandler):
+class HandleResponseJSON01(BaseHTTPRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/json\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("json/result-way-01.json", "rb"))
+    def do_POST(self):
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(read_file("json/result-way-01.json", "rb"))
 
 
-class HandleResponseJSON02(BaseRequestHandler):
+class HandleResponseJSON02(BaseHTTPRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/json\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("json/result-way-02.json", "rb"))
+    def do_POST(self):
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(read_file("json/result-way-02.json", "rb"))
 
 
-class HandleResponseJSON03(BaseRequestHandler):
+class HandleResponseJSON03(BaseHTTPRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/json\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("json/result-way-03.json", "rb"))
+    def do_POST(self):
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(read_file("json/result-way-03.json", "rb"))
 
 
 class TestNodes(object):
     def test_missing_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON01)
+        url, server = new_server_thread(HandleResponseJSON01)
 
         api = overpy.Overpass()
         api.url = url
@@ -56,10 +57,10 @@ class TestNodes(object):
             way.get_nodes(resolve_missing=True)
 
         assert len(result.nodes) == 0
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_partly_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -78,10 +79,10 @@ class TestNodes(object):
             way.get_nodes(resolve_missing=True)
 
         assert len(result.nodes) == 1
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_resolvable(self):
-        url, t = new_server_thread(HandleResponseJSON03)
+        url, server = new_server_thread(HandleResponseJSON03)
 
         api = overpy.Overpass()
         api.url = url
@@ -100,4 +101,4 @@ class TestNodes(object):
 
         assert len(nodes) == 2
 
-        t.join()
+        stop_server_thread(server)

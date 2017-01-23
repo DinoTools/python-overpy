@@ -2,17 +2,17 @@ import pytest
 
 import overpy
 
-from tests import read_file, new_server_thread, BaseRequestHandler
+from tests import read_file, new_server_thread, stop_server_thread, BaseHTTPRequestHandler
 
 
-class HandleResponseJSON02(BaseRequestHandler):
+class HandleResponseJSON02(BaseHTTPRequestHandler):
     """
     """
-    def handle(self):
-        self.request.send(b"HTTP/1.0 200 OK\r\n")
-        self.request.send(b"Content-Type: application/json\r\n")
-        self.request.send(b"\r\n")
-        self.request.send(read_file("json/result-expand-02.json", "rb"))
+    def do_POST(self):
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(read_file("json/result-expand-02.json", "rb"))
 
 
 class TestResult(object):
@@ -47,7 +47,7 @@ class TestResult(object):
 
 class TestArea(object):
     def test_missing_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -55,10 +55,10 @@ class TestArea(object):
 
         with pytest.raises(overpy.exception.DataIncomplete):
             result1.get_area(123, resolve_missing=True)
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_resolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -74,12 +74,12 @@ class TestArea(object):
         assert isinstance(area, overpy.Area)
         assert area.id == 3605945176
 
-        t.join()
+        stop_server_thread(server)
 
 
 class TestNode(object):
     def test_missing_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -87,10 +87,10 @@ class TestNode(object):
 
         with pytest.raises(overpy.exception.DataIncomplete):
             result1.get_node(123, resolve_missing=True)
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_resolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -106,12 +106,12 @@ class TestNode(object):
         assert isinstance(node, overpy.Node)
         assert node.id == 3233854235
 
-        t.join()
+        stop_server_thread(server)
 
 
 class TestRelation(object):
     def test_missing_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -119,10 +119,10 @@ class TestRelation(object):
 
         with pytest.raises(overpy.exception.DataIncomplete):
             result1.get_relation(123, resolve_missing=True)
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_resolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -138,12 +138,12 @@ class TestRelation(object):
         assert isinstance(relation, overpy.Relation)
         assert relation.id == 2046898
 
-        t.join()
+        stop_server_thread(server)
 
 
 class TestWay(object):
     def test_missing_unresolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -151,10 +151,10 @@ class TestWay(object):
 
         with pytest.raises(overpy.exception.DataIncomplete):
             result1.get_way(123, resolve_missing=True)
-        t.join()
+        stop_server_thread(server)
 
     def test_missing_resolvable(self):
-        url, t = new_server_thread(HandleResponseJSON02)
+        url, server = new_server_thread(HandleResponseJSON02)
 
         api = overpy.Overpass()
         api.url = url
@@ -170,4 +170,4 @@ class TestWay(object):
         assert isinstance(way, overpy.Way)
         assert way.id == 317146078
 
-        t.join()
+        stop_server_thread(server)
