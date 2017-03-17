@@ -99,3 +99,10 @@ class TestDataError(object):
                     "type": "foo"
                 }
             )
+
+
+class TestRemark(object):
+    def test_remark_runtime_error(self):
+        api = overpy.Overpass()
+        with pytest.raises(overpy.exception.OverpassRuntimeError):
+            api.parse_json(read_file("json/remark-runtime-error-01.json"))

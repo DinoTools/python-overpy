@@ -169,3 +169,10 @@ class TestDataError(object):
         node = ET.fromstring(data)
         with pytest.raises(ValueError):
             overpy.Way.from_xml(node)
+
+
+class TestRemark(object):
+    def test_remark_runtime_error(self):
+        api = overpy.Overpass()
+        with pytest.raises(overpy.exception.OverpassRuntimeError):
+            api.parse_xml(read_file("xml/remark-runtime-error-01.xml"))
