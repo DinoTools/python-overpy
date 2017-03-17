@@ -84,6 +84,12 @@ class Overpass(object):
 
         self.xml_parser = xml_parser
 
+    def _handle_remark_msg(self, msg):
+        msg = msg.strip()
+        if msg.startswith("runtime error:"):
+            raise exception.OverpassRuntimeError(msg)
+        raise exception.OverpassUnknownError(msg)
+
     def query(self, query):
         """
         Query the Overpass API
@@ -189,6 +195,8 @@ class Overpass(object):
         if isinstance(data, bytes):
             data = data.decode(encoding)
         data = json.loads(data, parse_float=Decimal)
+        if "remark" in data:
+            self._handle_remark_msg(msg=data.get("remark"))
         return Result.from_json(data, api=self)
 
     def parse_xml(self, data, encoding="utf-8", parser=None):
@@ -209,6 +217,10 @@ class Overpass(object):
         if PY2 and not isinstance(data, str):
             # Python 2.x: Convert unicode strings
             data = data.encode(encoding)
+
+        m = re.compile("<remark>(?P<msg>[^<>]*)</remark>").search(data)
+        if m:
+            self._handle_remark_msg(m.group("msg"))
 
         return Result.from_xml(data, api=self, parser=parser)
 

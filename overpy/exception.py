@@ -74,12 +74,24 @@ class OverpassBadRequest(OverPyException):
         return "\n".join(tmp_msgs)
 
 
+class OverpassError(OverPyException):
+    pass
+
+
 class OverpassGatewayTimeout(OverPyException):
     """
     Raised if load of the Overpass API service is too high and it can't handle the request.
     """
     def __init__(self):
         OverPyException.__init__(self, "Server load too high")
+
+
+class OverpassRuntimeError(OverpassError):
+    """
+    Raised if the server returns a remark-tag(xml) or remark element(json) with a message starting with
+    'runtime error: '.
+    """
+    pass
 
 
 class OverpassTooManyRequests(OverPyException):
@@ -104,6 +116,13 @@ class OverpassUnknownContentType(OverPyException):
         if self.content_type is None:
             return "No content type returned"
         return "Unknown content type: %s" % self.content_type
+
+
+class OverpassUnknownError(OverpassError):
+    """
+    Raised if the server returns a remark-tag(xml) or remark element(json) and we are unable to find any reason.
+    """
+    pass
 
 
 class OverpassUnknownHTTPStatusCode(OverPyException):
