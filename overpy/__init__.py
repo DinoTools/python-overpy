@@ -85,6 +85,13 @@ class Overpass(object):
         self.xml_parser = xml_parser
 
     def _handle_remark_msg(self, msg):
+        """
+        Try to parse the message provided with the remark tag or element.
+
+        :param str msg: The message
+        :raises overpy.exception.OverpassRuntimeError: If message starts with 'runtime error:'
+        :raises overpy.exception.OverpassUnknownError: If it is unable to identify the error
+        """
         msg = msg.strip()
         if msg.startswith("runtime error:"):
             raise exception.OverpassRuntimeError(msg)

@@ -75,6 +75,9 @@ class OverpassBadRequest(OverPyException):
 
 
 class OverpassError(OverPyException):
+    """
+    Base exception to report errors if the response returns a remark tag or element.
+    """
     pass
 
 
