@@ -349,23 +349,39 @@ class Result(object):
         return result
 
     @classmethod
-    def from_xml(cls, data, api=None, parser=XML_PARSER_SAX):
+    def from_xml(cls, data, api=None, parser=None):
         """
-        Create a new instance and load data from xml object.
+        Create a new instance and load data from xml data or object.
+        
+        .. note::
+            If parser is set to None, the functions tries to find the best parse.
+            By default the SAX parser is chosen if a string is provided as data.
+            The parser is set to DOM if an xml.etree.ElementTree.Element is provided as data value.
 
         :param data: Root element
-        :type data: xml.etree.ElementTree.Element
-        :param api:
+        :type data: str | xml.etree.ElementTree.Element
+        :param api: The instance to query additional information if required.
         :type api: Overpass
-        :param parser: Specify the parser to use(DOM or SAX)
-        :type parser: Integer
+        :param parser: Specify the parser to use(DOM or SAX)(Default: None = autodetect, defaults to SAX)
+        :type parser: Integer | None
         :return: New instance of Result object
         :rtype: Result
         """
+        if parser is None:
+            if isinstance(data, str):
+                parser = XML_PARSER_SAX
+            else:
+                parser = XML_PARSER_DOM
+
         result = cls(api=api)
         if parser == XML_PARSER_DOM:
             import xml.etree.ElementTree as ET
-            root = ET.fromstring(data)
+            if isinstance(data, str):
+                root = ET.fromstring(data)
+            elif isinstance(data, ET.Element):
+                root = data
+            else:
+                raise exception.OverPyException("Unable to detect data type.")
 
             for elem_cls in [Node, Way, Relation, Area]:
                 for child in root:
