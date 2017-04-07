@@ -3,7 +3,7 @@ import json
 import overpy
 
 
-def dump(result, fp, nodes=False, ways=False, json_args={}):
+def dump(result, fp, nodes=False, ways=False, json_args=None):
     """
     Use the result from the Overpass API to generate GeoJSON.
     
@@ -61,4 +61,6 @@ def dump(result, fp, nodes=False, ways=False, json_args={}):
         "features": features
     }
 
+    if json_args is None:
+        json_args = {}
     json.dump(geojson, fp, **json_args)
