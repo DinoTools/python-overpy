@@ -2,6 +2,7 @@ import pytest
 
 import overpy
 
+from tests.base_class import BaseTestWay
 from tests import read_file, new_server_thread, stop_server_thread, BaseHTTPRequestHandler
 
 
@@ -107,6 +108,23 @@ class TestNode(object):
         assert node.id == 3233854235
 
         stop_server_thread(server)
+
+
+class TestPickle(BaseTestWay):
+    def test_way02(self):
+        """
+        Try to pickle and unpickle the result object
+        """
+        import pickle
+
+        api = overpy.Overpass()
+        result = api.parse_json(read_file("json/way-02.json"))
+        self._test_way02(result)
+        # do pickle and unpickle
+        result_string = pickle.dumps(result)
+        new_result = pickle.loads(result_string)
+        # test new result
+        self._test_way02(new_result)
 
 
 class TestRelation(object):
