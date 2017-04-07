@@ -59,7 +59,7 @@ def dump(result, fp):
         fp.write('</node>\n')
 
     for way in result.ways:
-        fp.write('<way id="{0:d}"'.format(node.id))
+        fp.write('<way id="{0:d}"'.format(way.id))
         if len(way.nodes) == 0 and len(way.tags) == 0:
             fp.write('/>\n')
             continue
