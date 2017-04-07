@@ -92,6 +92,8 @@ class OverpassError(OverPyException):
     def __str__(self):
         if self.msg is None:
             return "No error message provided"
+        if not isinstance(self.msg, str):
+            return str(self.msg)
         return self.msg
 
 
