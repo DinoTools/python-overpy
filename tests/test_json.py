@@ -106,3 +106,13 @@ class TestRemark(object):
         api = overpy.Overpass()
         with pytest.raises(overpy.exception.OverpassRuntimeError):
             api.parse_json(read_file("json/remark-runtime-error-01.json"))
+
+    def test_remark_runtime_remark(self):
+        api = overpy.Overpass()
+        with pytest.raises(overpy.exception.OverpassRuntimeRemark):
+            api.parse_json(read_file("json/remark-runtime-remark-01.json"))
+
+    def test_remark_unknown(self):
+        api = overpy.Overpass()
+        with pytest.raises(overpy.exception.OverpassUnknownError):
+            api.parse_json(read_file("json/remark-unknown-01.json"))

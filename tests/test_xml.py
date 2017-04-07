@@ -176,3 +176,13 @@ class TestRemark(object):
         api = overpy.Overpass()
         with pytest.raises(overpy.exception.OverpassRuntimeError):
             api.parse_xml(read_file("xml/remark-runtime-error-01.xml"))
+
+    def test_remark_runtime_remark(self):
+        api = overpy.Overpass()
+        with pytest.raises(overpy.exception.OverpassRuntimeRemark):
+            api.parse_xml(read_file("xml/remark-runtime-remark-01.xml"))
+
+    def test_remark_unknown(self):
+        api = overpy.Overpass()
+        with pytest.raises(overpy.exception.OverpassUnknownError):
+            api.parse_xml(read_file("xml/remark-unknown-01.xml"))
