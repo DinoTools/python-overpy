@@ -31,8 +31,8 @@ def dump(result, fp):
     fp.write(
         '<bounds minlat="{0:f}" minlon="{1:f}" maxlat="{2:f}" maxlon="{3:f}"/>\n'.format(
             lat_min,
-            lat_max,
             lon_min,
+            lat_max,
             lon_max
         )
     )
