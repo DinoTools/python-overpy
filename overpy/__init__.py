@@ -90,12 +90,15 @@ class Overpass(object):
 
         :param str msg: The message
         :raises overpy.exception.OverpassRuntimeError: If message starts with 'runtime error:'
-        :raises overpy.exception.OverpassUnknownError: If it is unable to identify the error
+        :raises overpy.exception.OverpassRuntimeRemark: If message starts with 'runtime remark:'
+        :raises overpy.exception.OverpassUnknownError: If we are unable to identify the error
         """
         msg = msg.strip()
         if msg.startswith("runtime error:"):
-            raise exception.OverpassRuntimeError(msg)
-        raise exception.OverpassUnknownError(msg)
+            raise exception.OverpassRuntimeError(msg=msg)
+        elif msg.startswith("runtime remark:"):
+            raise exception.OverpassRuntimeRemark(msg=msg)
+        raise exception.OverpassUnknownError(msg=msg)
 
     def query(self, query):
         """

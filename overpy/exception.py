@@ -77,8 +77,22 @@ class OverpassBadRequest(OverPyException):
 class OverpassError(OverPyException):
     """
     Base exception to report errors if the response returns a remark tag or element.
+    
+    .. note::
+        If you are not sure which of the subexceptions you should use, use this one and try to parse the message.
+
+        For more information have a look at https://github.com/DinoTools/python-overpy/issues/62
+    
+    :param str msg: The message from the remark tag or element
     """
-    pass
+    def __init__(self, msg=None):
+        #: The message from the remark tag or element
+        self.msg = msg
+
+    def __str__(self):
+        if self.msg is None:
+            return "No error message provided"
+        return self.msg
 
 
 class OverpassGatewayTimeout(OverPyException):
@@ -92,7 +106,15 @@ class OverpassGatewayTimeout(OverPyException):
 class OverpassRuntimeError(OverpassError):
     """
     Raised if the server returns a remark-tag(xml) or remark element(json) with a message starting with
-    'runtime error: '.
+    'runtime error:'.
+    """
+    pass
+
+
+class OverpassRuntimeRemark(OverpassError):
+    """
+    Raised if the server returns a remark-tag(xml) or remark element(json) with a message starting with
+    'runtime remark:'.
     """
     pass
 
