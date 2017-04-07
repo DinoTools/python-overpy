@@ -5,10 +5,21 @@ import overpy
 
 def dump(result, fp, nodes=False, ways=False, json_args={}):
     """
+    Use the result from the Overpass API to generate GeoJSON.
+    
+    More information:
 
-    :param result:
+    * http://geojson.org/
+
+    :param result: The result from the Overpass API
     :type result: overpy.Result
-    :param fp:
+    :param fp: Filepointer to use
+    :param nodes: Export nodes
+    :type nodes: bool
+    :param ways: Export ways
+    :type ways: bool
+    :param json_args: Additional arguments passed to json.dump(...)
+    :type json_args: dict
     :return:
     """
     features = []
