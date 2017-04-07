@@ -171,6 +171,28 @@ class TestDataError(object):
             overpy.Way.from_xml(node)
 
 
+class TestParser(BaseTestNodes):
+    def test_exception(self):
+        with pytest.raises(overpy.exception.OverPyException):
+            overpy.Result.from_xml(123)
+
+    def test_xml_element(self):
+        import xml.etree.ElementTree as ET
+        data = read_file("xml/node-01.xml")
+        root = ET.fromstring(data)
+        result = overpy.Result.from_xml(root)
+
+        assert isinstance(result, overpy.Result)
+        self._test_node01(result)
+
+    def test_xml_autodetect_parser(self):
+        data = read_file("xml/node-01.xml")
+        result = overpy.Result.from_xml(data)
+
+        assert isinstance(result, overpy.Result)
+        self._test_node01(result)
+
+
 class TestRemark(object):
     def test_remark_runtime_error(self):
         api = overpy.Overpass()
