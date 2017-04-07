@@ -40,3 +40,25 @@ class TestExceptions(object):
         e = overpy.exception.OverpassUnknownHTTPStatusCode(123)
         assert e.code == 123
         assert str(e).endswith("123")
+
+    def test_overpass_error(self):
+        exceptions = [
+            overpy.exception.OverpassError,
+            overpy.exception.OverpassRuntimeError,
+            overpy.exception.OverpassRuntimeRemark,
+            overpy.exception.OverpassUnknownError
+        ]
+        for cls in exceptions:
+            e = cls(msg="Test message")
+            assert e.msg == "Test message"
+            assert str(e) == "Test message"
+
+        for cls in exceptions:
+            e = cls()
+            assert e.msg is None
+            assert str(e) == "No error message provided"
+
+        for cls in exceptions:
+            e = cls(msg=123)
+            assert e.msg == 123
+            assert str(e) == "123"
