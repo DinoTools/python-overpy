@@ -19,6 +19,16 @@ PY3 = sys.version_info[0] == 3
 XML_PARSER_DOM = 1
 XML_PARSER_SAX = 2
 
+# Try to convert some common attributes
+# http://wiki.openstreetmap.org/wiki/Elements#Common_attributes
+GLOBAL_ATTRIBUTE_MODIFIERS = {
+    "changeset": int,
+    "timestamp": lambda ts: datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ"),
+    "uid": int,
+    "version": int,
+    "visible": lambda v: v.lower() == "true"
+}
+
 if PY2:
     from urllib2 import urlopen
     from urllib2 import HTTPError
@@ -608,17 +618,10 @@ class Element(object):
         """
 
         self._result = result
-        # Try to convert some common attributes
-        # http://wiki.openstreetmap.org/wiki/Elements#Common_attributes
-        self._attribute_modifiers = {
-            "changeset": int,
-            "timestamp": lambda ts: datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ"),
-            "uid": int,
-            "version": int,
-            "visible": lambda v: v.lower() == "true"
-        }
         self.attributes = attributes
-        for n, m in self._attribute_modifiers.items():
+        # ToDo: Add option to modify attribute modifiers
+        attribute_modifiers = dict(GLOBAL_ATTRIBUTE_MODIFIERS.items())
+        for n, m in attribute_modifiers.items():
             if n in self.attributes:
                 self.attributes[n] = m(self.attributes[n])
         self.id = None
