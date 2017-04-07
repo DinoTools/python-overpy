@@ -5,10 +5,15 @@ import overpy
 
 def dump(result, fp):
     """
+    Use the result from the Overpass API to generate OSM XML
 
-    :param result:
+    More information:
+    
+    * http://wiki.openstreetmap.org/wiki/OSM_XML
+
+    :param result: The result from the Overpass API
     :type result: overpy.Result
-    :param fp:
+    :param fp: Filepointer to use
     :return:
     """
     fp.write('<?xml version="1.0" encoding="UTF-8"?>\n')
