@@ -1,4 +1,4 @@
-class OverPyException(BaseException):
+class OverPyException(Exception):
     """OverPy base exception"""
     pass
 
@@ -77,12 +77,12 @@ class OverpassBadRequest(OverPyException):
 class OverpassError(OverPyException):
     """
     Base exception to report errors if the response returns a remark tag or element.
-    
+
     .. note::
         If you are not sure which of the subexceptions you should use, use this one and try to parse the message.
 
         For more information have a look at https://github.com/DinoTools/python-overpy/issues/62
-    
+
     :param str msg: The message from the remark tag or element
     """
     def __init__(self, msg=None):
