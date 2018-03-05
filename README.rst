@@ -5,11 +5,11 @@ A Python Wrapper to access the Overpass API.
 
 Have a look at the `documentation`_ to find additional information.
 
-.. image:: https://pypip.in/version/overpy/badge.svg
+.. image:: https://img.shields.io/pypi/v/overpy.svg
     :target: https://pypi.python.org/pypi/overpy/
     :alt: Latest Version
 
-.. image:: https://pypip.in/license/overpy/badge.svg
+.. image:: https://img.shields.io/pypi/l/overpy.svg
     :target: https://pypi.python.org/pypi/overpy/
     :alt: License
 
