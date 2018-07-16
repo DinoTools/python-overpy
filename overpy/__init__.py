@@ -61,7 +61,7 @@ class Overpass(object):
     default_retry_timeout = 1.0
     default_url = "http://overpass-api.de/api/interpreter"
 
-    def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX, max_retry_count=None, retry_timeout=None):
+    def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX, max_retry_count=None, retry_timeout=None, context=None):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
@@ -73,6 +73,7 @@ class Overpass(object):
         :type max_retry_count: Integer
         :param retry_timeout: Time to wait between tries (Default: default_retry_timeout)
         :type retry_timeout: float
+        :param context: SSL content of the query. Can be used for connections to servers with unverified certificates.
         """
         self.url = self.default_url
         if url is not None:
@@ -92,6 +93,8 @@ class Overpass(object):
             retry_timeout = self.default_retry_timeout
         self.retry_timeout = retry_timeout
 
+        self.context = context
+
         self.xml_parser = xml_parser
 
     def _handle_remark_msg(self, msg):
@@ -110,12 +113,11 @@ class Overpass(object):
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
 
-    def query(self, query, context=None):
+    def query(self, query):
         """
         Query the Overpass API
 
         :param String|Bytes query: The query string in Overpass QL
-        :param SSLContext context: An optional context for an SSL connection
         :return: The parsed result
         :rtype: overpy.Result
         """
@@ -130,7 +132,7 @@ class Overpass(object):
                 time.sleep(self.retry_timeout)
             retry_num += 1
             try:
-                f = urlopen(self.url, query, context=context)
+                f = urlopen(self.url, query, context=self.context)
             except HTTPError as e:
                 f = e
 
