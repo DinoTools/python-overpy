@@ -110,11 +110,12 @@ class Overpass(object):
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
 
-    def query(self, query):
+    def query(self, query, context=None):
         """
         Query the Overpass API
 
         :param String|Bytes query: The query string in Overpass QL
+        :param SSLContext context: An optional context for an SSL connection
         :return: The parsed result
         :rtype: overpy.Result
         """
@@ -129,7 +130,7 @@ class Overpass(object):
                 time.sleep(self.retry_timeout)
             retry_num += 1
             try:
-                f = urlopen(self.url, query)
+                f = urlopen(self.url, query, context=context)
             except HTTPError as e:
                 f = e
 
