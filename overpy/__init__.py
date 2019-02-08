@@ -151,6 +151,11 @@ class Overpass(object):
                 else:
                     content_type = f.getheader("Content-Type")
 
+		if ";" in content_type:
+		    content_type, charset = content_type.split(";")
+
+		    charset = charset.split("=")[1]
+
                 if content_type == "application/json":
                     return self.parse_json(response)
 
