@@ -927,6 +927,9 @@ class Way(Element):
         result = []
         resolved = False
 
+        if not strict_mode:
+            invalid_nodes = []
+
         for node_id in self._node_ids:
             try:
                 node = self._result.get_node(node_id)
@@ -963,11 +966,19 @@ class Way(Element):
                 node = None
 
             if node is None:
-                raise exception.DataIncomplete("Unable to resolve all nodes")
+                if strict_mode:
+                    raise exception.DataIncomplete("Unable to resolve all nodes")
+                else:
+                    # remove the id of the note from the internal list of nodes
+                    invalid_nodes.append(node_id)
+            else:
+                result.append(node)
 
-            result.append(node)
-
+        if not strict_mode:
+            for node_id in invalid_nodes:
+                self._node_ids.remove(node_id)
         return result
+
 
     @classmethod
     def from_json(cls, data, result=None):
