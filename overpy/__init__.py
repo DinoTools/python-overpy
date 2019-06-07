@@ -913,7 +913,7 @@ class Way(Element):
         """
         return self.get_nodes()
 
-    def get_nodes(self, resolve_missing=False):
+    def get_nodes(self, resolve_missing=False, strict_mode=True):
         """
         Get the nodes defining the geometry of the way
 
@@ -937,11 +937,11 @@ class Way(Element):
                 result.append(node)
                 continue
 
-            if not resolve_missing:
+            if not resolve_missing and strict_mode:
                 raise exception.DataIncomplete("Resolve missing nodes is disabled")
 
             # We tried to resolve the data but some nodes are still missing
-            if resolved:
+            if resolved and strict_mode:
                 raise exception.DataIncomplete("Unable to resolve all nodes")
 
             query = ("\n"
