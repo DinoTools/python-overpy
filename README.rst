@@ -40,7 +40,7 @@ Supported Python versions:
 
 .. code-block:: console
 
-    $ pip install overpy
+    $ pip install overpy2
 
 Examples
 --------
