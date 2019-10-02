@@ -110,7 +110,7 @@ class Overpass(object):
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
 
-    def query(self, query):
+    def query(self, query, return_raw=False):
         """
         Query the Overpass API
 
@@ -149,101 +149,10 @@ class Overpass(object):
                     content_type = f.getheader("Content-Type")
 
                 if content_type == "application/json":
-                    return self.parse_json(response)
+                    return self.parse_json(response, return_raw=return_raw)
 
                 if content_type == "application/osm3s+xml":
-                    return self.parse_xml(response)
-
-                e = exception.OverpassUnknownContentType(content_type)
-                if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
-                continue
-
-            if f.code == 400:
-                msgs = []
-                for msg in self._regex_extract_error_msg.finditer(response):
-                    tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
-                    try:
-                        tmp = tmp.decode("utf-8")
-                    except UnicodeDecodeError:
-                        tmp = repr(tmp)
-                    msgs.append(tmp)
-
-                e = exception.OverpassBadRequest(
-                    query,
-                    msgs=msgs
-                )
-                if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
-                continue
-
-            if f.code == 429:
-                e = exception.OverpassTooManyRequests
-                if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
-                continue
-
-            if f.code == 504:
-                e = exception.OverpassGatewayTimeout
-                if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
-                continue
-
-            e = exception.OverpassUnknownHTTPStatusCode(f.code)
-            if not do_retry:
-                raise e
-            retry_exceptions.append(e)
-            continue
-
-        raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
-
-    def query_raw(self, query):
-        """
-        Query the Overpass API
-
-        :param String|Bytes query: The query string in Overpass QL
-        :return: The raw result
-        :rtype: str
-        """
-        if not isinstance(query, bytes):
-            query = query.encode("utf-8")
-
-        retry_num = 0
-        retry_exceptions = []
-        do_retry = True if self.max_retry_count > 0 else False
-        while retry_num <= self.max_retry_count:
-            if retry_num > 0:
-                time.sleep(self.retry_timeout)
-            retry_num += 1
-            try:
-                f = urlopen(self.url, query)
-            except HTTPError as e:
-                f = e
-
-            response = f.read(self.read_chunk_size)
-            while True:
-                data = f.read(self.read_chunk_size)
-                if len(data) == 0:
-                    break
-                response = response + data
-            f.close()
-
-            if f.code == 200:
-                if PY2:
-                    http_info = f.info()
-                    content_type = http_info.getheader("content-type")
-                else:
-                    content_type = f.getheader("Content-Type")
-
-                if content_type == "application/json":
-                    return self.parse_json(response, return_raw=True)
-
-                if content_type == "application/osm3s+xml":
-                    return self.parse_xml(response, return_raw=True)
+                    return self.parse_xml(response, return_raw=return_raw)
 
                 e = exception.OverpassUnknownContentType(content_type)
                 if not do_retry:
