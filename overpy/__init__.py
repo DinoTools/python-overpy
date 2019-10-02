@@ -201,7 +201,98 @@ class Overpass(object):
 
         raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
 
-    def parse_json(self, data, encoding="utf-8"):
+    def query_raw(self, query):
+        """
+        Query the Overpass API
+
+        :param String|Bytes query: The query string in Overpass QL
+        :return: The raw result
+        :rtype: str
+        """
+        if not isinstance(query, bytes):
+            query = query.encode("utf-8")
+
+        retry_num = 0
+        retry_exceptions = []
+        do_retry = True if self.max_retry_count > 0 else False
+        while retry_num <= self.max_retry_count:
+            if retry_num > 0:
+                time.sleep(self.retry_timeout)
+            retry_num += 1
+            try:
+                f = urlopen(self.url, query)
+            except HTTPError as e:
+                f = e
+
+            response = f.read(self.read_chunk_size)
+            while True:
+                data = f.read(self.read_chunk_size)
+                if len(data) == 0:
+                    break
+                response = response + data
+            f.close()
+
+            if f.code == 200:
+                if PY2:
+                    http_info = f.info()
+                    content_type = http_info.getheader("content-type")
+                else:
+                    content_type = f.getheader("Content-Type")
+
+                if content_type == "application/json":
+                    return self.parse_json(response, return_raw=True)
+
+                if content_type == "application/osm3s+xml":
+                    return self.parse_xml(response, return_raw=True)
+
+                e = exception.OverpassUnknownContentType(content_type)
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
+
+            if f.code == 400:
+                msgs = []
+                for msg in self._regex_extract_error_msg.finditer(response):
+                    tmp = self._regex_remove_tag.sub(b"", msg.group("msg"))
+                    try:
+                        tmp = tmp.decode("utf-8")
+                    except UnicodeDecodeError:
+                        tmp = repr(tmp)
+                    msgs.append(tmp)
+
+                e = exception.OverpassBadRequest(
+                    query,
+                    msgs=msgs
+                )
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
+
+            if f.code == 429:
+                e = exception.OverpassTooManyRequests
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
+
+            if f.code == 504:
+                e = exception.OverpassGatewayTimeout
+                if not do_retry:
+                    raise e
+                retry_exceptions.append(e)
+                continue
+
+            e = exception.OverpassUnknownHTTPStatusCode(f.code)
+            if not do_retry:
+                raise e
+            retry_exceptions.append(e)
+            continue
+
+        raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
+
+    def parse_json(self, data, encoding="utf-8", return_raw=False):
         """
         Parse raw response from Overpass service.
 
@@ -214,12 +305,16 @@ class Overpass(object):
         """
         if isinstance(data, bytes):
             data = data.decode(encoding)
-        data = json.loads(data, parse_float=Decimal)
-        if "remark" in data:
-            self._handle_remark_msg(msg=data.get("remark"))
-        return Result.from_json(data, api=self)
+        json_data = json.loads(data, parse_float=Decimal)
+        if "remark" in json_data:
+            self._handle_remark_msg(msg=json_data.get("remark"))
+        
+        if return_raw:
+            return data
+        else:
+            return Result.from_json(data, api=self)
 
-    def parse_xml(self, data, encoding="utf-8", parser=None):
+    def parse_xml(self, data, encoding="utf-8", parser=None, return_raw=False):
         """
 
         :param data: Raw XML Data
@@ -241,8 +336,11 @@ class Overpass(object):
         m = re.compile("<remark>(?P<msg>[^<>]*)</remark>").search(data)
         if m:
             self._handle_remark_msg(m.group("msg"))
-
-        return Result.from_xml(data, api=self, parser=parser)
+        
+        if return_raw:
+            return data
+        else:
+            return Result.from_xml(data, api=self, parser=parser)
 
 
 class Result(object):
