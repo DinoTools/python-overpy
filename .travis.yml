@@ -2,16 +2,14 @@ language: python
 sudo: false
 python:
   - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-  - "3.5"
   - "3.6"
-  - "pypy"
+  - "3.7"
+  - "3.8"
+  - "3.9"
+  - "pypy2"
   - "pypy3"
 
 before_install:
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install 'coverage<4.0.0'; fi
   - pip install coveralls
 
 install:
