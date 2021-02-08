@@ -3,13 +3,8 @@ import sys
 import threading
 from threading import Lock
 
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from SocketServer import BaseRequestHandler, TCPServer, ThreadingMixIn
-    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-else:
-    from socketserver import BaseRequestHandler, TCPServer, ThreadingMixIn
-    from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import BaseRequestHandler, TCPServer, ThreadingMixIn
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 TCPServer.allow_reuse_address = True
 

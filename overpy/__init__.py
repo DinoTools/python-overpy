@@ -4,7 +4,6 @@ from decimal import Decimal
 from xml.sax import handler, make_parser
 import json
 import re
-import sys
 import time
 
 from overpy import exception
@@ -12,9 +11,6 @@ from overpy.__about__ import (
     __author__, __copyright__, __email__, __license__, __summary__, __title__,
     __uri__, __version__
 )
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
 
 XML_PARSER_DOM = 1
 XML_PARSER_SAX = 2
@@ -29,12 +25,8 @@ GLOBAL_ATTRIBUTE_MODIFIERS = {
     "visible": lambda v: v.lower() == "true"
 }
 
-if PY2:
-    from urllib2 import urlopen
-    from urllib2 import HTTPError
-elif PY3:
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
+from urllib.request import urlopen
+from urllib.error import HTTPError
 
 
 def is_valid_type(element, cls):
@@ -142,11 +134,7 @@ class Overpass:
             f.close()
 
             if f.code == 200:
-                if PY2:
-                    http_info = f.info()
-                    content_type = http_info.getheader("content-type")
-                else:
-                    content_type = f.getheader("Content-Type")
+                content_type = f.getheader("Content-Type")
 
                 if content_type == "application/json":
                     return self.parse_json(response)
@@ -234,9 +222,6 @@ class Overpass:
 
         if isinstance(data, bytes):
             data = data.decode(encoding)
-        if PY2 and not isinstance(data, str):
-            # Python 2.x: Convert unicode strings
-            data = data.encode(encoding)
 
         m = re.compile("<remark>(?P<msg>[^<>]*)</remark>").search(data)
         if m:
@@ -399,10 +384,7 @@ class Result:
                         result.append(elem_cls.from_xml(child, result=result))
 
         elif parser == XML_PARSER_SAX:
-            if PY2:
-                from StringIO import StringIO
-            else:
-                from io import StringIO
+            from io import StringIO
             source = StringIO(data)
             sax_handler = OSMSAXHandler(result)
             parser = make_parser()
