@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
+from urllib.request import urlopen
+from urllib.error import HTTPError
 from xml.sax import handler, make_parser
 import json
 import re
@@ -24,9 +26,6 @@ GLOBAL_ATTRIBUTE_MODIFIERS = {
     "version": int,
     "visible": lambda v: v.lower() == "true"
 }
-
-from urllib.request import urlopen
-from urllib.error import HTTPError
 
 
 def is_valid_type(element, cls):
