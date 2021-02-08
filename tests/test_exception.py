@@ -1,7 +1,7 @@
 import overpy
 
 
-class TestExceptions(object):
+class TestExceptions:
     def test_element_data_wrong_type(self):
         e = overpy.exception.ElementDataWrongType("from1")
         assert e.type_expected == "from1"

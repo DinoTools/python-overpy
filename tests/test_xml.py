@@ -105,7 +105,7 @@ class TestWay(BaseTestWay):
             api.parse_xml(read_file("xml/way-04.xml"), parser=overpy.XML_PARSER_SAX)
 
 
-class TestDataError(object):
+class TestDataError:
     def _get_element_wrong_type(self):
         data = "<foo></foo>"
         import xml.etree.ElementTree as ET
@@ -193,7 +193,7 @@ class TestParser(BaseTestNodes):
         self._test_node01(result)
 
 
-class TestRemark(object):
+class TestRemark:
     def test_remark_runtime_error(self):
         api = overpy.Overpass()
         with pytest.raises(overpy.exception.OverpassRuntimeError):

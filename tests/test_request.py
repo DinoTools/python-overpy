@@ -126,7 +126,7 @@ class HandleRetry(BaseHTTPRequestHandler):
         f(self)
 
 
-class TestQuery(object):
+class TestQuery:
     def test_chunk_size(self):
         url, server = new_server_thread(HandleResponseJSON)
 
@@ -143,10 +143,10 @@ class TestQuery(object):
         api.url = url
         with pytest.raises(overpy.exception.OverpassBadRequest):
             # Missing ; after way(1)
-            api.query((
+            api.query(
                 "way(1)"
                 "out body;"
-            ))
+            )
         stop_server_thread(server)
 
     def test_overpass_syntax_error_encoding_error(self):
@@ -161,10 +161,10 @@ class TestQuery(object):
         api.url = url
         with pytest.raises(overpy.exception.OverpassBadRequest):
             # Missing ; after way(1)
-            api.query((
+            api.query(
                 "way(1)"
                 "out body;"
-            ))
+            )
         stop_server_thread(server)
 
     def test_overpass_too_many_requests(self):
@@ -173,10 +173,10 @@ class TestQuery(object):
         api = overpy.Overpass()
         api.url = url
         with pytest.raises(overpy.exception.OverpassTooManyRequests):
-            api.query((
+            api.query(
                 "way(1);"
                 "out body;"
-            ))
+            )
         stop_server_thread(server)
 
     def test_overpass_gateway_timeout(self):
@@ -185,10 +185,10 @@ class TestQuery(object):
         api = overpy.Overpass()
         api.url = url
         with pytest.raises(overpy.exception.OverpassGatewayTimeout):
-            api.query((
+            api.query(
                 "way(1);"
                 "out body;"
-            ))
+            )
         stop_server_thread(server)
 
     def test_overpass_unknown_status_code(self):
@@ -197,10 +197,10 @@ class TestQuery(object):
         api = overpy.Overpass()
         api.url = url
         with pytest.raises(overpy.exception.OverpassUnknownHTTPStatusCode):
-            api.query((
+            api.query(
                 "way(1);"
                 "out body;"
-            ))
+            )
         stop_server_thread(server)
 
     def test_response_json(self):
@@ -238,8 +238,8 @@ class TestQuery(object):
         api.max_retry_count = len(HandleRetry.default_handler_func) - 1
         api.url = url
         with pytest.raises(overpy.exception.MaxRetriesReached):
-            api.query((
+            api.query(
                 "way(1);"
                 "out body;"
-            ))
+            )
         stop_server_thread(server)

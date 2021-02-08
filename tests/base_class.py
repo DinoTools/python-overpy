@@ -9,7 +9,7 @@ import overpy
 from tests import read_file
 
 
-class BaseTestAreas(object):
+class BaseTestAreas:
     def _test_area01(self, result):
         assert len(result.areas) == 4
         assert len(result.nodes) == 0
@@ -76,7 +76,7 @@ class BaseTestAreas(object):
         assert len(result.get_way_ids()) == 0
 
 
-class BaseTestNodes(object):
+class BaseTestNodes:
     def _test_node01(self, result):
         assert len(result.nodes) == 3
         assert len(result.relations) == 0
@@ -150,7 +150,7 @@ class BaseTestNodes(object):
         assert len(result.get_way_ids()) == 0
 
 
-class BaseTestRelation(object):
+class BaseTestRelation:
     def _test_relation01(self, result):
         assert len(result.nodes) == 0
         assert len(result.relations) == 1
@@ -288,7 +288,7 @@ class BaseTestRelation(object):
         assert way.geometry[0].lon == Decimal("6.9813352")
 
 
-class BaseTestWay(object):
+class BaseTestWay:
     def _test_way01(self, result):
         assert len(result.nodes) == 0
         assert len(result.relations) == 0

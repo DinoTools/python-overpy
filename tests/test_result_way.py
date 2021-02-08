@@ -36,7 +36,7 @@ class HandleResponseJSON03(BaseHTTPRequestHandler):
         self.wfile.write(read_file("json/result-way-03.json", "rb"))
 
 
-class TestNodes(object):
+class TestNodes:
     def test_missing_unresolvable(self):
         url, server = new_server_thread(HandleResponseJSON01)
 

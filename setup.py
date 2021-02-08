@@ -12,7 +12,7 @@ with open(os.path.join(base_dir, "overpy", "__about__.py")) as f:
 filename_readme = os.path.join(base_dir, "README.rst")
 if sys.version_info[0] == 2:
     import io
-    fp = io.open(filename_readme, encoding="utf-8")
+    fp = open(filename_readme, encoding="utf-8")
 else:
     fp = open(filename_readme, encoding="utf-8")
 long_description = fp.read()
