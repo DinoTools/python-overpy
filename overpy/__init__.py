@@ -49,7 +49,7 @@ def is_valid_type(element, cls):
     return isinstance(element, cls) and element.id is not None
 
 
-class Overpass(object):
+class Overpass:
     """
     Class to access the Overpass API
 
@@ -78,7 +78,7 @@ class Overpass(object):
         if url is not None:
             self.url = url
 
-        self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
+        self._regex_extract_error_msg = re.compile(br"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
         if read_chunk_size is None:
             read_chunk_size = self.default_read_chunk_size
@@ -245,7 +245,7 @@ class Overpass(object):
         return Result.from_xml(data, api=self, parser=parser)
 
 
-class Result(object):
+class Result:
     """
     Class to handle the result.
     """
@@ -603,7 +603,7 @@ class Result(object):
     ways = property(get_ways)
 
 
-class Element(object):
+class Element:
     """
     Base element
     """
@@ -679,7 +679,7 @@ class Area(Element):
         self.id = area_id
 
     def __repr__(self):
-        return "<overpy.Area id={}>".format(self.id)
+        return f"<overpy.Area id={self.id}>"
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -782,7 +782,7 @@ class Node(Element):
         self.lon = lon
 
     def __repr__(self):
-        return "<overpy.Node id={} lat={} lon={}>".format(self.id, self.lat, self.lon)
+        return f"<overpy.Node id={self.id} lat={self.lat} lon={self.lon}>"
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -897,7 +897,7 @@ class Way(Element):
         self.center_lon = center_lon
 
     def __repr__(self):
-        return "<overpy.Way id={} nodes={}>".format(self.id, self._node_ids)
+        return f"<overpy.Way id={self.id} nodes={self._node_ids}>"
 
     @property
     def nodes(self):
@@ -1086,7 +1086,7 @@ class Relation(Element):
         self.center_lon = center_lon
 
     def __repr__(self):
-        return "<overpy.Relation id={}>".format(self.id)
+        return f"<overpy.Relation id={self.id}>"
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -1211,7 +1211,7 @@ class Relation(Element):
         )
 
 
-class RelationMember(object):
+class RelationMember:
     """
     Base class to represent a member of a relation.
     """
@@ -1340,7 +1340,7 @@ class RelationNode(RelationMember):
         return self._result.get_node(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationNode ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationNode ref={self.ref} role={self.role}>"
 
 
 class RelationWay(RelationMember):
@@ -1350,16 +1350,16 @@ class RelationWay(RelationMember):
         return self._result.get_way(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationWay ref={self.ref} role={self.role}>"
 
 
-class RelationWayGeometryValue(object):
+class RelationWayGeometryValue:
     def __init__(self, lat, lon):
         self.lat = lat
         self.lon = lon
 
     def __repr__(self):
-        return "<overpy.RelationWayGeometryValue lat={} lon={}>".format(self.lat, self.lon)
+        return f"<overpy.RelationWayGeometryValue lat={self.lat} lon={self.lon}>"
 
 
 class RelationRelation(RelationMember):
@@ -1369,7 +1369,7 @@ class RelationRelation(RelationMember):
         return self._result.get_relation(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationRelation ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationRelation ref={self.ref} role={self.role}>"
 
 
 class RelationArea(RelationMember):
@@ -1379,7 +1379,7 @@ class RelationArea(RelationMember):
         return self._result.get_area(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationArea ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationArea ref={self.ref} role={self.role}>"
 
 
 class OSMSAXHandler(handler.ContentHandler):

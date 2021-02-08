@@ -15,4 +15,4 @@ for way in result.ways:
     print("  Highway: %s" % way.tags.get("highway", "n/a"))
     print("  Nodes:")
     for node in way.nodes:
-        print("    Lat: %f, Lon: %f" % (node.lat, node.lon))
+        print(f"    Lat: {node.lat:f}, Lon: {node.lon:f}")

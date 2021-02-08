@@ -16,7 +16,7 @@ class HandleResponseJSON02(BaseHTTPRequestHandler):
         self.wfile.write(read_file("json/result-expand-02.json", "rb"))
 
 
-class TestResult(object):
+class TestResult:
     def test_expand_error(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/result-expand-01.json"))
@@ -46,7 +46,7 @@ class TestResult(object):
         assert len(result1.ways) == 2
 
 
-class TestArea(object):
+class TestArea:
     def test_missing_unresolvable(self):
         url, server = new_server_thread(HandleResponseJSON02)
 
@@ -78,7 +78,7 @@ class TestArea(object):
         stop_server_thread(server)
 
 
-class TestNode(object):
+class TestNode:
     def test_missing_unresolvable(self):
         url, server = new_server_thread(HandleResponseJSON02)
 
@@ -127,7 +127,7 @@ class TestPickle(BaseTestWay):
         self._test_way02(new_result)
 
 
-class TestRelation(object):
+class TestRelation:
     def test_missing_unresolvable(self):
         url, server = new_server_thread(HandleResponseJSON02)
 
@@ -159,7 +159,7 @@ class TestRelation(object):
         stop_server_thread(server)
 
 
-class TestWay(object):
+class TestWay:
     def test_missing_unresolvable(self):
         url, server = new_server_thread(HandleResponseJSON02)
 
