@@ -106,7 +106,8 @@ class TestWay(BaseTestWay):
 
 
 class TestDataError:
-    def _get_element_wrong_type(self):
+    @staticmethod
+    def _get_element_wrong_type():
         data = "<foo></foo>"
         import xml.etree.ElementTree as ET
         return ET.fromstring(data)

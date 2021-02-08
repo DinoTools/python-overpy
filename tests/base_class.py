@@ -10,7 +10,8 @@ from tests import read_file
 
 
 class BaseTestAreas:
-    def _test_area01(self, result):
+    @staticmethod
+    def _test_area01(result):
         assert len(result.areas) == 4
         assert len(result.nodes) == 0
         assert len(result.relations) == 0
@@ -77,7 +78,8 @@ class BaseTestAreas:
 
 
 class BaseTestNodes:
-    def _test_node01(self, result):
+    @staticmethod
+    def _test_node01(result):
         assert len(result.nodes) == 3
         assert len(result.relations) == 0
         assert len(result.ways) == 0
@@ -151,7 +153,8 @@ class BaseTestNodes:
 
 
 class BaseTestRelation:
-    def _test_relation01(self, result):
+    @staticmethod
+    def _test_relation01(result):
         assert len(result.nodes) == 0
         assert len(result.relations) == 1
         assert len(result.ways) == 0
@@ -187,7 +190,8 @@ class BaseTestRelation:
         assert isinstance(relation.members[3], overpy.RelationNode)
         assert isinstance(relation.members[4], overpy.RelationWay)
 
-    def _test_relation02(self, result):
+    @staticmethod
+    def _test_relation02(result):
         assert len(result.nodes) == 3
         assert len(result.relations) == 1
         assert len(result.ways) == 1
@@ -240,7 +244,8 @@ class BaseTestRelation:
         assert way.id == 317146078
         assert member.ref == way.id
 
-    def _test_relation03(self, result):
+    @staticmethod
+    def _test_relation03(result):
         assert len(result.nodes) == 0
         assert len(result.relations) == 1
         assert len(result.ways) == 0
@@ -259,7 +264,8 @@ class BaseTestRelation:
         assert relation.center_lat == Decimal("50.8176646")
         assert relation.center_lon == Decimal("7.0208539")
 
-    def _test_relation04(self, result):
+    @staticmethod
+    def _test_relation04(result):
         assert len(result.nodes) == 0
         assert len(result.relations) == 1
         assert len(result.ways) == 0
@@ -289,7 +295,8 @@ class BaseTestRelation:
 
 
 class BaseTestWay:
-    def _test_way01(self, result):
+    @staticmethod
+    def _test_way01(result):
         assert len(result.nodes) == 0
         assert len(result.relations) == 0
         assert len(result.ways) == 2
@@ -345,7 +352,8 @@ class BaseTestWay:
             assert way_ids[0] == 317146077
             assert way_ids[1] == 317146078
 
-    def _test_way02(self, result):
+    @staticmethod
+    def _test_way02(result):
         assert len(result.nodes) == 6
         assert len(result.relations) == 0
         assert len(result.ways) == 1
@@ -405,7 +413,8 @@ class BaseTestWay:
             assert len(way_ids) == 1
             assert way_ids[0] == 317146077
 
-    def _test_way03(self, result):
+    @staticmethod
+    def _test_way03(result):
         assert len(result.nodes) == 4
         assert len(result.relations) == 0
         assert len(result.ways) == 1
