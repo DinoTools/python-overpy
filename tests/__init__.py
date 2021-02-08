@@ -21,7 +21,7 @@ class OverpyBaseRequestHandler(BaseRequestHandler):
             self.request.send(data)
 
     @staticmethod
-    def get_response(self):
+    def get_response():
         yield b""
 
 
