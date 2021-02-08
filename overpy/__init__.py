@@ -629,7 +629,7 @@ class Element:
                 raise ValueError("Unable to get lat or lon of way center.")
             center_lat = Decimal(center_lat)
             center_lon = Decimal(center_lon)
-        return (center_lat, center_lon)
+        return center_lat, center_lon
 
     @classmethod
     def get_center_from_xml_dom(cls, sub_child):
