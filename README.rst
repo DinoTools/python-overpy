@@ -33,15 +33,14 @@ Install
 
 Supported Python versions:
 
-* Python 2.7
-* Python >= 3.2
+* Python >= 3.4
 * PyPy and PyPy3
 
 **Install:**
 
 .. code-block:: console
 
-    $ pip install overpy
+    $ pip install overpy2
 
 Examples
 --------

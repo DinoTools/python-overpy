@@ -61,7 +61,7 @@ class Overpass(object):
     default_retry_timeout = 1.0
     default_url = "http://overpass-api.de/api/interpreter"
 
-    def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX, max_retry_count=None, retry_timeout=None):
+    def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX, max_retry_count=None, retry_timeout=None, context=None):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
@@ -73,6 +73,7 @@ class Overpass(object):
         :type max_retry_count: Integer
         :param retry_timeout: Time to wait between tries (Default: default_retry_timeout)
         :type retry_timeout: float
+        :param context: SSL content of the query. Can be used for connections to servers with unverified certificates.
         """
         self.url = self.default_url
         if url is not None:
@@ -91,6 +92,8 @@ class Overpass(object):
         if retry_timeout is None:
             retry_timeout = self.default_retry_timeout
         self.retry_timeout = retry_timeout
+
+        self.context = context
 
         self.xml_parser = xml_parser
 
@@ -129,7 +132,7 @@ class Overpass(object):
                 time.sleep(self.retry_timeout)
             retry_num += 1
             try:
-                f = urlopen(self.url, query)
+                f = urlopen(self.url, query, context=self.context)
             except HTTPError as e:
                 f = e
 
@@ -147,6 +150,10 @@ class Overpass(object):
                     content_type = http_info.getheader("content-type")
                 else:
                     content_type = f.getheader("Content-Type")
+
+                if ";" in content_type:
+                    content_type, charset = content_type.split(";")
+                    charset = charset.split("=")[1]
 
                 if content_type == "application/json":
                     return self.parse_json(response)
@@ -906,7 +913,7 @@ class Way(Element):
         """
         return self.get_nodes()
 
-    def get_nodes(self, resolve_missing=False):
+    def get_nodes(self, resolve_missing=False, strict_mode=True):
         """
         Get the nodes defining the geometry of the way
 
@@ -920,6 +927,9 @@ class Way(Element):
         result = []
         resolved = False
 
+        if not strict_mode:
+            invalid_nodes = []
+
         for node_id in self._node_ids:
             try:
                 node = self._result.get_node(node_id)
@@ -930,11 +940,11 @@ class Way(Element):
                 result.append(node)
                 continue
 
-            if not resolve_missing:
+            if not resolve_missing and strict_mode:
                 raise exception.DataIncomplete("Resolve missing nodes is disabled")
 
             # We tried to resolve the data but some nodes are still missing
-            if resolved:
+            if resolved and strict_mode:
                 raise exception.DataIncomplete("Unable to resolve all nodes")
 
             query = ("\n"
@@ -956,11 +966,19 @@ class Way(Element):
                 node = None
 
             if node is None:
-                raise exception.DataIncomplete("Unable to resolve all nodes")
+                if strict_mode:
+                    raise exception.DataIncomplete("Unable to resolve all nodes")
+                else:
+                    # remove the id of the note from the internal list of nodes
+                    invalid_nodes.append(node_id)
+            else:
+                result.append(node)
 
-            result.append(node)
-
+        if not strict_mode:
+            for node_id in invalid_nodes:
+                self._node_ids.remove(node_id)
         return result
+
 
     @classmethod
     def from_json(cls, data, result=None):
