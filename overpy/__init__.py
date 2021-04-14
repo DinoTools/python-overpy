@@ -347,7 +347,7 @@ class Result:
     def from_xml(cls, data, api=None, parser=None):
         """
         Create a new instance and load data from xml data or object.
-        
+
         .. note::
             If parser is set to None, the functions tries to find the best parse.
             By default the SAX parser is chosen if a string is provided as data.
