@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import os
-import sys
 from pathlib import Path
 from setuptools import setup, find_packages
 
@@ -40,7 +38,7 @@ setup(
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests"]),
     include_package_data=True,
     package_data={
-        #"": ["README"],
+        # "": ["README"],
     },
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
