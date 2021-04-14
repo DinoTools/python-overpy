@@ -28,10 +28,13 @@ repos:
       - id: detect-private-key
       # Ensures that a file is either empty, or ends with one newline
       - id: end-of-file-fixer
+        exclude: ^tests/(json|response|xml)/
       # Replaces or checks mixed line ending
       - id: mixed-line-ending
+        exclude: ^tests/(json|response|xml)/
       # This hook trims trailing whitespace
       - id: trailing-whitespace
+        exclude: ^tests/(json|response|xml)/
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.6.0
@@ -76,3 +79,4 @@ repos:
     rev: v0.11.1
     hooks:
       - id: reuse
+        exclude: ^tests/(json|response|xml)/
