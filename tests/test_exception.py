@@ -5,7 +5,7 @@ class TestExceptions:
     def test_element_data_wrong_type(self):
         e = overpy.exception.ElementDataWrongType("from1")
         assert e.type_expected == "from1"
-        assert e.type_provided == None
+        assert e.type_provided is None
         assert isinstance(str(e), str)
 
         e = overpy.exception.ElementDataWrongType("from2", "to2")
@@ -28,7 +28,7 @@ class TestExceptions:
 
     def test_overpass_unknown_content_type(self):
         e = overpy.exception.OverpassUnknownContentType(None)
-        assert e.content_type == None
+        assert e.content_type is None
         assert str(e).startswith("No content")
 
         e = overpy.exception.OverpassUnknownContentType("content")

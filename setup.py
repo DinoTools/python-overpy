@@ -1,21 +1,15 @@
 #!/usr/bin/env python
 import os
 import sys
+from pathlib import Path
 from setuptools import setup, find_packages
 
-base_dir = os.path.dirname(__file__)
+HERE = Path(__file__).resolve().parent
 
 about = {}
-with open(os.path.join(base_dir, "overpy", "__about__.py")) as f:
-    exec(f.read(), about)
+exec((HERE / "overpy" / "__about__.py").read_text(), about)
 
-filename_readme = os.path.join(base_dir, "README.rst")
-if sys.version_info[0] == 2:
-    import io
-    fp = open(filename_readme, encoding="utf-8")
-else:
-    fp = open(filename_readme, encoding="utf-8")
-long_description = fp.read()
+long_description = (HERE / "README.rst").read_text()
 
 setup(
     name=about["__title__"],

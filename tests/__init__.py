@@ -1,6 +1,6 @@
-import os
 import sys
 import threading
+from pathlib import Path
 from threading import Lock
 
 from socketserver import BaseRequestHandler, TCPServer, ThreadingMixIn
@@ -21,13 +21,12 @@ class OverpyBaseRequestHandler(BaseRequestHandler):
             self.request.send(data)
 
     @staticmethod
-    def get_response(self):
+    def get_response():
         yield b""
 
 
 def read_file(filename, mode="r"):
-    filename = os.path.join(os.path.dirname(__file__), filename)
-    return open(filename, mode).read()
+    return (Path(__file__).resolve().parent / filename).open(mode).read()
 
 
 def new_server_thread(handle_cls, port=None):

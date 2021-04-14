@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
+from urllib.request import urlopen
+from urllib.error import HTTPError
 from xml.sax import handler, make_parser
 import json
 import re
@@ -24,9 +26,6 @@ GLOBAL_ATTRIBUTE_MODIFIERS = {
     "version": int,
     "visible": lambda v: v.lower() == "true"
 }
-
-from urllib.request import urlopen
-from urllib.error import HTTPError
 
 
 def is_valid_type(element, cls):
@@ -86,7 +85,8 @@ class Overpass:
 
         self.xml_parser = xml_parser
 
-    def _handle_remark_msg(self, msg):
+    @staticmethod
+    def _handle_remark_msg(msg):
         """
         Try to parse the message provided with the remark tag or element.
 
@@ -628,7 +628,7 @@ class Element:
                 raise ValueError("Unable to get lat or lon of way center.")
             center_lat = Decimal(center_lat)
             center_lon = Decimal(center_lon)
-        return (center_lat, center_lon)
+        return center_lat, center_lon
 
     @classmethod
     def get_center_from_xml_dom(cls, sub_child):

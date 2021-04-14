@@ -5,21 +5,15 @@
 # serve to show the default.
 
 import sys
-import os
+from pathlib import Path
+
+from overpy import __about__ as overpy_about
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(
-    0,
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '../../'
-        )
-    )
-)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 # -- General configuration ------------------------------------------------
 
@@ -57,7 +51,6 @@ copyright = '2014, PhiBo'
 # built documents.
 #
 # The short X.Y version.
-from overpy import __about__ as overpy_about
 version = overpy_about.__version__
 # The full version, including alpha/beta/rc tags.
 release = overpy_about.__version__
