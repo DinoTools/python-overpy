@@ -5,7 +5,7 @@ api = overpy.Overpass()
 
 # We can also see a node's metadata:
 jet_deau = 60018172
-result = api.query("node({}); out meta;".format(jet_deau))
+result = api.query(f"node({jet_deau}); out meta;")
 node = result.get_node(jet_deau)
 
 print(

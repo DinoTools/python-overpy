@@ -31,7 +31,7 @@ class ElementDataWrongType(OverPyException):
         self.type_provided = type_provided
 
     def __str__(self):
-        return "Type expected '%s' but '%s' provided" % (
+        return "Type expected '{}' but '{}' provided".format(
             self.type_expected,
             str(self.type_provided)
         )

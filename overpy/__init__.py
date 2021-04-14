@@ -4,7 +4,6 @@ from decimal import Decimal
 from xml.sax import handler, make_parser
 import json
 import re
-import sys
 import time
 
 from overpy import exception
@@ -12,9 +11,6 @@ from overpy.__about__ import (
     __author__, __copyright__, __email__, __license__, __summary__, __title__,
     __uri__, __version__
 )
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
 
 XML_PARSER_DOM = 1
 XML_PARSER_SAX = 2
@@ -29,12 +25,8 @@ GLOBAL_ATTRIBUTE_MODIFIERS = {
     "visible": lambda v: v.lower() == "true"
 }
 
-if PY2:
-    from urllib2 import urlopen
-    from urllib2 import HTTPError
-elif PY3:
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
+from urllib.request import urlopen
+from urllib.error import HTTPError
 
 
 def is_valid_type(element, cls):
@@ -49,7 +41,7 @@ def is_valid_type(element, cls):
     return isinstance(element, cls) and element.id is not None
 
 
-class Overpass(object):
+class Overpass:
     """
     Class to access the Overpass API
 
@@ -78,7 +70,7 @@ class Overpass(object):
         if url is not None:
             self.url = url
 
-        self._regex_extract_error_msg = re.compile(b"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
+        self._regex_extract_error_msg = re.compile(br"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
         if read_chunk_size is None:
             read_chunk_size = self.default_read_chunk_size
@@ -142,11 +134,7 @@ class Overpass(object):
             f.close()
 
             if f.code == 200:
-                if PY2:
-                    http_info = f.info()
-                    content_type = http_info.getheader("content-type")
-                else:
-                    content_type = f.getheader("Content-Type")
+                content_type = f.getheader("Content-Type")
 
                 if content_type == "application/json":
                     return self.parse_json(response)
@@ -234,9 +222,6 @@ class Overpass(object):
 
         if isinstance(data, bytes):
             data = data.decode(encoding)
-        if PY2 and not isinstance(data, str):
-            # Python 2.x: Convert unicode strings
-            data = data.encode(encoding)
 
         m = re.compile("<remark>(?P<msg>[^<>]*)</remark>").search(data)
         if m:
@@ -245,7 +230,7 @@ class Overpass(object):
         return Result.from_xml(data, api=self, parser=parser)
 
 
-class Result(object):
+class Result:
     """
     Class to handle the result.
     """
@@ -399,10 +384,7 @@ class Result(object):
                         result.append(elem_cls.from_xml(child, result=result))
 
         elif parser == XML_PARSER_SAX:
-            if PY2:
-                from StringIO import StringIO
-            else:
-                from io import StringIO
+            from io import StringIO
             source = StringIO(data)
             sax_handler = OSMSAXHandler(result)
             parser = make_parser()
@@ -603,7 +585,7 @@ class Result(object):
     ways = property(get_ways)
 
 
-class Element(object):
+class Element:
     """
     Base element
     """
@@ -679,7 +661,7 @@ class Area(Element):
         self.id = area_id
 
     def __repr__(self):
-        return "<overpy.Area id={}>".format(self.id)
+        return f"<overpy.Area id={self.id}>"
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -782,7 +764,7 @@ class Node(Element):
         self.lon = lon
 
     def __repr__(self):
-        return "<overpy.Node id={} lat={} lon={}>".format(self.id, self.lat, self.lon)
+        return f"<overpy.Node id={self.id} lat={self.lat} lon={self.lon}>"
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -897,7 +879,7 @@ class Way(Element):
         self.center_lon = center_lon
 
     def __repr__(self):
-        return "<overpy.Way id={} nodes={}>".format(self.id, self._node_ids)
+        return f"<overpy.Way id={self.id} nodes={self._node_ids}>"
 
     @property
     def nodes(self):
@@ -1086,7 +1068,7 @@ class Relation(Element):
         self.center_lon = center_lon
 
     def __repr__(self):
-        return "<overpy.Relation id={}>".format(self.id)
+        return f"<overpy.Relation id={self.id}>"
 
     @classmethod
     def from_json(cls, data, result=None):
@@ -1211,7 +1193,7 @@ class Relation(Element):
         )
 
 
-class RelationMember(object):
+class RelationMember:
     """
     Base class to represent a member of a relation.
     """
@@ -1340,7 +1322,7 @@ class RelationNode(RelationMember):
         return self._result.get_node(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationNode ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationNode ref={self.ref} role={self.role}>"
 
 
 class RelationWay(RelationMember):
@@ -1350,16 +1332,16 @@ class RelationWay(RelationMember):
         return self._result.get_way(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationWay ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationWay ref={self.ref} role={self.role}>"
 
 
-class RelationWayGeometryValue(object):
+class RelationWayGeometryValue:
     def __init__(self, lat, lon):
         self.lat = lat
         self.lon = lon
 
     def __repr__(self):
-        return "<overpy.RelationWayGeometryValue lat={} lon={}>".format(self.lat, self.lon)
+        return f"<overpy.RelationWayGeometryValue lat={self.lat} lon={self.lon}>"
 
 
 class RelationRelation(RelationMember):
@@ -1369,7 +1351,7 @@ class RelationRelation(RelationMember):
         return self._result.get_relation(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationRelation ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationRelation ref={self.ref} role={self.role}>"
 
 
 class RelationArea(RelationMember):
@@ -1379,7 +1361,7 @@ class RelationArea(RelationMember):
         return self._result.get_area(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
-        return "<overpy.RelationArea ref={} role={}>".format(self.ref, self.role)
+        return f"<overpy.RelationArea ref={self.ref} role={self.role}>"
 
 
 class OSMSAXHandler(handler.ContentHandler):

@@ -18,4 +18,4 @@ for area in result.areas:
         )
     )
     for n, v in area.tags.items():
-        print("  Tag: %s = %s" % (n, v))
+        print(f"  Tag: {n} = {v}")
