@@ -6,6 +6,18 @@ Changelog
 
 .. note:: This version is not yet released and is under development.
 
+0.5 (2021-04-14)
+~~~~~~~~~~~~~~~~
+
+* Add support to retry a failed request
+* Improve test handlers to fix issues with Py2.7 and PyPy
+* Improve tests
+* Add Support for Python 3.6
+* Add function to handle remark tags and elements
+* Add support to parse data from ET.Element
+* Move attribute modifiers from class to package
+* Change to use Exception instead of BaseException
+
 0.4 (2016-12-08)
 ~~~~~~~~~~~~~~~~
 
