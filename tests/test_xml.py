@@ -2,8 +2,8 @@ import pytest
 
 import overpy
 
+from tests import read_file
 from tests.base_class import BaseTestAreas, BaseTestNodes, BaseTestRelation, BaseTestWay
-from tests.base_class import read_file
 
 
 class TestAreas(BaseTestAreas):

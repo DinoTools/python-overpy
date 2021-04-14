@@ -1,12 +1,9 @@
 from decimal import Decimal
 from datetime import datetime
-import os
 
 import pytest
 
 import overpy
-
-from tests import read_file
 
 
 class BaseTestAreas:

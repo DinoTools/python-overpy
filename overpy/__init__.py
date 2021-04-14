@@ -9,7 +9,8 @@ import re
 import time
 
 from overpy import exception
-from overpy.__about__ import (
+# Ignore flake8 F401 warning for unused vars
+from overpy.__about__ import (  # noqa: F401
     __author__, __copyright__, __email__, __license__, __summary__, __title__,
     __uri__, __version__
 )
@@ -52,7 +53,13 @@ class Overpass:
     default_retry_timeout = 1.0
     default_url = "http://overpass-api.de/api/interpreter"
 
-    def __init__(self, read_chunk_size=None, url=None, xml_parser=XML_PARSER_SAX, max_retry_count=None, retry_timeout=None):
+    def __init__(
+            self,
+            read_chunk_size=None,
+            url=None,
+            xml_parser=XML_PARSER_SAX,
+            max_retry_count=None,
+            retry_timeout=None):
         """
         :param read_chunk_size: Max size of each chunk read from the server response
         :type read_chunk_size: Integer
@@ -142,10 +149,10 @@ class Overpass:
                 if content_type == "application/osm3s+xml":
                     return self.parse_xml(response)
 
-                e = exception.OverpassUnknownContentType(content_type)
+                current_exception = exception.OverpassUnknownContentType(content_type)
                 if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
+                    raise current_exception
+                retry_exceptions.append(current_exception)
                 continue
 
             if f.code == 400:
@@ -158,33 +165,33 @@ class Overpass:
                         tmp = repr(tmp)
                     msgs.append(tmp)
 
-                e = exception.OverpassBadRequest(
+                current_exception = exception.OverpassBadRequest(
                     query,
                     msgs=msgs
                 )
                 if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
+                    raise current_exception
+                retry_exceptions.append(current_exception)
                 continue
 
             if f.code == 429:
-                e = exception.OverpassTooManyRequests
+                current_exception = exception.OverpassTooManyRequests
                 if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
+                    raise current_exception
+                retry_exceptions.append(current_exception)
                 continue
 
             if f.code == 504:
-                e = exception.OverpassGatewayTimeout
+                current_exception = exception.OverpassGatewayTimeout
                 if not do_retry:
-                    raise e
-                retry_exceptions.append(e)
+                    raise current_exception
+                retry_exceptions.append(current_exception)
                 continue
 
-            e = exception.OverpassUnknownHTTPStatusCode(f.code)
+            current_exception = exception.OverpassUnknownHTTPStatusCode(f.code)
             if not do_retry:
-                raise e
-            retry_exceptions.append(e)
+                raise current_exception
+            retry_exceptions.append(current_exception)
             continue
 
         raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
@@ -347,7 +354,7 @@ class Result:
     def from_xml(cls, data, api=None, parser=None):
         """
         Create a new instance and load data from xml data or object.
-        
+
         .. note::
             If parser is set to None, the functions tries to find the best parse.
             By default the SAX parser is chosen if a string is provided as data.

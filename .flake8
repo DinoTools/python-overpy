@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: none
+# SPDX-License-Identifier: CC0-1.0
+
+[flake8]
+max-line-length = 120
+extend-exclude =
+    venv/
+    docs/source/conf.py
