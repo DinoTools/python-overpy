@@ -30,10 +30,6 @@ class OverpyBaseRequestHandler(BaseRequestHandler):
         yield b""
 
 
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    pass
-
-
 def read_file(filename, mode="r"):
     filename = os.path.join(os.path.dirname(__file__), filename)
     return open(filename, mode).read()
@@ -47,7 +43,7 @@ def new_server_thread(handle_cls, port=None):
         current_port += 1
         test_lock.release()
 
-    server = ThreadedHTTPServer(
+    server = HTTPServer(
         (HOST, port),
         handle_cls
     )
