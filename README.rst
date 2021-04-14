@@ -13,8 +13,8 @@ Have a look at the `documentation`_ to find additional information.
     :target: https://pypi.python.org/pypi/overpy/
     :alt: License
 
-.. image:: https://travis-ci.org/DinoTools/python-overpy.svg?branch=master
-    :target: https://travis-ci.org/DinoTools/python-overpy
+.. image:: https://github.com/DinoTools/python-overpy/actions/workflows/ci.yml/badge.svg?branch=master
+    :target: https://github.com/DinoTools/python-overpy/actions/workflows/ci.yml?query=branch%3Amaster+
 
 .. image:: https://coveralls.io/repos/DinoTools/python-overpy/badge.png?branch=master
     :target: https://coveralls.io/r/DinoTools/python-overpy?branch=master
