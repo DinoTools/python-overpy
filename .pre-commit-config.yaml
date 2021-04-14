@@ -72,11 +72,11 @@ repos:
         args: [--no-strict-optional, --ignore-missing-imports, --allow-untyped-global]
         exclude: ^(docs/)
 
-  # Check for missing licensing and copyright information.
-  # The REUSE helper tool assists with achieving and confirming REUSE compliance.
-  # See: https://reuse.software/
-  - repo: https://github.com/fsfe/reuse-tool
-    rev: v0.11.1
-    hooks:
-      - id: reuse
-        exclude: ^tests/(json|response|xml)/
+#  # Check for missing licensing and copyright information.
+#  # The REUSE helper tool assists with achieving and confirming REUSE compliance.
+#  # See: https://reuse.software/
+#  - repo: https://github.com/fsfe/reuse-tool
+#    rev: v0.11.1
+#    hooks:
+#      - id: reuse
+#        exclude: ^tests/(json|response|xml)/
