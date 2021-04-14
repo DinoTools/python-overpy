@@ -40,7 +40,6 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: update pip
         run: |
-          set -xe
           python -VV
           python -m site
           pip install -U wheel
