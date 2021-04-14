@@ -1,9 +1,11 @@
+from http.server import BaseHTTPRequestHandler
+
 import pytest
 
 import overpy
 
+from tests import read_file, new_server_thread, stop_server_thread
 from tests.base_class import BaseTestWay
-from tests import read_file, new_server_thread, stop_server_thread, BaseHTTPRequestHandler
 
 
 class HandleResponseJSON02(BaseHTTPRequestHandler):

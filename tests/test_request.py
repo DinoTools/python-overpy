@@ -1,8 +1,9 @@
+from http.server import BaseHTTPRequestHandler
+
 import pytest
 
 import overpy
 
-from tests import BaseHTTPRequestHandler
 from tests import read_file, new_server_thread, stop_server_thread
 
 
