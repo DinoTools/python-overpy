@@ -3,8 +3,8 @@ import threading
 from pathlib import Path
 from threading import Lock
 
-from socketserver import BaseRequestHandler, TCPServer, ThreadingMixIn
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import BaseRequestHandler, TCPServer
+from http.server import HTTPServer
 
 TCPServer.allow_reuse_address = True
 
