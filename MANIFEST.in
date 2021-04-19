@@ -1,7 +1,7 @@
-include README.rst CHANGELOG.rst
+include CHANGELOG.rst CONTRIBUTING.rst README.rst
 include LICENSE
 include MANIFEST.in
-include docs/make.bat docs.Makefile
+include docs/make.bat docs/Makefile
 include docs/source/conf.py
 include docs/source/*.rst
 include examples/*.py
@@ -9,3 +9,4 @@ include tests/*.py
 include tests/json/*.json
 include tests/response/*.html
 include tests/xml/*.xml
+include tox.ini
