@@ -6,6 +6,17 @@ Changelog
 
 .. note:: This version is not yet released and is under development.
 
+0.6 (2021-04-20)
+~~~~~~~~~~~~~~~~
+
+* Drop Python 2.7 support
+* Replace Travis CI with GitHub Actions
+* Change ThreadedHTTPServer to HTTPServer for tests
+* Add CodeQL CI tests
+* Add pre-commit
+* Improve build steps
+
+
 0.5 (2021-04-14)
 ~~~~~~~~~~~~~~~~
 
