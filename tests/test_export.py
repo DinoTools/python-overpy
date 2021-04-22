@@ -1,15 +1,11 @@
 import pytest
 
 import overpy
-from overpy import PY2
 from overpy.format import geojson, osm_xml
 
-from tests.base_class import read_file
+from tests import read_file
 
-if PY2:
-    from StringIO import StringIO
-else:
-    from io import StringIO
+from io import StringIO
 
 
 class TestGeoJSON(object):
