@@ -109,7 +109,7 @@ class Overpass:
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
 
-    def query(self, query):
+    def query(self, query, return_raw=False):
         """
         Query the Overpass API
 
@@ -144,10 +144,10 @@ class Overpass:
                 content_type = f.getheader("Content-Type")
 
                 if content_type == "application/json":
-                    return self.parse_json(response)
+                    return self.parse_json(response, return_raw=return_raw)
 
                 if content_type == "application/osm3s+xml":
-                    return self.parse_xml(response)
+                    return self.parse_xml(response, return_raw=return_raw)
 
                 current_exception = exception.OverpassUnknownContentType(content_type)
                 if not do_retry:
@@ -196,7 +196,7 @@ class Overpass:
 
         raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
 
-    def parse_json(self, data, encoding="utf-8"):
+    def parse_json(self, data, encoding="utf-8", return_raw=False):
         """
         Parse raw response from Overpass service.
 
@@ -209,12 +209,16 @@ class Overpass:
         """
         if isinstance(data, bytes):
             data = data.decode(encoding)
-        data = json.loads(data, parse_float=Decimal)
-        if "remark" in data:
-            self._handle_remark_msg(msg=data.get("remark"))
-        return Result.from_json(data, api=self)
+        json_data = json.loads(data, parse_float=Decimal)
+        if "remark" in json_data:
+            self._handle_remark_msg(msg=json_data.get("remark"))
+        
+        if return_raw:
+            return data
+        else:
+            return Result.from_json(data, api=self)
 
-    def parse_xml(self, data, encoding="utf-8", parser=None):
+    def parse_xml(self, data, encoding="utf-8", parser=None, return_raw=False):
         """
 
         :param data: Raw XML Data
@@ -233,8 +237,11 @@ class Overpass:
         m = re.compile("<remark>(?P<msg>[^<>]*)</remark>").search(data)
         if m:
             self._handle_remark_msg(m.group("msg"))
-
-        return Result.from_xml(data, api=self, parser=parser)
+        
+        if return_raw:
+            return data
+        else:
+            return Result.from_xml(data, api=self, parser=parser)
 
 
 class Result:
