@@ -30,7 +30,7 @@ class ElementDataWrongType(OverPyException):
         self.type_expected = type_expected
         self.type_provided = type_provided
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Type expected '{}' but '{}' provided".format(
             self.type_expected,
             str(self.type_provided)
@@ -45,7 +45,7 @@ class MaxRetriesReached(OverPyException):
         self.exceptions = exceptions
         self.retry_count = retry_count
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Unable get any result from the Overpass API server after %d retries." % self.retry_count
 
 
@@ -64,7 +64,7 @@ class OverpassBadRequest(OverPyException):
             msgs = []
         self.msgs = msgs
 
-    def __str__(self):
+    def __str__(self) -> str:
         tmp_msgs = []
         for tmp_msg in self.msgs:
             if not isinstance(tmp_msg, str):
@@ -89,7 +89,7 @@ class OverpassError(OverPyException):
         #: The message from the remark tag or element
         self.msg = msg
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.msg is None:
             return "No error message provided"
         if not isinstance(self.msg, str):
@@ -139,7 +139,7 @@ class OverpassUnknownContentType(OverPyException):
     def __init__(self, content_type):
         self.content_type = content_type
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.content_type is None:
             return "No content type returned"
         return "Unknown content type: %s" % self.content_type
@@ -162,5 +162,5 @@ class OverpassUnknownHTTPStatusCode(OverPyException):
     def __init__(self, code):
         self.code = code
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Unknown/Unhandled status code: %d" % self.code
