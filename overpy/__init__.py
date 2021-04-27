@@ -17,7 +17,7 @@ from overpy.__about__ import (  # noqa: F401
     __uri__, __version__
 )
 
-ElementTypeVar = TypeVar("ElementTypeVar", Type["Area"], Type["Node"], Type["Relation"], Type["Way"])
+ElementTypeVar = TypeVar("ElementTypeVar", bound="Element")
 
 XML_PARSER_DOM = 1
 XML_PARSER_SAX = 2
@@ -33,7 +33,9 @@ GLOBAL_ATTRIBUTE_MODIFIERS: Dict[str, Callable] = {
 }
 
 
-def is_valid_type(element: "Element", cls: Type["Element"]) -> bool:
+def is_valid_type(
+        element: Union["Area", "Node", "Relation", "Way"],
+        cls: Type[Union["Area", "Element", "Node", "Relation", "Way"]]) -> bool:
     """
     Test if an element is of a given type.
 
@@ -119,9 +121,9 @@ class Overpass:
         if not isinstance(query, bytes):
             query = query.encode("utf-8")
 
-        retry_num = 0
+        retry_num: int = 0
         retry_exceptions: List[exception.OverPyException] = []
-        do_retry = True if self.max_retry_count > 0 else False
+        do_retry: bool = True if self.max_retry_count > 0 else False
         while retry_num <= self.max_retry_count:
             if retry_num > 0:
                 time.sleep(self.retry_timeout)
@@ -156,7 +158,7 @@ class Overpass:
                 continue
 
             if f.code == 400:
-                msgs = []
+                msgs: List[str] = []
                 for msg_raw in self._regex_extract_error_msg.finditer(response):
                     msg_clean_bytes = self._regex_remove_tag.sub(b"", msg_raw.group("msg"))
                     try:
@@ -239,7 +241,7 @@ class Result:
 
     def __init__(
             self,
-            elements: Optional[List["Element"]] = None,
+            elements: Optional[List[Union["Area", "Node", "Relation", "Way"]]] = None,
             api: Optional[Overpass] = None):
         """
 
@@ -248,13 +250,18 @@ class Result:
         """
         if elements is None:
             elements = []
-        self._areas: Dict[int, Element] = OrderedDict(
+        self._areas: Dict[int, Union["Area", "Node", "Relation", "Way"]] = OrderedDict(
             (element.id, element) for element in elements if is_valid_type(element, Area)
         )
-        self._nodes = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Node))
-        self._ways = OrderedDict((element.id, element) for element in elements if is_valid_type(element, Way))
-        self._relations = OrderedDict((element.id, element)
-                                      for element in elements if is_valid_type(element, Relation))
+        self._nodes = OrderedDict(
+            (element.id, element) for element in elements if is_valid_type(element, Node)
+        )
+        self._ways = OrderedDict(
+            (element.id, element) for element in elements if is_valid_type(element, Way)
+        )
+        self._relations = OrderedDict(
+            (element.id, element) for element in elements if is_valid_type(element, Relation)
+        )
         self._class_collection_map: Dict[Any, Any] = {
             Node: self._nodes,
             Way: self._ways,
@@ -275,13 +282,18 @@ class Result:
         if not isinstance(other, Result):
             raise ValueError("Provided argument has to be instance of overpy:Result()")
 
-        other_collection_map = {Node: other.nodes, Way: other.ways, Relation: other.relations, Area: other.areas}
+        other_collection_map: Dict[Type["Element"], List[Union["Area", "Node", "Relation", "Way"]]] = {
+            Area: other.areas,
+            Node: other.nodes,
+            Relation: other.relations,
+            Way: other.ways
+        }
         for element_type, own_collection in self._class_collection_map.items():
             for element in other_collection_map[element_type]:
                 if is_valid_type(element, element_type) and element.id not in own_collection:
                     own_collection[element.id] = element
 
-    def append(self, element: "Element"):
+    def append(self, element: Union["Area", "Node", "Relation", "Way"]):
         """
         Append a new element to the result.
 
@@ -292,7 +304,7 @@ class Result:
 
     def get_elements(
             self,
-            filter_cls: ElementTypeVar,
+            filter_cls: Type[ElementTypeVar],
             elem_id: Optional[int] = None) -> List[ElementTypeVar]:
         """
         Get a list of elements from the result and filter the element type by a class.
@@ -345,7 +357,7 @@ class Result:
         :return: New instance of Result object
         """
         result = cls(api=api)
-        elem_cls: Type[Element]
+        elem_cls: Type[Union["Area", "Node", "Relation", "Way"]]
         for elem_cls in [Node, Way, Relation, Area]:
             for element in data.get("elements", []):
                 e_type = element.get("type")
@@ -359,7 +371,7 @@ class Result:
             cls,
             data: Union[str, xml.etree.ElementTree.Element],
             api: Optional[Overpass] = None,
-            parser: Optional[int] = None):
+            parser: Optional[int] = None) -> "Result":
         """
         Create a new instance and load data from xml data or object.
 
@@ -389,7 +401,7 @@ class Result:
             else:
                 raise exception.OverPyException("Unable to detect data type.")
 
-            elem_cls: Type[Element]
+            elem_cls: Type[Union["Area", "Node", "Relation", "Way"]]
             for elem_cls in [Node, Way, Relation, Area]:
                 for child in root:
                     if child.tag.lower() == elem_cls._type_value:
@@ -409,7 +421,7 @@ class Result:
             raise Exception("Unknown XML parser")
         return result
 
-    def get_area(self, area_id: int, resolve_missing: bool = False) -> Type["Area"]:
+    def get_area(self, area_id: int, resolve_missing: bool = False) -> "Area":
         """
         Get an area by its ID.
 
@@ -442,7 +454,7 @@ class Result:
 
         return areas[0]
 
-    def get_areas(self, area_id: Optional[int] = None) -> List[Type["Area"]]:
+    def get_areas(self, area_id: Optional[int] = None) -> List["Area"]:
         """
         Alias for get_elements() but filter the result by Area
 
@@ -451,7 +463,7 @@ class Result:
         """
         return self.get_elements(Area, elem_id=area_id)
 
-    def get_node(self, node_id: int, resolve_missing: bool = False):
+    def get_node(self, node_id: int, resolve_missing: bool = False) -> "Node":
         """
         Get a node by its ID.
 
@@ -484,7 +496,7 @@ class Result:
 
         return nodes[0]
 
-    def get_nodes(self, node_id: Optional[int] = None) -> List[Type["Node"]]:
+    def get_nodes(self, node_id: Optional[int] = None) -> List["Node"]:
         """
         Alias for get_elements() but filter the result by Node()
 
@@ -494,7 +506,7 @@ class Result:
         """
         return self.get_elements(Node, elem_id=node_id)
 
-    def get_relation(self, rel_id: int, resolve_missing: bool = False) -> Type["Relation"]:
+    def get_relation(self, rel_id: int, resolve_missing: bool = False) -> "Relation":
         """
         Get a relation by its ID.
 
@@ -527,7 +539,7 @@ class Result:
 
         return relations[0]
 
-    def get_relations(self, rel_id: int = None) -> List[Type["Relation"]]:
+    def get_relations(self, rel_id: int = None) -> List["Relation"]:
         """
         Alias for get_elements() but filter the result by Relation
 
@@ -536,7 +548,7 @@ class Result:
         """
         return self.get_elements(Relation, elem_id=rel_id)
 
-    def get_way(self, way_id: int, resolve_missing: bool = False) -> Type["Way"]:
+    def get_way(self, way_id: int, resolve_missing: bool = False) -> "Way":
         """
         Get a way by its ID.
 
@@ -569,7 +581,7 @@ class Result:
 
         return ways[0]
 
-    def get_ways(self, way_id: Optional[int] = None) -> List[Type["Way"]]:
+    def get_ways(self, way_id: Optional[int] = None) -> List["Way"]:
         """
         Alias for get_elements() but filter the result by Way
 
@@ -643,7 +655,7 @@ class Element:
         return center_lat, center_lon
 
     @classmethod
-    def from_json(cls, data: dict, result: Optional[Result] = None) -> "Element":
+    def from_json(cls: Type[ElementTypeVar], data: dict, result: Optional[Result] = None) -> ElementTypeVar:
         """
         Create new Element() from json data
         :param data:
@@ -653,7 +665,10 @@ class Element:
         raise NotImplementedError
 
     @classmethod
-    def from_xml(cls, child: xml.etree.ElementTree.Element, result: Optional[Result] = None) -> "Element":
+    def from_xml(
+            cls: Type[ElementTypeVar],
+            child: xml.etree.ElementTree.Element,
+            result: Optional[Result] = None) -> ElementTypeVar:
         """
         Create new Element() element from XML data
         """
@@ -898,13 +913,13 @@ class Way(Element):
         return f"<overpy.Way id={self.id} nodes={self._node_ids}>"
 
     @property
-    def nodes(self) -> List[Type[Node]]:
+    def nodes(self) -> List[Node]:
         """
         List of nodes associated with the way.
         """
         return self.get_nodes()
 
-    def get_nodes(self, resolve_missing: bool = False) -> List[Type[Node]]:
+    def get_nodes(self, resolve_missing: bool = False) -> List[Node]:
         """
         Get the nodes defining the geometry of the way
 
@@ -1343,7 +1358,7 @@ class RelationNode(RelationMember):
 class RelationWay(RelationMember):
     _type_value = "way"
 
-    def resolve(self, resolve_missing: bool = False) -> Type[Way]:
+    def resolve(self, resolve_missing: bool = False) -> Way:
         return self._result.get_way(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
@@ -1362,7 +1377,7 @@ class RelationWayGeometryValue:
 class RelationRelation(RelationMember):
     _type_value = "relation"
 
-    def resolve(self, resolve_missing: bool = False) -> Type[Relation]:
+    def resolve(self, resolve_missing: bool = False) -> Relation:
         return self._result.get_relation(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):
@@ -1372,7 +1387,7 @@ class RelationRelation(RelationMember):
 class RelationArea(RelationMember):
     _type_value = "area"
 
-    def resolve(self, resolve_missing: bool = False) -> Type[Area]:
+    def resolve(self, resolve_missing: bool = False) -> Area:
         return self._result.get_area(self.ref, resolve_missing=resolve_missing)
 
     def __repr__(self):

@@ -1,15 +1,19 @@
+from typing import List, Optional
 __author__ = 'mjob'
 
 import overpy
 
 
-def get_street(street, areacode, api=None):
+def get_street(
+        street: str,
+        areacode: str,
+        api: Optional[overpy.Overpass] = None) -> overpy.Result:
     """
     Retrieve streets in a given bounding area
 
-    :param overpy.Overpass api: First street of intersection
-    :param String street: Name of street
-    :param String areacode: The OSM id of the bounding area
+    :param street: Name of street
+    :param areacode: The OSM id of the bounding area
+    :param api: API object to fetch missing elements
     :return: Parsed result
     :raises overpy.exception.OverPyException: If something bad happens.
     """
@@ -35,14 +39,18 @@ def get_street(street, areacode, api=None):
     return data
 
 
-def get_intersection(street1, street2, areacode, api=None):
+def get_intersection(
+        street1: str,
+        street2: str,
+        areacode: str,
+        api: Optional[overpy.Overpass] = None) -> List[overpy.Node]:
     """
     Retrieve intersection of two streets in a given bounding area
 
-    :param overpy.Overpass api: First street of intersection
-    :param String street1: Name of first street of intersection
-    :param String street2: Name of second street of intersection
-    :param String areacode: The OSM id of the bounding area
+    :param street1: Name of first street of intersection
+    :param street2: Name of second street of intersection
+    :param areacode: The OSM id of the bounding area
+    :param api: API object to fetch missing elements
     :return: List of intersections
     :raises overpy.exception.OverPyException: If something bad happens.
     """
