@@ -1,5 +1,5 @@
 import json
-from typing import Optional, TextIO
+from typing import Any, Dict, Optional, TextIO
 
 import overpy
 
@@ -22,7 +22,7 @@ def dump(result: overpy.Result, fp: TextIO, nodes: bool = False, ways: bool = Fa
     features = []
     if nodes:
         for node in result.nodes:
-            properties = {}
+            properties: Dict[str, Any] = {}
             features.append({
                 "type": "Feature",
                 "geometry": {
