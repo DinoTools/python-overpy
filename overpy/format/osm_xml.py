@@ -1,9 +1,10 @@
+from typing import TextIO
 from xml.sax.saxutils import escape
 
 import overpy
 
 
-def dump(result, fp):
+def dump(result: overpy.Result, fp: TextIO):
     """
     Use the result from the Overpass API to generate OSM XML
 
@@ -12,7 +13,6 @@ def dump(result, fp):
     * http://wiki.openstreetmap.org/wiki/OSM_XML
 
     :param result: The result from the Overpass API
-    :type result: overpy.Result
     :param fp: Filepointer to use
     :return:
     """
