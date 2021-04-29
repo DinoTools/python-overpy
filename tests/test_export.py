@@ -1,5 +1,3 @@
-import pytest
-
 import overpy
 from overpy.format import geojson, osm_xml
 
