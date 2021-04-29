@@ -8,7 +8,7 @@ def dump(result, fp):
     Use the result from the Overpass API to generate OSM XML
 
     More information:
-    
+
     * http://wiki.openstreetmap.org/wiki/OSM_XML
 
     :param result: The result from the Overpass API
