@@ -1,4 +1,8 @@
+from decimal import Decimal
+from typing import Iterable, Mapping
 import pytest
+import simplejson
+import json
 
 import overpy
 
@@ -6,11 +10,17 @@ from tests import read_file
 from tests.base_class import BaseTestAreas, BaseTestNodes, BaseTestRelation, BaseTestWay
 
 
+def reparse(api: overpy.Overpass, r: overpy.Result):
+    # we need `simplejson` because core `json` can't serialize Decimals in the way
+    # that we would like without enormous hacks
+    return api.parse_json(simplejson.dumps(r.to_json()))
+
 class TestAreas(BaseTestAreas):
     def test_area01(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/area-01.json"))
         self._test_area01(result)
+        self._test_area01(reparse(api, result))
 
 
 class TestNodes(BaseTestNodes):
@@ -18,6 +28,7 @@ class TestNodes(BaseTestNodes):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/node-01.json"))
         self._test_node01(result)
+        self._test_node01(reparse(api, result))
 
 
 class TestRelation(BaseTestRelation):
@@ -25,21 +36,27 @@ class TestRelation(BaseTestRelation):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/relation-01.json"))
         self._test_relation01(result)
+        self._test_relation01(reparse(api, result))
 
     def test_relation02(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/relation-02.json"))
         self._test_relation02(result)
+        self._test_relation02(reparse(api, result))
+
 
     def test_relation03(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/relation-03.json"))
         self._test_relation03(result)
+        self._test_relation03(reparse(api, result))
+
 
     def test_relation04(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/relation-04.json"))
         self._test_relation04(result)
+        self._test_relation04(reparse(api, result))
 
 
 class TestWay(BaseTestWay):
@@ -47,16 +64,19 @@ class TestWay(BaseTestWay):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/way-01.json"))
         self._test_way01(result)
+        self._test_way01(reparse(api, result))
 
     def test_way02(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/way-02.json"))
         self._test_way02(result)
+        self._test_way02(reparse(api, result))
 
     def test_way03(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/way-03.json"))
         self._test_way03(result)
+        self._test_way03(reparse(api, result))
 
     def test_way04(self):
         api = overpy.Overpass()
