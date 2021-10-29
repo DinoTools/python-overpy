@@ -262,8 +262,8 @@ Line 22-25:
 Serialization
 ----
 
-Result objects can be converted to a dictionary, in the same format
-as the Overpass API `json` output format. 
+Result objects can be converted to a dictionary, in the same format as the
+Overpass API ``json`` output format.
 
 .. code-block:: pycon
     >>> import overpy, simplejson
@@ -276,8 +276,8 @@ as the Overpass API `json` output format.
     >>> assert len(result.ways) == len(other_result.ways)
 
 Serializing the dictionary to JSON requires rendering Decimal values as JSON
-numbers, and then parsing with `Overpass.parse_json()`. The third-party package
-`simplejson` works for this application:
+numbers, and then parsing with ``Overpass.parse_json()``. The third-party
+package ``simplejson`` works for this application:
 
 .. code-block:: pycon
     >>> result_str = simplejson.dumps(result.to_json())

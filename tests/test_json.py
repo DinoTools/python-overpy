@@ -1,8 +1,5 @@
-from decimal import Decimal
-from typing import Iterable, Mapping
 import pytest
 import simplejson
-import json
 
 import overpy
 
@@ -14,6 +11,7 @@ def reparse(api: overpy.Overpass, r: overpy.Result):
     # we need `simplejson` because core `json` can't serialize Decimals in the way
     # that we would like without enormous hacks
     return api.parse_json(simplejson.dumps(r.to_json()))
+
 
 class TestAreas(BaseTestAreas):
     def test_area01(self):
@@ -44,13 +42,11 @@ class TestRelation(BaseTestRelation):
         self._test_relation02(result)
         self._test_relation02(reparse(api, result))
 
-
     def test_relation03(self):
         api = overpy.Overpass()
         result = api.parse_json(read_file("json/relation-03.json"))
         self._test_relation03(result)
         self._test_relation03(reparse(api, result))
-
 
     def test_relation04(self):
         api = overpy.Overpass()
