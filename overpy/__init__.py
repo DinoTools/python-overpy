@@ -8,6 +8,7 @@ import xml.etree.ElementTree
 import json
 import re
 import time
+import enum
 from typing import Any, Callable, ClassVar, Dict, List, NoReturn, Optional, Tuple, Type, TypeVar, Union
 
 from overpy import exception
@@ -19,8 +20,11 @@ from overpy.__about__ import (  # noqa: F401
 
 ElementTypeVar = TypeVar("ElementTypeVar", bound="Element")
 
-XML_PARSER_DOM = 1
-XML_PARSER_SAX = 2
+
+class XMLParser(enum.IntEnum):
+    DOM = 1
+    SAX = 2
+
 
 # Try to convert some common attributes
 # http://wiki.openstreetmap.org/wiki/Elements#Common_attributes
@@ -64,7 +68,7 @@ class Overpass:
             self,
             read_chunk_size: Optional[int] = None,
             url: Optional[str] = None,
-            xml_parser: int = XML_PARSER_SAX,
+            xml_parser: XMLParser = XMLParser.SAX,
             max_retry_count: int = None,
             retry_timeout: float = None):
         """
@@ -213,7 +217,7 @@ class Overpass:
             self._handle_remark_msg(msg=data_parsed.get("remark"))
         return Result.from_json(data_parsed, api=self)
 
-    def parse_xml(self, data: Union[bytes, str], encoding: str = "utf-8", parser: Optional[int] = None):
+    def parse_xml(self, data: Union[bytes, str], encoding: str = "utf-8", parser: Optional[XMLParser] = None):
         """
 
         :param data: Raw XML Data
@@ -371,7 +375,7 @@ class Result:
             cls,
             data: Union[str, xml.etree.ElementTree.Element],
             api: Optional[Overpass] = None,
-            parser: Optional[int] = None) -> "Result":
+            parser: Optional[XMLParser] = None) -> "Result":
         """
         Create a new instance and load data from xml data or object.
 
@@ -387,12 +391,12 @@ class Result:
         """
         if parser is None:
             if isinstance(data, str):
-                parser = XML_PARSER_SAX
+                parser = XMLParser.SAX
             else:
-                parser = XML_PARSER_DOM
+                parser = XMLParser.DOM
 
         result = cls(api=api)
-        if parser == XML_PARSER_DOM:
+        if parser == XMLParser.DOM:
             import xml.etree.ElementTree as ET
             if isinstance(data, str):
                 root = ET.fromstring(data)
@@ -407,7 +411,7 @@ class Result:
                     if child.tag.lower() == elem_cls._type_value:
                         result.append(elem_cls.from_xml(child, result=result))
 
-        elif parser == XML_PARSER_SAX:
+        elif parser == XMLParser.SAX:
             from io import StringIO
             if not isinstance(data, str):
                 raise ValueError("data must be of type str if using the SAX parser")
