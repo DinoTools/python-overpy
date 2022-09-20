@@ -21,6 +21,5 @@ setup(
     package_data={
         # "": ["README"],
     },
-    setup_requires=["pytest-runner"],
     tests_require=["pytest"],
 )
