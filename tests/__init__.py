@@ -45,7 +45,7 @@ def new_server_thread(handle_cls, port=None):
     server_thread.daemon = True
     server_thread.start()
     return (
-        "http://%s:%d" % (HOST, port),
+        f"http://{HOST}:{port}",
         server
     )
 

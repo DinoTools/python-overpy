@@ -406,12 +406,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "area({area_id});\n"
+                     f"area({area_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                area_id=area_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -448,12 +445,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "node({node_id});\n"
+                     f"node({node_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                node_id=node_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -491,12 +485,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "relation({relation_id});\n"
+                     f"relation({rel_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                relation_id=rel_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -533,12 +524,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "way({way_id});\n"
+                     f"way({way_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                way_id=way_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -918,13 +906,10 @@ class Way(Element):
 
             query = ("\n"
                      "[out:json];\n"
-                     "way({way_id});\n"
+                     f"way({self.id});\n"
                      "node(w);\n"
                      "out body;\n"
                      )
-            query = query.format(
-                way_id=self.id
-            )
             tmp_result = self._result.api.query(query)
             self._result.expand(tmp_result)
             resolved = True
@@ -1391,9 +1376,9 @@ class OSMSAXHandler(handler.ContentHandler):
         if name in self.ignore_start:
             return
         try:
-            handler = getattr(self, '_handle_start_%s' % name)
+            handler = getattr(self, f"_handle_start_{name}")
         except AttributeError:
-            raise KeyError("Unknown element start '%s'" % name)
+            raise KeyError(f"Unknown element start {name!r}")
         handler(attrs)
 
     def endElement(self, name: str):
@@ -1405,9 +1390,9 @@ class OSMSAXHandler(handler.ContentHandler):
         if name in self.ignore_end:
             return
         try:
-            handler = getattr(self, '_handle_end_%s' % name)
+            handler = getattr(self, f"_handle_end_{name}")
         except AttributeError:
-            raise KeyError("Unknown element end '%s'" % name)
+            raise KeyError(f"Unknown element end {name!r}")
         handler()
 
     def _handle_start_center(self, attrs: dict):
@@ -1585,7 +1570,7 @@ class OSMSAXHandler(handler.ContentHandler):
         }
         cls: Type[RelationMember] = cls_map.get(attrs["type"])
         if cls is None:
-            raise ValueError("Undefined type for member: '%s'" % attrs['type'])
+            raise ValueError(f"Undefined type for member: {attrs['type']!r}")
 
         self.cur_relation_member = cls(**params)
         self._curr['members'].append(self.cur_relation_member)
