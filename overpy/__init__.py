@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from functools import partial
 from urllib.request import urlopen
 from urllib.error import HTTPError
 from xml.sax import handler, make_parser
@@ -120,43 +121,31 @@ class Overpass:
         if not isinstance(query, bytes):
             query = query.encode("utf-8")
 
-        retry_num: int = 0
         retry_exceptions: List[exception.OverPyException] = []
-        do_retry: bool = True if self.max_retry_count > 0 else False
-        while retry_num <= self.max_retry_count:
-            if retry_num > 0:
-                time.sleep(self.retry_timeout)
-            retry_num += 1
-            try:
-                f = urlopen(self.url, query)
-            except HTTPError as e:
-                f = e
 
-            response = f.read(self.read_chunk_size)
-            while True:
-                data = f.read(self.read_chunk_size)
-                if len(data) == 0:
-                    break
-                response = response + data
-            f.close()
+        for run in range(self.max_retry_count + 1):
+            if run:
+                time.sleep(self.retry_timeout)
+
+            response = b""
+            try:
+                with urlopen(self.url, query) as f:
+                    f_read = partial(f.read, self.read_chunk_size)
+                    for data in iter(f_read, b""):
+                        response += data
+            except HTTPError as exc:
+                f = exc
 
             current_exception: exception.OverPyException
             if f.code == 200:
                 content_type = f.getheader("Content-Type")
-
                 if content_type == "application/json":
                     return self.parse_json(response)
-
-                if content_type == "application/osm3s+xml":
+                elif content_type == "application/osm3s+xml":
                     return self.parse_xml(response)
-
-                current_exception = exception.OverpassUnknownContentType(content_type)
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            if f.code == 400:
+                else:
+                    current_exception = exception.OverpassUnknownContentType(content_type)
+            elif f.code == 400:
                 msgs: List[str] = []
                 for msg_raw in self._regex_extract_error_msg.finditer(response):
                     msg_clean_bytes = self._regex_remove_tag.sub(b"", msg_raw.group("msg"))
@@ -165,37 +154,17 @@ class Overpass:
                     except UnicodeDecodeError:
                         msg = repr(msg_clean_bytes)
                     msgs.append(msg)
-
-                current_exception = exception.OverpassBadRequest(
-                    query,
-                    msgs=msgs
-                )
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            if f.code == 429:
+                current_exception = exception.OverpassBadRequest(query, msgs=msgs)
+            elif f.code == 429:
                 current_exception = exception.OverpassTooManyRequests()
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            if f.code == 504:
+            elif f.code == 504:
                 current_exception = exception.OverpassGatewayTimeout()
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            current_exception = exception.OverpassUnknownHTTPStatusCode(f.code)
-            if not do_retry:
+            else:
+                current_exception = exception.OverpassUnknownHTTPStatusCode(f.code)
+            if not self.max_retry_count:
                 raise current_exception
             retry_exceptions.append(current_exception)
-            continue
-
-        raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
+        raise exception.MaxRetriesReached(retry_count=run + 1, exceptions=retry_exceptions)
 
     def parse_json(self, data: Union[bytes, str], encoding: str = "utf-8") -> "Result":
         """
