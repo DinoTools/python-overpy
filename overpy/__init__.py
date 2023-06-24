@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
 from urllib.request import urlopen
@@ -250,18 +249,18 @@ class Result:
         """
         if elements is None:
             elements = []
-        self._areas: Dict[int, Union["Area", "Node", "Relation", "Way"]] = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Area)
-        )
-        self._nodes = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Node)
-        )
-        self._ways = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Way)
-        )
-        self._relations = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Relation)
-        )
+        self._areas: Dict[int, Union["Area", "Node", "Relation", "Way"]] = {
+            element.id: element for element in elements if is_valid_type(element, Area)
+        }
+        self._nodes = {
+            element.id: element for element in elements if is_valid_type(element, Node)
+        }
+        self._ways = {
+            element.id: element for element in elements if is_valid_type(element, Way)
+        }
+        self._relations = {
+            element.id: element for element in elements if is_valid_type(element, Relation)
+        }
         self._class_collection_map: Dict[Any, Any] = {
             Node: self._nodes,
             Way: self._ways,
