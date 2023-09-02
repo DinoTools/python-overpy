@@ -111,11 +111,12 @@ class Overpass:
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
 
-    def query(self, query: Union[bytes, str]) -> "Result":
+    def query(self, query: Union[bytes, str], include_raw: bool = False) -> "Result":
         """
         Query the Overpass API
 
         :param query: The query string in Overpass QL
+        :param include_raw: True to store the raw data along with the parsed result
         :return: The parsed result
         """
         if not isinstance(query, bytes):
@@ -146,10 +147,10 @@ class Overpass:
                 content_type = f.getheader("Content-Type")
 
                 if content_type == "application/json":
-                    return self.parse_json(response)
+                    return self.parse_json(response, include_raw=include_raw)
 
                 if content_type == "application/osm3s+xml":
-                    return self.parse_xml(response)
+                    return self.parse_xml(response, include_raw=include_raw)
 
                 current_exception = exception.OverpassUnknownContentType(content_type)
                 if not do_retry:
@@ -198,12 +199,17 @@ class Overpass:
 
         raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
 
-    def parse_json(self, data: Union[bytes, str], encoding: str = "utf-8") -> "Result":
+    def parse_json(
+            self,
+            data: Union[bytes, str],
+            encoding: str = "utf-8",
+            include_raw: bool = False) -> "Result":
         """
         Parse raw response from Overpass service.
 
         :param data: Raw JSON Data
         :param encoding: Encoding to decode byte string
+        :param include_raw: True to store the data along with the parsed result
         :return: Result object
         """
         if isinstance(data, bytes):
@@ -211,14 +217,23 @@ class Overpass:
         data_parsed: dict = json.loads(data, parse_float=Decimal)
         if "remark" in data_parsed:
             self._handle_remark_msg(msg=data_parsed.get("remark"))
-        return Result.from_json(data_parsed, api=self)
+        result = Result.from_json(data_parsed, api=self)
+        if include_raw:
+            result.raw = data
+        return result
 
-    def parse_xml(self, data: Union[bytes, str], encoding: str = "utf-8", parser: Optional[int] = None):
+    def parse_xml(
+            self,
+            data: Union[bytes, str],
+            encoding: str = "utf-8",
+            parser: Optional[int] = None,
+            include_raw: bool = False) -> "Result":
         """
 
         :param data: Raw XML Data
         :param encoding: Encoding to decode byte string
         :param parser: The XML parser to use
+        :param include_raw: True to store the data along with the parsed result
         :return: Result object
         """
         if parser is None:
@@ -230,8 +245,10 @@ class Overpass:
         m = re.compile("<remark>(?P<msg>[^<>]*)</remark>").search(data)
         if m:
             self._handle_remark_msg(m.group("msg"))
-
-        return Result.from_xml(data, api=self, parser=parser)
+        result = Result.from_xml(data, api=self, parser=parser)
+        if include_raw:
+            result.raw = data
+        return result
 
 
 class Result:
@@ -242,11 +259,13 @@ class Result:
     def __init__(
             self,
             elements: Optional[List[Union["Area", "Node", "Relation", "Way"]]] = None,
-            api: Optional[Overpass] = None):
+            api: Optional[Overpass] = None,
+            raw: Optional[Union[bytes, str]] = None):
         """
 
         :param elements: List of elements to initialize the result with
         :param api: The API object to load additional resources and elements
+        :param raw: The raw data corresponding to these elements
         """
         if elements is None:
             elements = []
@@ -269,6 +288,7 @@ class Result:
             Area: self._areas
         }
         self.api = api
+        self.raw = raw
 
     def expand(self, other: "Result"):
         """
