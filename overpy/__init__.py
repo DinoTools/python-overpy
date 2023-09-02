@@ -111,11 +111,17 @@ class Overpass:
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
 
-    def query(self, query: Union[bytes, str], include_raw: bool = False) -> "Result":
+    def query(
+            self,
+            query: Union[bytes, str],
+            *,
+            raw: bool = False,
+            include_raw: bool = False) -> Union["Result", bytes, str]:
         """
         Query the Overpass API
 
         :param query: The query string in Overpass QL
+        :param raw: True to return the raw response without parsing
         :param include_raw: True to store the raw data along with the parsed result
         :return: The parsed result
         """
@@ -144,6 +150,9 @@ class Overpass:
 
             current_exception: exception.OverPyException
             if f.code == 200:
+                if raw:
+                    return response
+                
                 content_type = f.getheader("Content-Type")
 
                 if content_type == "application/json":
