@@ -211,8 +211,7 @@ class Overpass:
         response, content_type = self.query_raw(query)
         if content_type == "application/json":
             return self.parse_json(response, include_raw=include_raw)
-
-        if content_type == "application/osm3s+xml":
+        else: # "application/osm3s+xml":
             return self.parse_xml(response, include_raw=include_raw)
 
     def parse_json(
