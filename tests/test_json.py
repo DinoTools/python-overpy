@@ -124,7 +124,7 @@ class TestIncludeRawJSON:
         data = read_file("json/area-01.json")
         result = api.parse_json(data, include_raw=True)
         assert result.raw == data
-    
+
     def test_not_include_raw(self):
         api = overpy.Overpass()
         data = read_file("json/area-01.json")

@@ -217,7 +217,7 @@ class TestIncludeRawXML:
         data = read_file("xml/area-01.xml")
         result = api.parse_xml(data, include_raw=True)
         assert result.raw == data
-    
+
     def test_not_include_raw(self):
         api = overpy.Overpass()
         data = read_file("xml/area-01.xml")
