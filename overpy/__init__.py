@@ -110,7 +110,7 @@ class Overpass:
         elif msg.startswith("runtime remark:"):
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
-    
+
     def query_raw(self, query: Union[bytes, str]) -> Tuple[Union[bytes, str], str]:
         """
         Query the Overpass API and returns the raw response
@@ -211,7 +211,7 @@ class Overpass:
         response, content_type = self.query_raw(query)
         if content_type == "application/json":
             return self.parse_json(response, include_raw=include_raw)
-        else:  # "application/osm3s+xml":
+        else:  # "application/osm3s+xml"
             return self.parse_xml(response, include_raw=include_raw)
 
     def parse_json(
