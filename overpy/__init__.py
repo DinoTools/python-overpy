@@ -110,20 +110,13 @@ class Overpass:
         elif msg.startswith("runtime remark:"):
             raise exception.OverpassRuntimeRemark(msg=msg)
         raise exception.OverpassUnknownError(msg=msg)
-
-    def query(
-            self,
-            query: Union[bytes, str],
-            *,
-            raw: bool = False,
-            include_raw: bool = False) -> Union["Result", bytes, str]:
+    
+    def query_raw(self, query: Union[bytes, str]) -> Tuple[Union[bytes, str], str]:
         """
-        Query the Overpass API
+        Query the Overpass API and returns the raw response
 
         :param query: The query string in Overpass QL
-        :param raw: True to return the raw response without parsing
-        :param include_raw: True to store the raw data along with the parsed result
-        :return: The parsed result
+        :return: A tuple made of the raw response and the response content type
         """
         if not isinstance(query, bytes):
             query = query.encode("utf-8")
@@ -150,16 +143,10 @@ class Overpass:
 
             current_exception: exception.OverPyException
             if f.code == 200:
-                if raw:
-                    return response
-                
                 content_type = f.getheader("Content-Type")
 
-                if content_type == "application/json":
-                    return self.parse_json(response, include_raw=include_raw)
-
-                if content_type == "application/osm3s+xml":
-                    return self.parse_xml(response, include_raw=include_raw)
+                if content_type in ("application/json", "application/osm3s+xml"):
+                    return response, content_type
 
                 current_exception = exception.OverpassUnknownContentType(content_type)
                 if not do_retry:
@@ -207,6 +194,26 @@ class Overpass:
             continue
 
         raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
+
+    def query(
+            self,
+            query: Union[bytes, str],
+            *,
+            include_raw: bool = False) -> "Result":
+        """
+        Query the Overpass API and returns parsed result
+
+        :param query: The query string in Overpass QL
+        :param include_raw: True to store the raw data along with the parsed result
+        :return: The parsed result
+        """
+
+        response, content_type = self.query_raw(query)
+        if content_type == "application/json":
+            return self.parse_json(response, include_raw=include_raw)
+
+        if content_type == "application/osm3s+xml":
+            return self.parse_xml(response, include_raw=include_raw)
 
     def parse_json(
             self,
