@@ -258,3 +258,52 @@ Line 20-21:
 
 Line 22-25:
     The resolved nodes have been added to the result set and are available to be used again later.
+
+
+Relations
+---------
+
+Get all ways of a relation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+In this example we query a relation with the id 2686919 and get its constituting ways. Then we resolve its nodes.
+
+.. code-block:: text
+    :linenos:
+
+    rel(id:2686919);
+    out;
+
+**Use OverPy:**
+
+.. code-block:: pycon
+    :linenos:
+
+    >>> import overpy
+    >>> api = overpy.Overpass()
+    >>> result = api.query("""rel(id:2686919;out;""")
+    >>> result.relations
+    [<overpy.Relation id=2686919>]
+    >>> relation = result.relations[0]
+    >>> relation.tags
+    {'name': 'Fardumeträsk', 'natural': 'water', 'source:lake': 'Review by So9q using LM Topographic Map', 'type': 'multipolygon', 'water': 'lake'}
+    >>> relation.members
+    [<overpy.RelationWay ref=199775464 role=outer>, <overpy.RelationWay ref=199775467 role=inner>]
+    >>> relation.members[0]
+    <overpy.RelationWay ref=199775464 role=outer>
+    >>> way = relation.members[0].resolve(True)
+    >>> nodes = way.get_nodes(True)
+
+Line 3:
+    We query the Overpass using the id of the relation.
+
+Line 7:
+    It turns out to be a Lake. It is a multipolygon relation.
+
+Line 9:
+    The members constituting this relation are 2 ways. One is the outer border, the other the inner (there is a island on this lake).
+
+Line 13:
+    The object is of type RelationWay. To get a way object we need to resolve it. The parameter True tells the api to download the missing data.
+
+Line 14:
+    We download the ways nodes, like in the example above.
