@@ -133,12 +133,7 @@ class Overpass:
             except HTTPError as e:
                 f = e
 
-            response = f.read(self.read_chunk_size)
-            while True:
-                data = f.read(self.read_chunk_size)
-                if len(data) == 0:
-                    break
-                response = response + data
+            response = f.read()
             f.close()
 
             current_exception: exception.OverPyException
