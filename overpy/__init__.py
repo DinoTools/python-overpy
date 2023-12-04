@@ -32,6 +32,16 @@ GLOBAL_ATTRIBUTE_MODIFIERS: Dict[str, Callable] = {
     "visible": lambda v: v.lower() == "true"
 }
 
+GLOBAL_ATTRIBUTE_SERIALIZERS: Dict[str, Callable] = {
+    "timestamp": lambda dt: datetime.strftime(dt, "%Y-%m-%dT%H:%M:%SZ"),
+}
+
+
+def _attributes_to_json(attributes: dict):
+    def attr_serializer(k):
+        return GLOBAL_ATTRIBUTE_SERIALIZERS.get(k, lambda v: v)
+    return {k: attr_serializer(k)(v) for k, v in attributes.items()}
+
 
 def is_valid_type(
         element: Union["Area", "Node", "Relation", "Way"],
@@ -334,6 +344,18 @@ class Result:
 
         return result
 
+    def to_json(self) -> dict:
+        def elements_to_json():
+            for elem_cls in [Node, Way, Relation, Area]:
+                for element in self.get_elements(elem_cls):
+                    yield element.to_json()
+
+        return {
+            "version": 0.6,
+            "generator": "Overpy Serializer",
+            "elements": list(elements_to_json())
+        }
+
     @classmethod
     def from_xml(
             cls,
@@ -620,6 +642,11 @@ class Element:
         """
         raise NotImplementedError
 
+    def to_json(self) -> dict:
+        d = {"type": self._type_value, "id": self.id, "tags": self.tags}
+        d.update(_attributes_to_json(self.attributes))
+        return d
+
     @classmethod
     def from_xml(
             cls: Type[ElementTypeVar],
@@ -781,6 +808,12 @@ class Node(Element):
             attributes[n] = v
 
         return cls(node_id=node_id, lat=lat, lon=lon, tags=tags, attributes=attributes, result=result)
+
+    def to_json(self) -> dict:
+        d = super().to_json()
+        d["lat"] = self.lat
+        d["lon"] = self.lon
+        return d
 
     @classmethod
     def from_xml(cls, child: xml.etree.ElementTree.Element, result: Optional[Result] = None) -> "Node":
@@ -965,6 +998,13 @@ class Way(Element):
             way_id=way_id
         )
 
+    def to_json(self) -> dict:
+        d = super().to_json()
+        if self.center_lat is not None and self.center_lon is not None:
+            d["center"] = {"lat": self.center_lat, "lon": self.center_lon}
+        d["nodes"] = self._node_ids
+        return d
+
     @classmethod
     def from_xml(cls, child: xml.etree.ElementTree.Element, result: Optional[Result] = None) -> "Way":
         """
@@ -1103,6 +1143,14 @@ class Relation(Element):
             tags=tags,
             result=result
         )
+
+    def to_json(self) -> dict:
+        d = super().to_json()
+        if self.center_lat is not None and self.center_lon is not None:
+            d["center"] = {"lat": self.center_lat, "lon": self.center_lon}
+
+        d["members"] = [member.to_json() for member in self.members]
+        return d
 
     @classmethod
     def from_xml(cls, child: xml.etree.ElementTree.Element, result: Optional[Result] = None) -> "Relation":
@@ -1243,6 +1291,13 @@ class RelationMember:
             role=role,
             result=result
         )
+
+    def to_json(self):
+        d = {"type": self._type_value, "ref": self.ref, "role": self.role}
+        if self.geometry is not None:
+            d["geometry"] = [{"lat": v.lat, "lon": v.lon} for v in self.geometry]
+        d.update(_attributes_to_json(self.attributes))
+        return d
 
     @classmethod
     def from_xml(
