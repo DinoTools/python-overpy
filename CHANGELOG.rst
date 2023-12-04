@@ -6,6 +6,16 @@ Changelog
 
 .. note:: This version is not yet released and is under development.
 
+0.7 (2023-12-04)
+~~~~~~~~~~~~~~~~
+
+* Add type hints
+* Update requirements to 3.6.2+
+* Update docs to use type hints
+* Update CI pipelines
+* Add automated upload to PyPI
+* Build wheels
+
 0.6 (2021-04-20)
 ~~~~~~~~~~~~~~~~
 
