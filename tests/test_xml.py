@@ -10,10 +10,10 @@ class TestAreas(BaseTestAreas):
     def test_node01(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/area-01.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/area-01.xml"), parser=overpy.XMLParser.DOM)
         self._test_area01(result)
         # SAX
-        result = api.parse_xml(read_file("xml/area-01.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/area-01.xml"), parser=overpy.XMLParser.SAX)
         self._test_area01(result)
 
 
@@ -21,10 +21,10 @@ class TestNodes(BaseTestNodes):
     def test_node01(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/node-01.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/node-01.xml"), parser=overpy.XMLParser.DOM)
         self._test_node01(result)
         # SAX
-        result = api.parse_xml(read_file("xml/node-01.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/node-01.xml"), parser=overpy.XMLParser.SAX)
         self._test_node01(result)
 
 
@@ -32,37 +32,37 @@ class TestRelation(BaseTestRelation):
     def test_relation01(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/relation-01.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/relation-01.xml"), parser=overpy.XMLParser.DOM)
         self._test_relation01(result)
         # SAX
-        result = api.parse_xml(read_file("xml/relation-01.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/relation-01.xml"), parser=overpy.XMLParser.SAX)
         self._test_relation01(result)
 
     def test_relation02(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/relation-02.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/relation-02.xml"), parser=overpy.XMLParser.DOM)
         self._test_relation02(result)
         # SAX
-        result = api.parse_xml(read_file("xml/relation-02.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/relation-02.xml"), parser=overpy.XMLParser.SAX)
         self._test_relation02(result)
 
     def test_relation03(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/relation-03.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/relation-03.xml"), parser=overpy.XMLParser.DOM)
         self._test_relation03(result)
         # SAX
-        result = api.parse_xml(read_file("xml/relation-03.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/relation-03.xml"), parser=overpy.XMLParser.SAX)
         self._test_relation03(result)
 
     def test_relation04(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/relation-04.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/relation-04.xml"), parser=overpy.XMLParser.DOM)
         self._test_relation04(result)
         # SAX
-        result = api.parse_xml(read_file("xml/relation-04.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/relation-04.xml"), parser=overpy.XMLParser.SAX)
         self._test_relation04(result)
 
 
@@ -70,39 +70,39 @@ class TestWay(BaseTestWay):
     def test_way01(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/way-01.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/way-01.xml"), parser=overpy.XMLParser.DOM)
         self._test_way01(result)
         # SAX
-        result = api.parse_xml(read_file("xml/way-01.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/way-01.xml"), parser=overpy.XMLParser.SAX)
         self._test_way01(result)
 
     def test_way02(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/way-02.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/way-02.xml"), parser=overpy.XMLParser.DOM)
         self._test_way02(result)
         # SAX
-        result = api.parse_xml(read_file("xml/way-02.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/way-02.xml"), parser=overpy.XMLParser.SAX)
         self._test_way02(result)
 
     def test_way03(self):
         api = overpy.Overpass()
         # DOM
-        result = api.parse_xml(read_file("xml/way-03.xml"), parser=overpy.XML_PARSER_DOM)
+        result = api.parse_xml(read_file("xml/way-03.xml"), parser=overpy.XMLParser.DOM)
         self._test_way03(result)
         # SAX
-        result = api.parse_xml(read_file("xml/way-03.xml"), parser=overpy.XML_PARSER_SAX)
+        result = api.parse_xml(read_file("xml/way-03.xml"), parser=overpy.XMLParser.SAX)
         self._test_way03(result)
 
     def test_way04(self):
         api = overpy.Overpass()
         # DOM
         with pytest.raises(ValueError):
-            api.parse_xml(read_file("xml/way-04.xml"), parser=overpy.XML_PARSER_DOM)
+            api.parse_xml(read_file("xml/way-04.xml"), parser=overpy.XMLParser.DOM)
 
         # SAX
         with pytest.raises(ValueError):
-            api.parse_xml(read_file("xml/way-04.xml"), parser=overpy.XML_PARSER_SAX)
+            api.parse_xml(read_file("xml/way-04.xml"), parser=overpy.XMLParser.SAX)
 
 
 class TestDataError:
