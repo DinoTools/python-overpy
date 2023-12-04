@@ -209,3 +209,17 @@ class TestRemark:
         api = overpy.Overpass()
         with pytest.raises(overpy.exception.OverpassUnknownError):
             api.parse_xml(read_file("xml/remark-unknown-01.xml"))
+
+
+class TestIncludeRawXML:
+    def test_include_raw_xml(self):
+        api = overpy.Overpass()
+        data = read_file("xml/area-01.xml")
+        result = api.parse_xml(data, include_raw=True)
+        assert result.raw == data
+
+    def test_not_include_raw(self):
+        api = overpy.Overpass()
+        data = read_file("xml/area-01.xml")
+        result = api.parse_xml(data, include_raw=False)
+        assert result.raw is None

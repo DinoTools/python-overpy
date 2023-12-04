@@ -116,3 +116,17 @@ class TestRemark:
         api = overpy.Overpass()
         with pytest.raises(overpy.exception.OverpassUnknownError):
             api.parse_json(read_file("json/remark-unknown-01.json"))
+
+
+class TestIncludeRawJSON:
+    def test_include_raw_json(self):
+        api = overpy.Overpass()
+        data = read_file("json/area-01.json")
+        result = api.parse_json(data, include_raw=True)
+        assert result.raw == data
+
+    def test_not_include_raw(self):
+        api = overpy.Overpass()
+        data = read_file("json/area-01.json")
+        result = api.parse_json(data, include_raw=False)
+        assert result.raw is None
