@@ -6,7 +6,7 @@ Requirements
 
 Supported Python versions:
 
-* Python 3.6+
+* Python 3.7+
 * PyPy3
 
 Installation

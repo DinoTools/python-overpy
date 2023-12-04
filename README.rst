@@ -33,7 +33,7 @@ Install
 
 Supported Python versions:
 
-* Python >= 3.6.2
+* Python >= 3.7
 * PyPy3
 
 **Install:**

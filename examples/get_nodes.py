@@ -8,15 +8,9 @@ jet_deau = 60018172
 result = api.query(f"node({jet_deau}); out meta;")
 node = result.get_node(jet_deau)
 
-print(
-    "The node for the famous Geneva {} ({},{}) was:".format(
-        node.tags['name'],
-        node.lat,
-        node.lon
-    )
-)
+print(f"The node for the famous Geneva {node.tags['name']} ({node.lat},{node.lon}) was:")
 attrs = node.attributes
 
-print("* last modified {}".format(attrs['timestamp']))
-print("* by {} (uid: {})".format(attrs['user'], attrs['uid']))
-print("* in changeset {}".format(attrs['changeset']))
+print(f"* last modified {attrs['timestamp']}")
+print(f"* by {attrs['user']} (uid: {attrs['uid']})")
+print(f"* in changeset {attrs['changeset']}")

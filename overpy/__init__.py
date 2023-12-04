@@ -1,6 +1,6 @@
-from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
+from functools import partial
 from urllib.request import urlopen
 from urllib.error import HTTPError
 from xml.sax import handler, make_parser
@@ -121,43 +121,31 @@ class Overpass:
         if not isinstance(query, bytes):
             query = query.encode("utf-8")
 
-        retry_num: int = 0
         retry_exceptions: List[exception.OverPyException] = []
-        do_retry: bool = True if self.max_retry_count > 0 else False
-        while retry_num <= self.max_retry_count:
-            if retry_num > 0:
-                time.sleep(self.retry_timeout)
-            retry_num += 1
-            try:
-                f = urlopen(self.url, query)
-            except HTTPError as e:
-                f = e
 
-            response = f.read(self.read_chunk_size)
-            while True:
-                data = f.read(self.read_chunk_size)
-                if len(data) == 0:
-                    break
-                response = response + data
-            f.close()
+        for run in range(self.max_retry_count + 1):
+            if run:
+                time.sleep(self.retry_timeout)
+
+            response = b""
+            try:
+                with urlopen(self.url, query) as f:
+                    f_read = partial(f.read, self.read_chunk_size)
+                    for data in iter(f_read, b""):
+                        response += data
+            except HTTPError as exc:
+                f = exc
 
             current_exception: exception.OverPyException
             if f.code == 200:
                 content_type = f.getheader("Content-Type")
-
                 if content_type == "application/json":
                     return self.parse_json(response)
-
-                if content_type == "application/osm3s+xml":
+                elif content_type == "application/osm3s+xml":
                     return self.parse_xml(response)
-
-                current_exception = exception.OverpassUnknownContentType(content_type)
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            if f.code == 400:
+                else:
+                    current_exception = exception.OverpassUnknownContentType(content_type)
+            elif f.code == 400:
                 msgs: List[str] = []
                 for msg_raw in self._regex_extract_error_msg.finditer(response):
                     msg_clean_bytes = self._regex_remove_tag.sub(b"", msg_raw.group("msg"))
@@ -166,37 +154,17 @@ class Overpass:
                     except UnicodeDecodeError:
                         msg = repr(msg_clean_bytes)
                     msgs.append(msg)
-
-                current_exception = exception.OverpassBadRequest(
-                    query,
-                    msgs=msgs
-                )
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            if f.code == 429:
+                current_exception = exception.OverpassBadRequest(query, msgs=msgs)
+            elif f.code == 429:
                 current_exception = exception.OverpassTooManyRequests()
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            if f.code == 504:
+            elif f.code == 504:
                 current_exception = exception.OverpassGatewayTimeout()
-                if not do_retry:
-                    raise current_exception
-                retry_exceptions.append(current_exception)
-                continue
-
-            current_exception = exception.OverpassUnknownHTTPStatusCode(f.code)
-            if not do_retry:
+            else:
+                current_exception = exception.OverpassUnknownHTTPStatusCode(f.code)
+            if not self.max_retry_count:
                 raise current_exception
             retry_exceptions.append(current_exception)
-            continue
-
-        raise exception.MaxRetriesReached(retry_count=retry_num, exceptions=retry_exceptions)
+        raise exception.MaxRetriesReached(retry_count=run + 1, exceptions=retry_exceptions)
 
     def parse_json(self, data: Union[bytes, str], encoding: str = "utf-8") -> "Result":
         """
@@ -250,18 +218,18 @@ class Result:
         """
         if elements is None:
             elements = []
-        self._areas: Dict[int, Union["Area", "Node", "Relation", "Way"]] = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Area)
-        )
-        self._nodes = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Node)
-        )
-        self._ways = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Way)
-        )
-        self._relations = OrderedDict(
-            (element.id, element) for element in elements if is_valid_type(element, Relation)
-        )
+        self._areas: Dict[int, Union["Area", "Node", "Relation", "Way"]] = {
+            element.id: element for element in elements if is_valid_type(element, Area)
+        }
+        self._nodes = {
+            element.id: element for element in elements if is_valid_type(element, Node)
+        }
+        self._ways = {
+            element.id: element for element in elements if is_valid_type(element, Way)
+        }
+        self._relations = {
+            element.id: element for element in elements if is_valid_type(element, Relation)
+        }
         self._class_collection_map: Dict[Any, Any] = {
             Node: self._nodes,
             Way: self._ways,
@@ -438,12 +406,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "area({area_id});\n"
+                     f"area({area_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                area_id=area_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -480,12 +445,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "node({node_id});\n"
+                     f"node({node_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                node_id=node_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -523,12 +485,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "relation({relation_id});\n"
+                     f"relation({rel_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                relation_id=rel_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -565,12 +524,9 @@ class Result:
 
             query = ("\n"
                      "[out:json];\n"
-                     "way({way_id});\n"
+                     f"way({way_id});\n"
                      "out body;\n"
                      )
-            query = query.format(
-                way_id=way_id
-            )
             tmp_result = self.api.query(query)
             self.expand(tmp_result)
 
@@ -950,13 +906,10 @@ class Way(Element):
 
             query = ("\n"
                      "[out:json];\n"
-                     "way({way_id});\n"
+                     f"way({self.id});\n"
                      "node(w);\n"
                      "out body;\n"
                      )
-            query = query.format(
-                way_id=self.id
-            )
             tmp_result = self._result.api.query(query)
             self._result.expand(tmp_result)
             resolved = True
@@ -1423,9 +1376,9 @@ class OSMSAXHandler(handler.ContentHandler):
         if name in self.ignore_start:
             return
         try:
-            handler = getattr(self, '_handle_start_%s' % name)
+            handler = getattr(self, f"_handle_start_{name}")
         except AttributeError:
-            raise KeyError("Unknown element start '%s'" % name)
+            raise KeyError(f"Unknown element start {name!r}")
         handler(attrs)
 
     def endElement(self, name: str):
@@ -1437,9 +1390,9 @@ class OSMSAXHandler(handler.ContentHandler):
         if name in self.ignore_end:
             return
         try:
-            handler = getattr(self, '_handle_end_%s' % name)
+            handler = getattr(self, f"_handle_end_{name}")
         except AttributeError:
-            raise KeyError("Unknown element end '%s'" % name)
+            raise KeyError(f"Unknown element end {name!r}")
         handler()
 
     def _handle_start_center(self, attrs: dict):
@@ -1617,7 +1570,7 @@ class OSMSAXHandler(handler.ContentHandler):
         }
         cls: Type[RelationMember] = cls_map.get(attrs["type"])
         if cls is None:
-            raise ValueError("Undefined type for member: '%s'" % attrs['type'])
+            raise ValueError(f"Undefined type for member: {attrs['type']!r}")
 
         self.cur_relation_member = cls(**params)
         self._curr['members'].append(self.cur_relation_member)

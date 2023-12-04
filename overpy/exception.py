@@ -31,10 +31,7 @@ class ElementDataWrongType(OverPyException):
         self.type_provided = type_provided
 
     def __str__(self) -> str:
-        return "Type expected '{}' but '{}' provided".format(
-            self.type_expected,
-            str(self.type_provided)
-        )
+        return f"Type expected {self.type_expected!r} but {self.type_provided!r} provided"
 
 
 class MaxRetriesReached(OverPyException):
@@ -46,7 +43,7 @@ class MaxRetriesReached(OverPyException):
         self.retry_count = retry_count
 
     def __str__(self) -> str:
-        return "Unable get any result from the Overpass API server after %d retries." % self.retry_count
+        return f"Unable get any result from the Overpass API server after {self.retry_count} retries."
 
 
 class OverpassBadRequest(OverPyException):
@@ -142,7 +139,7 @@ class OverpassUnknownContentType(OverPyException):
     def __str__(self) -> str:
         if self.content_type is None:
             return "No content type returned"
-        return "Unknown content type: %s" % self.content_type
+        return f"Unknown content type: {self.content_type}"
 
 
 class OverpassUnknownError(OverpassError):
@@ -163,4 +160,4 @@ class OverpassUnknownHTTPStatusCode(OverPyException):
         self.code = code
 
     def __str__(self) -> str:
-        return "Unknown/Unhandled status code: %d" % self.code
+        return f"Unknown/Unhandled status code: {self.code}"
