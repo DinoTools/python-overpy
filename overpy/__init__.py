@@ -1421,7 +1421,7 @@ class OSMSAXHandler(handler.ContentHandler):
         #: Current relation member object
         self.cur_relation_member: Optional[RelationMember] = None
 
-    def startElement(self, name: str, attrs: dict):
+    def startElement(self, name: Any, attrs: Any):
         """
         Handle opening elements.
 

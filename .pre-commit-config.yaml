@@ -72,10 +72,11 @@ repos:
           - flake8-implicit-str-concat
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.6.0
+    rev: v1.7.1
     hooks:
       - id: mypy
         args: [--no-strict-optional, --ignore-missing-imports, --allow-untyped-global]
+        additional_dependencies: [types-simplejson]
         exclude: ^(docs/)
 
 #  # Check for missing licensing and copyright information.
