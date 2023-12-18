@@ -260,12 +260,14 @@ Line 22-25:
     The resolved nodes have been added to the result set and are available to be used again later.
 
 Serialization
-----
+-------------
 
 Result objects can be converted to a dictionary, in the same format as the
 Overpass API ``json`` output format.
 
 .. code-block:: pycon
+    :linenos:
+
     >>> import overpy, simplejson
     >>> api = overpy.Overpass()
     >>> result = api.query("[out:xml];node(50.745,7.17,50.75,7.18);out;")
@@ -280,6 +282,8 @@ numbers, and then parsing with ``Overpass.parse_json()``. The third-party
 package ``simplejson`` works for this application:
 
 .. code-block:: pycon
+    :linenos:
+
     >>> result_str = simplejson.dumps(result.to_json())
     >>> new_result = api.parse_json(result_str)
     >>> assert len(result.nodes) == len(new_result.nodes)

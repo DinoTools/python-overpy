@@ -60,14 +60,23 @@ class Overpass:
     """
     Class to access the Overpass API
 
-    :cvar default_max_retry_count: Global max number of retries (Default: 0)
-    :cvar default_read_chunk_size: Max size of each chunk read from the server response
-    :cvar default_retry_timeout: Global time to wait between tries (Default: 1.0s)
-    :cvar default_url: Default URL of the Overpass server
+    :param read_chunk_size: Max size of each chunk read from the server response
+    :param url: Optional URL of the Overpass server. Defaults to http://overpass-api.de/api/interpreter
+    :param xml_parser: The xml parser to use
+    :param max_retry_count: Max number of retries (Default: default_max_retry_count)
+    :param retry_timeout: Time to wait between tries (Default: default_retry_timeout)
     """
+
+    #: Global max number of retries (Default: 0)
     default_max_retry_count: ClassVar[int] = 0
+
+    #: Max size of each chunk read from the server response
     default_read_chunk_size: ClassVar[int] = 4096
+
+    #: Global time to wait between tries (Default: 1.0s)
     default_retry_timeout: ClassVar[float] = 1.0
+
+    #: Default URL of the Overpass server
     default_url: ClassVar[str] = "http://overpass-api.de/api/interpreter"
 
     def __init__(
@@ -77,13 +86,8 @@ class Overpass:
             xml_parser: int = XML_PARSER_SAX,
             max_retry_count: int = None,
             retry_timeout: float = None):
-        """
-        :param read_chunk_size: Max size of each chunk read from the server response
-        :param url: Optional URL of the Overpass server. Defaults to http://overpass-api.de/api/interpreter
-        :param xml_parser: The xml parser to use
-        :param max_retry_count: Max number of retries (Default: default_max_retry_count)
-        :param retry_timeout: Time to wait between tries (Default: default_retry_timeout)
-        """
+
+        #: URL to use for this instance
         self.url = self.default_url
         if url is not None:
             self.url = url
@@ -92,16 +96,23 @@ class Overpass:
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
         if read_chunk_size is None:
             read_chunk_size = self.default_read_chunk_size
+
+        #: The chunk size for this instance
         self.read_chunk_size = read_chunk_size
 
         if max_retry_count is None:
             max_retry_count = self.default_max_retry_count
+
+        #: Max retry count for this instance
         self.max_retry_count = max_retry_count
 
         if retry_timeout is None:
             retry_timeout = self.default_retry_timeout
+
+        #: The retry timeout for this instance
         self.retry_timeout = retry_timeout
 
+        #: The XML parser to use for this instance
         self.xml_parser = xml_parser
 
     @staticmethod
@@ -176,7 +187,11 @@ class Overpass:
             retry_exceptions.append(current_exception)
         raise exception.MaxRetriesReached(retry_count=run + 1, exceptions=retry_exceptions)
 
-    def parse_json(self, data: Union[bytes, str], encoding: str = "utf-8") -> "Result":
+    def parse_json(
+            self,
+            data: Union[bytes, str],
+            encoding: str = "utf-8"
+    ) -> "Result":
         """
         Parse raw response from Overpass service.
 
@@ -191,7 +206,12 @@ class Overpass:
             self._handle_remark_msg(msg=data_parsed.get("remark"))
         return Result.from_json(data_parsed, api=self)
 
-    def parse_xml(self, data: Union[bytes, str], encoding: str = "utf-8", parser: Optional[int] = None):
+    def parse_xml(
+            self,
+            data: Union[bytes, str],
+            encoding: str = "utf-8",
+            parser: Optional[int] = None
+    ) -> "Result":
         """
 
         :param data: Raw XML Data
@@ -215,17 +235,16 @@ class Overpass:
 class Result:
     """
     Class to handle the result.
+
+    :param elements: List of elements to initialize the result with
+    :param api: The API object to load additional resources and elements
     """
 
     def __init__(
             self,
             elements: Optional[List[Union["Area", "Node", "Relation", "Way"]]] = None,
             api: Optional[Overpass] = None):
-        """
 
-        :param elements: List of elements to initialize the result with
-        :param api: The API object to load additional resources and elements
-        """
         if elements is None:
             elements = []
         self._areas: Dict[int, Union["Area", "Node", "Relation", "Way"]] = {
@@ -246,11 +265,12 @@ class Result:
             Relation: self._relations,
             Area: self._areas
         }
-        self.api = api
+        #: The API to use if we need to resolve additional information
+        self.api: Optional[Overpass] = api
 
     def expand(self, other: "Result"):
         """
-        Add all elements from an other result to the list of elements of this result object.
+        Add all elements from another result to the list of elements of this result object.
 
         It is used by the auto resolve feature.
 
@@ -581,17 +601,15 @@ class Result:
 class Element:
     """
     Base element
+
+    :param attributes: Additional attributes
+    :param result: The result object this element belongs to
+    :param tags: List of tags
     """
 
     _type_value: str
 
     def __init__(self, attributes: Optional[dict] = None, result: Optional[Result] = None, tags: Optional[Dict] = None):
-        """
-        :param attributes: Additional attributes
-        :param result: The result object this element belongs to
-        :param tags: List of tags
-        """
-
         self._result = result
         self.attributes = attributes
         # ToDo: Add option to modify attribute modifiers
@@ -599,8 +617,12 @@ class Element:
         for n, m in attribute_modifiers.items():
             if n in self.attributes:
                 self.attributes[n] = m(self.attributes[n])
+
+        #: The ID of the element form the OSM data
         self.id: int
-        self.tags = tags
+
+        #: The tags of the element
+        self.tags: Optional[Dict] = tags
 
     @classmethod
     def get_center_from_json(cls, data: dict) -> Tuple[Decimal, Decimal]:
@@ -661,16 +683,14 @@ class Element:
 class Area(Element):
     """
     Class to represent an element of type area
+
+    :param area_id: Id of the area element
+    :param kwargs: Additional arguments are passed directly to the parent class
     """
 
     _type_value = "area"
 
     def __init__(self, area_id: Optional[int] = None, **kwargs):
-        """
-        :param area_id: Id of the area element
-        :param kwargs: Additional arguments are passed directly to the parent class
-        """
-
         Element.__init__(self, **kwargs)
         #: The id of the way
         self.id = area_id
@@ -753,6 +773,11 @@ class Area(Element):
 class Node(Element):
     """
     Class to represent an element of type node
+
+    :param lat: Latitude
+    :param lon: Longitude
+    :param node_id: Id of the node element
+    :param kwargs: Additional arguments are passed directly to the parent class
     """
 
     _type_value = "node"
@@ -763,16 +788,16 @@ class Node(Element):
             lat: Optional[Union[Decimal, float]] = None,
             lon: Optional[Union[Decimal, float]] = None,
             **kwargs):
-        """
-        :param lat: Latitude
-        :param lon: Longitude
-        :param node_id: Id of the node element
-        :param kwargs: Additional arguments are passed directly to the parent class
-        """
 
         Element.__init__(self, **kwargs)
+
+        #: The node ID from the OSM
         self.id = node_id
+
+        #: Latitude of the node
         self.lat = lat
+
+        #: Longitude of the node
         self.lon = lon
 
     def __repr__(self) -> str:
@@ -870,6 +895,12 @@ class Node(Element):
 class Way(Element):
     """
     Class to represent an element of type way
+
+    :param center_lat: The latitude of the center of the way (optional depending on query)
+    :param center_lon: The longitude of the center of the way (optional depending on query)
+    :param node_ids: List of node IDs
+    :param way_id: Id of the way element
+    :param kwargs: Additional arguments are passed directly to the parent class
     """
 
     _type_value = "way"
@@ -881,11 +912,6 @@ class Way(Element):
             center_lon: Optional[Union[Decimal, float]] = None,
             node_ids: Optional[Union[List[int], Tuple[int]]] = None,
             **kwargs):
-        """
-        :param node_ids: List of node IDs
-        :param way_id: Id of the way element
-        :param kwargs: Additional arguments are passed directly to the parent class
-        """
 
         Element.__init__(self, **kwargs)
         #: The id of the way
@@ -894,8 +920,10 @@ class Way(Element):
         #: List of Ids of the associated nodes
         self._node_ids = node_ids
 
-        #: The lat/lon of the center of the way (optional depending on query)
+        #: The latitude of the center of the way (optional depending on query)
         self.center_lat = center_lat
+
+        #: The longitude of the center of the way (optional depending on query)
         self.center_lon = center_lon
 
     def __repr__(self):
@@ -1063,6 +1091,13 @@ class Way(Element):
 class Relation(Element):
     """
     Class to represent an element of type relation
+
+    :param center_lat: The latitude of the center of the relation (optional depending on query)
+    :param center_lon: The longitude of the center of the relation (optional depending on query)
+    :param members:
+    :param rel_id: Id of the relation element
+    :param kwargs:
+    :return:
     """
 
     _type_value = "relation"
@@ -1074,19 +1109,15 @@ class Relation(Element):
             center_lon: Optional[Union[Decimal, float]] = None,
             members: Optional[List["RelationMember"]] = None,
             **kwargs):
-        """
-        :param members:
-        :param rel_id: Id of the relation element
-        :param kwargs:
-        :return:
-        """
 
         Element.__init__(self, **kwargs)
         self.id = rel_id
         self.members = members
 
-        #: The lat/lon of the center of the way (optional depending on query)
+        #: The latitude of the center of the relation (optional depending on query)
         self.center_lat = center_lat
+
+        #: The longitude of the center of the relation (optional depending on query)
         self.center_lon = center_lon
 
     def __repr__(self):
@@ -1221,6 +1252,11 @@ class Relation(Element):
 class RelationMember:
     """
     Base class to represent a member of a relation.
+
+    :param attributes:
+    :param ref: Reference Id
+    :param role: The role of the relation member
+    :param result:
     """
     _type_value: Optional[str] = None
 
@@ -1231,13 +1267,7 @@ class RelationMember:
             ref: Optional[int] = None,
             role: Optional[str] = None,
             result: Optional[Result] = None):
-        """
-        :param ref: Reference Id
-        :type ref: Integer
-        :param role: The role of the relation member
-        :type role: String
-        :param result:
-        """
+
         self.ref = ref
         self._result = result
         self.role = role
@@ -1405,6 +1435,8 @@ class RelationArea(RelationMember):
 class OSMSAXHandler(handler.ContentHandler):
     """
     SAX parser for Overpass XML response.
+
+    :param result: Append results to this result set.
     """
     #: Tuple of opening elements to ignore
     ignore_start: ClassVar = ('osm', 'meta', 'note', 'bounds', 'remark')
@@ -1412,9 +1444,6 @@ class OSMSAXHandler(handler.ContentHandler):
     ignore_end: ClassVar = ('osm', 'meta', 'note', 'bounds', 'remark', 'tag', 'nd', 'center')
 
     def __init__(self, result: Result):
-        """
-        :param result: Append results to this result set.
-        """
         handler.ContentHandler.__init__(self)
         self._result = result
         self._curr: Dict[str, Any] = {}
