@@ -75,7 +75,9 @@ class Overpass:
     #: Default URL of the Overpass server
     default_url: ClassVar[str] = "http://overpass-api.de/api/interpreter"
 
-    default_headers: ClassVar[Dict[str, str]] = {}
+    default_headers: ClassVar[Dict[str, str]] = {
+        'User-Agent': 'python-overpy/{} (urllib)'.format(__version__),
+    }
 
     def __init__(
             self,
