@@ -1,7 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from functools import partial
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 from xml.sax import handler, make_parser
 import xml.etree.ElementTree
@@ -60,7 +59,6 @@ class Overpass:
     """
     Class to access the Overpass API
 
-    :param read_chunk_size: Max size of each chunk read from the server response
     :param url: Optional URL of the Overpass server. Defaults to http://overpass-api.de/api/interpreter
     :param xml_parser: The xml parser to use
     :param max_retry_count: Max number of retries (Default: default_max_retry_count)
@@ -70,9 +68,6 @@ class Overpass:
     #: Global max number of retries (Default: 0)
     default_max_retry_count: ClassVar[int] = 0
 
-    #: Max size of each chunk read from the server response
-    default_read_chunk_size: ClassVar[int] = 4096
-
     #: Global time to wait between tries (Default: 1.0s)
     default_retry_timeout: ClassVar[float] = 1.0
 
@@ -81,7 +76,6 @@ class Overpass:
 
     def __init__(
             self,
-            read_chunk_size: Optional[int] = None,
             url: Optional[str] = None,
             xml_parser: int = XML_PARSER_SAX,
             max_retry_count: int = None,
@@ -94,11 +88,6 @@ class Overpass:
 
         self._regex_extract_error_msg = re.compile(br"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
-        if read_chunk_size is None:
-            read_chunk_size = self.default_read_chunk_size
-
-        #: The chunk size for this instance
-        self.read_chunk_size = read_chunk_size
 
         if max_retry_count is None:
             max_retry_count = self.default_max_retry_count
@@ -151,9 +140,7 @@ class Overpass:
             response = b""
             try:
                 with urlopen(self.url, query) as f:
-                    f_read = partial(f.read, self.read_chunk_size)
-                    for data in iter(f_read, b""):
-                        response += data
+                    response = f.read()
             except HTTPError as exc:
                 f = exc
 
