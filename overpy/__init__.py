@@ -63,6 +63,7 @@ class Overpass:
     :param xml_parser: The xml parser to use
     :param max_retry_count: Max number of retries (Default: default_max_retry_count)
     :param retry_timeout: Time to wait between tries (Default: default_retry_timeout)
+    :param headers: Dict of headers to send with the request
     """
 
     #: Global max number of retries (Default: 0)
@@ -74,17 +75,24 @@ class Overpass:
     #: Default URL of the Overpass server
     default_url: ClassVar[str] = "http://overpass-api.de/api/interpreter"
 
+    default_headers: ClassVar[Dict[str, str]] = {}
+
     def __init__(
             self,
             url: Optional[str] = None,
             xml_parser: int = XML_PARSER_SAX,
             max_retry_count: int = None,
-            retry_timeout: float = None):
+            retry_timeout: float = None,
+            headers: dict[str, str] = None):
 
         #: URL to use for this instance
         self.url = self.default_url
         if url is not None:
             self.url = url
+
+        self.headers = self.default_headers
+        if headers is not None:
+            self.headers = headers
 
         self._regex_extract_error_msg = re.compile(br"\<p\>(?P<msg>\<strong\s.*?)\</p\>")
         self._regex_remove_tag = re.compile(b"<[^>]*?>")
@@ -139,7 +147,8 @@ class Overpass:
 
             response = b""
             try:
-                with urlopen(self.url, query) as f:
+                req = Request(self.url, data=query, headers=self.headers)
+                with urlopen(req) as f:
                     response = f.read()
             except HTTPError as exc:
                 f = exc
