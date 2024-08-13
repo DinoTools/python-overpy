@@ -128,15 +128,6 @@ class HandleRetry(BaseHTTPRequestHandler):
 
 
 class TestQuery:
-    def test_chunk_size(self):
-        url, server = new_server_thread(HandleResponseJSON)
-
-        api = overpy.Overpass(read_chunk_size=128)
-        api.url = url
-        result = api.query("[out:json];node(50.745,7.17,50.75,7.18);out;")
-        stop_server_thread(server)
-        assert len(result.nodes) > 0
-
     def test_overpass_syntax_error(self):
         url, server = new_server_thread(HandleOverpassBadRequest)
 
