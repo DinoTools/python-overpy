@@ -64,3 +64,17 @@ Helper
 
 .. automodule:: overpy.helper
     :members:
+
+
+Format/Export
+-------------
+
+.. warning::
+
+    This feature is in pre alpha stage. Please report any issues.
+
+.. automodule:: overpy.format.geojson
+    :members:
+
+.. automodule:: overpy.format.osm_xml
+    :members:
